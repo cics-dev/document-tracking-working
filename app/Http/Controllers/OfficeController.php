@@ -7,19 +7,16 @@ use Illuminate\Http\Request;
 
 class OfficeController extends Controller
 {
-    // Fetch all offices
     public function index()
     {
-        return Office::all();
+        return Office::all()->load('head');
     }
 
-    // Fetch a single office
     public function show(Office $office)
     {
         return $office;
     }
 
-    // Create a new office
     public function store(Request $request)
     {
         $request->validate([
@@ -32,7 +29,6 @@ class OfficeController extends Controller
         return Office::create($request->all());
     }
 
-    // Update an office
     public function update(Request $request, Office $office)
     {
         $request->validate([
@@ -46,7 +42,6 @@ class OfficeController extends Controller
         return $office;
     }
 
-    // Delete an office
     public function destroy(Office $office)
     {
         $office->delete();

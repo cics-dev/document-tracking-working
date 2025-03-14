@@ -53,6 +53,16 @@ class User extends Authenticatable
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
+
+    public function getIsHeadAttribute()
+    {
+        return ($this->office && $this->id === $this->office->head_id) ? 'Yes' : 'No';
+    }
+    
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
     
     public function office()
     {

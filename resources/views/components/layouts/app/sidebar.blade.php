@@ -14,7 +14,19 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="building-office" :href="route('offices.index')" :current="request()->routeIs('offices.index')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
+                    @if (auth()->user()?->position === 'Administrator')
+                        <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
+                        <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
+                        <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Documents') }}</flux:navlist.item>
+                    @else
+                        <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate>
+                            {{ __('Received Documents') }}
+                        </flux:navlist.item>
+
+                        <flux:navlist.item icon="inbox-stack" :href="route('documents.list-documents', 'sent')" :current="request()->is('documents/sent')" wire:navigate>
+                            {{ __('Sent Documents') }}
+                        </flux:navlist.item>
+                    @endif
                 </flux:navlist.group>
             </flux:navlist>
 

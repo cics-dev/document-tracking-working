@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Offices;
 
 use App\Http\Controllers\OfficeController;
 use App\Models\Office;
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
 
-class OfficeManager extends Component
+class ListOffices extends Component
 {
     public $offices = [];
     public $name, $abbreviation, $office_type, $head_id;
@@ -24,7 +24,7 @@ class OfficeManager extends Component
 
     public function mount()
     {
-        $this->offices = []; // Initialize as an empty array
+        $this->offices = [];
         $this->fetchOffices();
     }
 
@@ -38,7 +38,6 @@ class OfficeManager extends Component
     {
         $this->validate();
 
-        // Use the full URL for the API request
         Http::post(config('app.url') . '/api/offices', [
             'name' => $this->name,
             'abbreviation' => $this->abbreviation,
@@ -59,7 +58,7 @@ class OfficeManager extends Component
         $this->office_type = $office['office_type'];
         $this->head_id = $office['head_id'];
         
-        return view('livewire.offices.edit');
+        return view('livewire.offices.edit-office');
     }
 
     public function updateOffice()
@@ -71,7 +70,6 @@ class OfficeManager extends Component
             'head_id' => 'nullable|exists:users,id',
         ]);
 
-        // Use the full URL for the API request
         Http::put(config('app.url') . '/api/offices/' . $this->officeId, [
             'name' => $this->name,
             'abbreviation' => $this->abbreviation,
@@ -85,7 +83,6 @@ class OfficeManager extends Component
 
     public function deleteOffice($id)
     {
-        // Use the full URL for the API request
         Http::delete(config('app.url') . '/api/offices/' . $id);
         $this->fetchOffices();
     }
@@ -102,6 +99,6 @@ class OfficeManager extends Component
 
     public function render()
     {
-        return view('livewire.offices.office-manager');
+        return view('livewire.offices.list-offices');
     }
 }
