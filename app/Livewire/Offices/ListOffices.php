@@ -30,7 +30,7 @@ class ListOffices extends Component
 
     public function fetchOffices()
     {
-        $response = app(OfficeController::class)->index();
+        $response = app(OfficeController::class)->index('ADMIN');
         $this->offices = $response;
     }
 

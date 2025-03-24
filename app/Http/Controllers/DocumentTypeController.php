@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 
 class DocumentTypeController extends Controller
 {
-    public function index()
+    public function index($office_type)
     {
+        if ($office_type != 'ADMIN') return DocumentType::where('id', 1)->get();
         return DocumentType::all();
     }
 }

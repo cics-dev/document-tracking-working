@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->string('document_number')->unique();
-            $table->foreignId('office_id')->constrained('offices')->onDelete('cascade');
+            $table->string('document_number')->unique()->nullable();
+            $table->foreignId('from_id')->constrained('offices')->onDelete('cascade');
+            $table->foreignId('to_id')->constrained('offices')->onDelete('cascade');
             $table->foreignId('document_type_id')->constrained('document_types')->onDelete('cascade');
             $table->string('subject');
             $table->text('content');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])->default('draft');
+            $table->string('status')->default('draft');
             $table->date('date_sent')->nullable();
             $table->timestamps();
         });

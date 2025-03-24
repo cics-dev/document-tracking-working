@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 
 class OfficeController extends Controller
 {
-    public function index()
+    public function index($office_type)
     {
+        if ($office_type != 'ADMIN') return Office::where('office_type', 'ADMIN')->with('head')->get();
         return Office::all()->load('head');
     }
 

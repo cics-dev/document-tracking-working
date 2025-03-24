@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DocumentSignatory extends Model
+class DocumentCarbonCopy extends Model
 {
-    protected $fillable = ['document_id', 'user_id', 'signatory_label', 'comments', 'status', 'viewed_at', 'signed_at', 'rejected_at', 'sequence'];
+    protected $fillable = ['document_id', 'user_id', 'viewed_at'];
 
     public function document()
     {

@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\DocumentPreviewController;
 use App\Livewire\Documents\CreateDocument;
 use App\Livewire\Documents\ListDocuments;
+use App\Livewire\Documents\TrackDocument;
+use App\Livewire\Documents\ViewDocument;
 use App\Livewire\Offices\CreateOffice;
 use App\Livewire\Offices\ListOffices;
 use App\Livewire\Settings\Appearance;
@@ -19,6 +22,8 @@ Route::view('dashboard', 'dashboard')
 ->middleware(['auth', 'verified'])
 ->name('dashboard');
 
+Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
+
 Route::middleware(['auth'])->group(function () {
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
@@ -34,7 +39,9 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/received', ListDocuments::class)->name('recieved-documents');
         // Route::get('/sent', ListDocuments::class)->name('sent-documents');
         Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['sent', 'received'])->name('list-documents');
+        Route::get('/track/{number}', TrackDocument::class)->name('track-document');
         Route::get('/create', CreateDocument::class)->name('create-document');
+        Route::get('/view/{number}', ViewDocument::class)->name('view-document');
     });
 
     Route::redirect('settings', 'settings/profile');

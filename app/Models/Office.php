@@ -17,9 +17,14 @@ class Office extends Model
     {
         return $this->hasMany(User::class);
     }
-
-    public function documents()
+    
+    public function sentDocuments()
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(Document::class, 'from_id');
+    }
+
+    public function receivedDocuments()
+    {
+        return $this->hasMany(Document::class, 'to_id');
     }
 }
