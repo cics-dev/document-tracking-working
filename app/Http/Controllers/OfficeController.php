@@ -7,10 +7,16 @@ use Illuminate\Http\Request;
 
 class OfficeController extends Controller
 {
-    public function index($office_type)
+    public function index($office_type, $paginate)
     {
-        if ($office_type != 'ADMIN') return Office::where('office_type', 'ADMIN')->with('head')->get();
-        return Office::all()->load('head');
+        $offices = Office::with('head');
+        
+        if ($office_type != 'ADMIN') {
+            $offices = $offices->where('office_type', 'ADMIN');
+        }
+
+        return $paginate ? $offices->paginate(10) : $offices->get();
+            
     }
 
     public function show(Office $office)

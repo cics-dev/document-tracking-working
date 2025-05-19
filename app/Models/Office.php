@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Office extends Model
 {
-    protected $fillable = ['name', 'abbreviation', 'office_type', 'head_id'];
+    protected $fillable = ['name', 'abbreviation', 'office_type', 'head_id', 'office_logo'];
 
     public function head()
     {

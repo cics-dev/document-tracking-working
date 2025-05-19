@@ -7,6 +7,7 @@ use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
 use App\Models\Document;
 use App\Models\Office;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -14,12 +15,14 @@ class CreateDocument extends Component
 {
     public $office_type = '';
     public $document_type = '';
+    public $attachments = '';
     public $subject = '';
     public $content = '';
     public $document_type_id = '';
     public $document_to_id = '';
+    public $document_from_id;
     public $signatories = [];
-    public $users = [];
+    public $users;
     public $types;
     public $offices;
     public $cf_offices = [];
@@ -32,13 +35,13 @@ class CreateDocument extends Component
 
     public function fetchUsers()
     {
-        $response = app(UserController::class)->index();
+        $response = app(UserController::class)->index(false);
         $this->users = $response;
     }
 
     public function fetchOffices()
     {
-        $response = app(OfficeController::class)->index(Auth::user()->office->office_type);
+        $response = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
         $this->offices = $response;
     }
 
@@ -57,9 +60,11 @@ class CreateDocument extends Component
 
         if ($data) {
             $this->document_to_id = $data['to'];
+            $this->document_from_id = $data['from'];
             $this->document_type_id = $data['document_type_id'];
             $this->subject = $data['subject'];
             $this->content = $data['content'];
+            $this->attachments = $data['attachments'];
             $this->cf_offices = $data['cf'];
         }
         
@@ -104,6 +109,10 @@ class CreateDocument extends Component
 
     public function submitDocument($action)
     {
+        $from_user = '';
+        if ($this->document_from_id) $from_user = Office::find($this->document_from_id)->head;
+        else $from_user = Auth::user();
+
         if ($action === 'preview') {
             $toOffice = collect($this->offices)->firstWhere('id', $this->document_to_id);
             $toName = $toOffice['head']['name'] ?? 'N/A';
@@ -111,11 +120,12 @@ class CreateDocument extends Component
             if ($toPosition !== 'University President' && $toPosition != 'N/A') {
                 $toPosition .= ', ' . $toOffice['name'];
             }
-
-            $fromName = Auth::user()->name . (Auth::user()->profile->title != '' ? ', ' . Auth::user()->profile->title : '');
-            $fromPosition = Auth::user()->position ?? 'N/A';
-            if (Auth::user()->position !== 'University President' && $fromPosition != 'N/A') {
-                $fromPosition .= ', ' . Auth::user()->office->name;
+            
+            $fromName = $from_user->name . ($from_user->profile->title != '' ? ', ' . $from_user->profile->title : '');
+            $fromPosition = $from_user->position ?? 'N/A';
+            $fromLogo = $from_user->office->office_logo;
+            if ($from_user->position !== 'University President' && $fromPosition != 'N/A') {
+                $fromPosition .= ', ' . $from_user->office->name;
             }
 
             $type = collect($this->types)->firstWhere('id', $this->document_type_id);
@@ -146,11 +156,13 @@ class CreateDocument extends Component
                 'toName' => $toName,
                 'toPosition' => $toPosition,
                 'fromName' => $fromName,
+                'office_logo' => $fromLogo,
                 'fromPosition' => $fromPosition,
                 'documentType' => $documentType,
                 'documentNumber' => $documentNumber,
                 'signatories' => $signatories->toJson(),
-                'cfs' => $cfs->toJson()
+                'cfs' => $cfs->toJson(),
+                'attachments' => $this->attachments
             ]);
 
             $this->dispatch('open-preview-tab', [
@@ -186,7 +198,7 @@ class CreateDocument extends Component
             }
                 
             $document = Document::create([
-                'from_id' => Auth::user()->office->id,
+                'from_id' => $from_user->office->id,
                 'to_id' => $this->document_to_id,
                 'document_type_id' => $this->document_type_id,
                 'document_number' => $docNumber,
@@ -199,7 +211,8 @@ class CreateDocument extends Component
 
             $document->logs()->create([
                 'user_id' => Auth::id(),
-                'action' => 'Document Sent'
+                'action' => 'sent',
+                'description' => 'Document Sent'
             ]);
 
             if(!empty($this->signatories)) {

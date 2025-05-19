@@ -28,11 +28,11 @@
                         <td class="px-4 py-2">{{ $user->name }}</td>
                         <td class="px-4 py-2">{{ $user->email }}</td>
                         <td class="px-4 py-2">{{ $user->position }}</td>
-                        <td class="px-4 py-2">{{ $user->office->name??'No Office' }}</td>
-                        <td class="px-4 py-2">{{ $user->is_head??'No' }}</td>
+                        <td class="px-4 py-2">{{ $user->office->name ?? 'No Office' }}</td>
+                        <td class="px-4 py-2">{{ $user->is_head ?? 'No' }}</td>
                         <td class="px-4 py-2 space-x-2">
-                            <button wire:click="edituser({{ $user['id'] }})" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Edit</button>
-                            <button wire:click="deleteuser('{{ $user['id'] }}')" class="text-[#f53003] dark:text-[#FF4433] hover:underline">Delete</button>
+                            <button wire:click="edituser({{ $user->id }})" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Edit</button>
+                            <button wire:click="deleteuser('{{ $user->id }}')" class="text-[#f53003] dark:text-[#FF4433] hover:underline">Delete</button>
                         </td>
                     </tr>
                 @empty
@@ -42,5 +42,11 @@
                 @endforelse
             </tbody>
         </table>
+
+        <!-- Pagination Links -->
+        <div class="mt-4">
+            {{ $users->links() }}
+        </div>
+
     </div>
 </section>

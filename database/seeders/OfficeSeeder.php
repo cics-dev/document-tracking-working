@@ -32,22 +32,22 @@ class OfficeSeeder extends Seeder
         ]);
         Office::create([
             'name' => 'Office of the Vice President for Student Affairs and Services',
-            'abbreviation' => 'SAO',
+            'abbreviation' => 'VPSAS',
             'office_type' => 'ADMIN'
         ]);
         Office::create([
             'name' => 'Office of the Vice President for Academic Affairs',
-            'abbreviation' => 'SAO',
+            'abbreviation' => 'VPAA',
             'office_type' => 'ADMIN'
         ]);
         Office::create([
             'name' => 'Office of the Vice President for Administration and Finance',
-            'abbreviation' => 'SAO',
+            'abbreviation' => 'VPAF',
             'office_type' => 'ADMIN'
         ]);
         Office::create([
             'name' => 'Office of the Vice President for Research Development and Extension',
-            'abbreviation' => 'SAO',
+            'abbreviation' => 'VPRDE',
             'office_type' => 'ADMIN'
         ]);
         Office::create([
@@ -70,7 +70,8 @@ class OfficeSeeder extends Seeder
         Office::create([
             'name' => 'College of Information and Computing Sciences',
             'abbreviation' => 'CICS',
-            'office_type' => 'ACAD'
+            'office_type' => 'ACAD',
+            'office_logo' => 'office_images/cics-logo.jpg'
         ]);
         Office::create([
             'name' => 'College of Maritime Education',

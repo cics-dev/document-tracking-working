@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index($paginate)
     {
-        return User::all()->load('profile', 'office');
+        $users = User::with('profile', 'office');
+
+        return $paginate ? $users->paginate(10) : $users->get();
     }
 
     public function store(Request $request)

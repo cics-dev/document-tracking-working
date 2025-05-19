@@ -20,9 +20,9 @@
                                 @if($log->action == 'Document Sent')
                                     <strong>○ {{ $log->action }}</strong>
                                 @elseif(strpos($log->action, 'viewed') !== false)
-                                    <strong>○ {{ $log->action }}</strong>
+                                    <strong>○ {{ $log->description }}</strong>
                                 @else
-                                    <strong>○ {{ $log->action }}</strong>
+                                    <strong>○ {{ $log->description }}</strong>
                                 @endif
                             </p>
                             <p class="text-sm text-gray-500">{{ $log->created_at->format('F d, Y h:i A') }}</p>

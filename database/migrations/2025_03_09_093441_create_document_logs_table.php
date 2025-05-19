@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('document_id')->constrained('documents')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('action');
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

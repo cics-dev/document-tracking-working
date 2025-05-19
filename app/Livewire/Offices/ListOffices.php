@@ -3,13 +3,14 @@
 namespace App\Livewire\Offices;
 
 use App\Http\Controllers\OfficeController;
-use App\Models\Office;
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
+use Livewire\WithPagination;
 
 class ListOffices extends Component
 {
-    public $offices = [];
+    use WithPagination;
+
     public $name, $abbreviation, $office_type, $head_id;
     public $editMode = false;
     public $officeId;
@@ -22,16 +23,9 @@ class ListOffices extends Component
         'head_id' => 'nullable|exists:users,id',
     ];
 
-    public function mount()
+    public function updatingSearch()
     {
-        $this->offices = [];
-        $this->fetchOffices();
-    }
-
-    public function fetchOffices()
-    {
-        $response = app(OfficeController::class)->index('ADMIN');
-        $this->offices = $response;
+        $this->resetPage();
     }
 
     public function saveOffice()
@@ -99,6 +93,6 @@ class ListOffices extends Component
 
     public function render()
     {
-        return view('livewire.offices.list-offices');
+        return view('livewire.offices.list-offices', ['offices'=>app(OfficeController::class)->index('ADMIN', true)]);
     }
 }

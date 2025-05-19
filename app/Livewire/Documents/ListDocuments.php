@@ -30,7 +30,7 @@ class ListDocuments extends Component
                 $document->status = 'Waiting for Signatures';
             }
 
-            if ($mySignatory?->viewed_at) $document->viewed_at = $mySignatory?->viewed_at;
+            // if ($mySignatory?->viewed_at) $document->viewed_at = $mySignatory?->viewed_at;
         }     
     }
 

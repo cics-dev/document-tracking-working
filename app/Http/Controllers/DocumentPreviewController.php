@@ -14,6 +14,7 @@ class DocumentPreviewController extends Controller
         $data = $request->all();
 
         $data['date'] = $data['date_sent'] ?? now();
+        $data['attachments'] = $data['attachments'] ?? null;
 
         // Ensure signatories is an array (not string)
         if (isset($data['signatories']) && is_string($data['signatories'])) {

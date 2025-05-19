@@ -36,30 +36,42 @@ class ViewDocument extends Component
         $this->office_name = Auth::user()->office->name;
 
         if ($this->office_name != 'Administration' && $this->office_name != 'Records Section') {
+            if ($this->document->signatories->isNotEmpty()) {
+                $this->mySignatory = $this->document->signatories->firstWhere('user_id', Auth::user()->id);
 
-            $this->mySignatory = $this->document->signatories->firstWhere('user_id', Auth::user()->id);
+                // if (!$this->mySignatory) {
+                //     abort(403, 'Access denied.');
+                //     return;
+                // }
 
-            if (!$this->mySignatory) {
-                abort(403, 'Access denied.');
-                return;
+                $this->signed = $this->mySignatory->signed_at;
+                $this->rejected = $this->mySignatory->rejected_at;
+
+                if ($this->signed) {
+                    $this->display_text = 'You have already signed this document.';
+                } elseif ($this->rejected) {
+                    $this->display_text = 'You have rejected this document.';
+                }
+
+                if (is_null($this->mySignatory->viewed_at)) {
+                    $this->mySignatory->viewed_at = now();
+                    $this->mySignatory->save();
+                    $this->document->logs()->create([
+                        'user_id' => Auth::id(),
+                        'action' => 'viewed',
+                        'description' => $this->mySignatory->user->office->name . ' viewed the document'
+                    ]);
+                }
             }
-
-            $this->signed = $this->mySignatory->signed_at;
-            $this->rejected = $this->mySignatory->rejected_at;
-
-            if ($this->signed) {
-                $this->display_text = 'You have already signed this document.';
-            } elseif ($this->rejected) {
-                $this->display_text = 'You have rejected this document.';
-            }
-
-            if (is_null($this->mySignatory->viewed_at)) {
-                $this->mySignatory->viewed_at = now();
-                $this->mySignatory->save();
-                $this->document->logs()->create([
-                    'user_id' => Auth::id(),
-                    'action' => $this->mySignatory->user->office->name . ' viewed the document'
-                ]);
+            else {
+                if (!$this->document->viewed_at) {
+                    $this->document->logs()->create([
+                        'user_id' => Auth::id(),
+                        'action' => 'viewed'
+                    ]);
+                }
+                $this->signed = true;
+                $this->rejected = true;
             }
         }
 
@@ -69,6 +81,7 @@ class ViewDocument extends Component
         }
 
         $fromPosition = $this->document->fromOffice->head->position ?? 'N/A';
+        $fromLogo = $this->document->fromOffice->office_logo;
         if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
             $fromPosition .= ', ' . $this->document->fromOffice->name;
         }
@@ -82,9 +95,11 @@ class ViewDocument extends Component
             'toPosition' => $toPosition,
             'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
+            'office_logo' => $fromLogo,
             'documentType' => $this->document->documentType->name ?? 'N/A',
             'documentNumber' => $this->document->document_number,
             'signatories' => $signatories->toJson(),
+            'attachments' => null
         ]);
     
         // $this->dispatch('open-preview-tab', [
@@ -126,7 +141,8 @@ class ViewDocument extends Component
         $this->mySignatory->save();
         $this->document->logs()->create([
             'user_id' => Auth::id(),
-            'action' => $this->mySignatory->user->office->name . ' signed the document'
+            'action' => 'signed',
+            'description' => $this->mySignatory->user->office->name . ' signed the document'
         ]);
         $data = [
             'title' => 'Document signed!',
@@ -169,16 +185,18 @@ class ViewDocument extends Component
     {
         session()->flash('redirect_data', [
             'to' => $this->document->fromOffice->id,
+            'from' => $this->document->toOffice->id,
             'subject' => 'RE: ' . $this->document->subject,
             'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
             'content' => '<p>Pursuant to the approved-request letter memorandum (<b>' . $this->document->document_number . '</b>)',
             'cf' => $this->document->signatories
                 ->map(fn($s) => $s->user->office->id ?? null)
-                ->filter(fn($id) => $id !== Office::where('name', 'Office of the University President')->value('id'))
+                // ->filter(fn($id) => $id !== Office::where('name', 'Office of the University President')->value('id'))
                 ->unique()
                 ->values()
                 ->merge([Office::where('name', 'Records Section')->value('id'), Auth::user()->office->id])
                 ->toArray(),
+            'attachments' => $this->document->id
         ]);        
 
         return redirect()->route('documents.create-document');
@@ -211,7 +229,8 @@ class ViewDocument extends Component
         ]);
         $this->document->logs()->create([
             'user_id' => Auth::id(),
-            'action' => $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks
+            'action' => 'rejected',
+            'description' => $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks
         ]);
         $this->mySignatory->save();
         $data = [

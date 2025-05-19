@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('status')->default('draft');
             $table->date('date_sent')->nullable();
+            $table->string('file_url')->nullable();
             $table->timestamps();
         });
     }

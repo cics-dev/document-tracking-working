@@ -7,22 +7,8 @@ use Livewire\Component;
 
 class ListUsers extends Component
 {
-    public $users = [];
-
-    public function fetchUsers()
-    {
-        $response = app(UserController::class)->index();
-        $this->users = $response;
-    }
-
-    public function mount()
-    {
-        $this->users = [];
-        $this->fetchUsers();
-    }
-
     public function render()
     {
-        return view('livewire.users.list-users');
+        return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)]);
     }
 }

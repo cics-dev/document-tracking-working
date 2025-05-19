@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('abbreviation', 50);
             $table->enum('office_type', ['ACAD', 'ADMIN', ''])->default('');
             $table->unsignedBigInteger('head_id')->nullable(); // FK added later
+            $table->string('office_logo')->nullable();
             $table->timestamps();
         });
     }

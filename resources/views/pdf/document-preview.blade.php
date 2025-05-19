@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>{{ $documentNumber ?? 'Document Preview' }}</title>
     <style>
+        .page-break { page-break-after: always; }
         body {
             font-family: 'Arial', sans-serif;
             font-size: 13px;
@@ -129,6 +130,9 @@
         Region IX, Western Mindanao<br>
         R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
         Telephone No.: 955-4024 / 991-4012
+        @if(isset($office_logo) && $office_logo)
+            <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
+        @endif
     </div>
 
     <hr style="margin: 10px 0;">
@@ -198,5 +202,8 @@
         </div>
     @endif
 
+    @if ($attachments)
+        <div class="page-break"></div>
+    @endif
 </body>
 </html>

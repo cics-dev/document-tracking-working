@@ -9,7 +9,6 @@ use Livewire\Component;
 
 class CreateUser extends Component
 {
-    public $offices = [];
     public $family_name = '';
     public $given_name = '';
     public $middle_name = '';
@@ -37,16 +36,10 @@ class CreateUser extends Component
         'position'   => 'required|string|max:100',
         'is_head'    => 'boolean',
     ];
-
-    public function mount()
-    {
-        $response = app(OfficeController::class)->index();
-        $this->offices = $response;
-    }
     
     public function render()
     {
-        return view('livewire.users.create-user');
+        return view('livewire.users.create-user', ['offices' => app(OfficeController::class)->index('ADMIN', false)]);
     }
 
     public function saveUser()
@@ -67,7 +60,6 @@ class CreateUser extends Component
             'is_head'         => $this->is_head,
         ]);
         $response = app(UserController::class)->store($data);
-        dd($response);
         redirect()->route('users.list-users');
     }
 }

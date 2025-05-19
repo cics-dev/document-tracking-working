@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentLog extends Model
 {
-    protected $fillable = ['document_id', 'user_id', 'action'];
+    protected $fillable = ['document_id', 'user_id', 'action', 'description'];
 
     public function document()
     {

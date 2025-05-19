@@ -27,10 +27,10 @@
                         <td class="px-4 py-2">{{ $office->name }}</td>
                         <td class="px-4 py-2">{{ $office->abbreviation }}</td>
                         <td class="px-4 py-2">{{ $office->office_type }}</td>
-                        <td class="px-4 py-2">{{ $office->head->name??'Not set' }}</td>
+                        <td class="px-4 py-2">{{ $office->head->name ?? 'Not set' }}</td>
                         <td class="px-4 py-2 space-x-2">
-                            <button wire:click="editOffice({{ $office['id'] }})" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Edit</button>
-                            <button wire:click="deleteOffice('{{ $office['id'] }}')" class="text-[#f53003] dark:text-[#FF4433] hover:underline">Delete</button>
+                            <button wire:click="editOffice({{ $office->id }})" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Edit</button>
+                            <button wire:click="deleteOffice({{ $office->id }})" class="text-[#f53003] dark:text-[#FF4433] hover:underline">Delete</button>
                         </td>
                     </tr>
                 @empty
@@ -40,5 +40,11 @@
                 @endforelse
             </tbody>
         </table>
+
+        <!-- Pagination Links -->
+        <div class="mt-4">
+            {{ $offices->links() }}
+        </div>
     </div>
+
 </section>
