@@ -1,0 +1,71 @@
+<!-- Place the div inside any container you want -->
+<div class="card-body">
+  <div class="row">
+    <div class="col-12">
+      <div id="pie-chart" class="pie-chart-container" style="height: 200px;"></div> <!-- Adjust height here -->
+    </div>
+  </div>
+</div>
+
+<!-- Optional: ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.min.js" crossorigin="anonymous"></script>
+<script>
+  //---------------------------
+  // - PIE CHART -
+  //---------------------------
+
+  const pie_chart_options = {
+    series: [700, 500, 400, 600, 300, 100],
+    chart: {
+      type: 'donut',
+      height: 500,  // Adjust height here for smaller pie chart
+    },
+    labels: ['Chrome', 'Edge', 'FireFox', 'Safari', 'Opera', 'IE'],
+    dataLabels: {
+      enabled: false,
+    },
+    colors: ['#0d6efd', '#20c997', '#ffc107', '#d63384', '#6f42c1', '#adb5bd'],
+    legend: {
+      position: 'right',  // Position labels on the right side
+      floating: false,  // Not floating, stays aligned to the chart
+      offsetX: 580,  // Adjust the distance of the legend from the chart (optional)
+      offsetY: 0,   // Adjust the vertical position of the legend (optional)
+      labels: {
+        useSeriesColors: true,  // Use series colors for the labels
+      },
+    },
+  };
+
+  const pie_chart = new ApexCharts(document.querySelector('#pie-chart'), pie_chart_options);
+  pie_chart.render();
+
+  //-----------------
+  // - END PIE CHART -
+  //-----------------
+</script>
+
+<style>
+  /* CSS to make the pie chart container flexible and positionable */
+  .pie-chart-container {
+    width: 100%;  /* Ensures the chart takes up the full width of the container */
+    margin: 0 auto;  /* Centers the pie chart within its container */
+    position: relative;  /* Allows for absolute positioning if needed */
+  }
+
+  /* Optional: Add responsiveness and control positioning */
+  .card-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full screen height to center the chart vertically */
+  }
+
+  /* If you want to add custom position, you can override with absolute positioning */
+  /* Example: */
+  .pie-chart-container {
+    position: absolute;
+    top: 50%;  /* Centers vertically */
+    left: 50%;  /* Centers horizontally */
+    transform: translate(-80%, -50%);  /* Exact centering */
+  }
+</style>
