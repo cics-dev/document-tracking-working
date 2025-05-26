@@ -1,10 +1,9 @@
-<div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
-        <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
-                <!---End Here-->
+<div class="overflow-x-auto rounded-lg shadow-sm">
+        <table class="w-full">
+<!---End Here-->
     <tbody>
         <tr>
-            <td class="border p-2 font-medium text-sm text-gray-700">Type of Document</td>
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">Type of Document</td>
             <td class="border p-2">
                 <flux:select wire:model="document_type_id" placeholder="Choose document type..." wire:change="handleUpdateDocumentType">
                     @foreach ($types as $type)
@@ -13,7 +12,7 @@
                 </flux:select>
             </td>
 
-            <td class="border p-2 font-medium text-sm text-gray-700">To</td>
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">To</td>
             <td class="border p-2">
                 <flux:select wire:model="document_to_id" placeholder="Choose office...">
                     @foreach ($offices as $office)
@@ -26,8 +25,8 @@
         <!-- Row: CF Offices (Admin only) -->
         @if ($office_type == 'ADMIN')
         <tr>
-            <td class="border p-2 font-medium text-sm text-gray-700">CF to Offices</td>
-            <td colspan="3" class="border p-2">
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">CF to Offices</td>
+            <td colspan="3" class="border p-2 ">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="flex-1">
                         <flux:select wire:model="selected_cf_office" placeholder="Select office...">
@@ -56,15 +55,16 @@
 
         <!-- Row: Subject -->
         <tr>
-            <td class="border p-2 font-medium text-sm text-gray-700">Subject</td>
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">Subject</td>
+
             <td colspan="3" class="border p-2">
-                <flux:input wire:model="subject" :label="__('Subject')" type="subject" required autocomplete="subject" />
+                <flux:input wire:model="subject" :label="__('')" type="subject" required autocomplete="subject" />
             </td>
         </tr>
 
         <!-- Row: Content -->
         <tr>
-            <td class="border p-2 font-medium text-sm text-gray-700">Content</td>
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">Content</td>
             <td colspan="3" class="border p-2">
                 <div wire:ignore>
                     <div id="quill-editor" style="height: 200px;"></div>
@@ -76,7 +76,7 @@
         <!-- Row: Signatories -->
         @if ($document_type != 'IOM')
         <tr>
-            <td class="border p-2 font-medium text-sm text-gray-700">Signatories</td>
+            <td class="border p-2 font-medium text-sm text-gray-700 text-center align-middle">Signatories</td>
             <td colspan="3" class="border p-2 space-y-2">
                 @foreach ($signatories as $index => $signatory)
                     <div class="flex items-center gap-4">
@@ -111,15 +111,15 @@
         <tr>
             <td colspan="4" class="border p-2">
                 <div class="flex justify-between">
-                    <button type="button" wire:click.prevent="submitDocument('draft')" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    <button type="button" wire:click.prevent="submitDocument('draft')" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-orange-700">
                         Save as Draft
                     </button>
 
                     <div class="flex gap-4 ml-auto">
-                        <button type="button" wire:click.prevent="submitDocument('preview')" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <button type="button" wire:click.prevent="submitDocument('preview')" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                             Preview
                         </button>
-                        <button type="button" wire:click.prevent="submitDocument('send')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <button type="button" wire:click.prevent="submitDocument('send')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                             Send
                         </button>
                     </div>
