@@ -5,10 +5,14 @@ namespace App\Livewire\Users;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
-use Livewire\Component;
+use Livewire\Component;use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class CreateUser extends Component
 {
+    use WithFileUploads;
+
+    public $signature;
     public $family_name = '';
     public $given_name = '';
     public $middle_name = '';
@@ -23,6 +27,7 @@ class CreateUser extends Component
     public $is_head = false;
 
     protected $rules = [
+        'signature' => 'nullable|image|max:2048',
         'family_name' => 'required|string|max:255',
         'given_name' => 'required|string|max:255',
         'middle_name'     => 'sometimes|string|max:255',
@@ -45,6 +50,9 @@ class CreateUser extends Component
     public function saveUser()
     {
         $this->validate($this->rules,['middle_initial.required_with' => 'Required', '*.required' => 'Required']);
+        if ($this->signature) {
+            $signature_path = $this->signature->store('assets/img', 'public');
+        }
         $data = new Request([
             'given_name'      => $this->given_name,
             'middle_name'     => $this->middle_name,
@@ -58,6 +66,7 @@ class CreateUser extends Component
             'office_id'       => $this->office_id,
             'position'        => $this->position,
             'is_head'         => $this->is_head,
+            'signature'       => $signature_path,
         ]);
         $response = app(UserController::class)->store($data);
         redirect()->route('users.list-users');

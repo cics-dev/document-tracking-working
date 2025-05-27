@@ -27,6 +27,7 @@ class UserSeeder extends Seeder
             'email' => 'president@example.com',
             'password' => Hash::make('password'),
             'position' => 'University President',
+            'signature' => 'assets/img/fakesig1.png',
             'office_id' => 1, // set if needed
         ]);
         $president->profile()->create([
@@ -48,6 +49,7 @@ class UserSeeder extends Seeder
             'email' => 'vpsas@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Student Affairs and Services',
+            'signature' => 'assets/img/fakesig2.png',
             'office_id' => 2, // set if needed
         ]);
         $vpsas->profile()->create([
@@ -69,6 +71,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaa@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Academic Affairs',
+            'signature' => 'assets/img/fakesig3.png',
             'office_id' => 3, // set if needed
         ]);
         $vpaa->profile()->create([
@@ -90,6 +93,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaf@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Administration and Finance',
+            'signature' => 'assets/img/fakesig4.png',
             'office_id' => 4, // set if needed
         ]);
         $vpaf->profile()->create([
@@ -111,6 +115,7 @@ class UserSeeder extends Seeder
             'email' => 'vprde@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Research Development and Extension',
+            'signature' => 'assets/img/fakesig5.png',
             'office_id' => 5, // set if needed
         ]);
         $vprde->profile()->create([
@@ -209,6 +214,90 @@ class UserSeeder extends Seeder
         ]);
         $sao->office()->update([
             'head_id' => $sao->id
+        ]);
+
+        $budget = User::create([
+            'name' => 'Unknown',
+            'email' => 'budget@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Budget Office Head',
+            'office_id' => 19, // set if needed
+        ]);
+        $budget->profile()->create([
+            'honorifics' => 'Unknown',
+            'given_name' => 'Unknown',
+            'middle_name' => 'Unknown',
+            'middle_initial' => 'Unknown',
+            'family_name' => 'Unknown',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Unknown',
+        ]);
+        $budget->office()->update([
+            'head_id' => $budget->id
+        ]);
+
+        $motorpool = User::create([
+            'name' => 'Unknown',
+            'email' => 'motorpool@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Motorpool Office Head',
+            'office_id' => 20, // set if needed
+        ]);
+        $motorpool->profile()->create([
+            'honorifics' => 'Unknown',
+            'given_name' => 'Unknown',
+            'middle_name' => 'Unknown',
+            'middle_initial' => 'Unknown',
+            'family_name' => 'Unknown',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Unknown',
+        ]);
+        $motorpool->office()->update([
+            'head_id' => $motorpool->id
+        ]);
+
+        $legal = User::create([
+            'name' => 'Unknown',
+            'email' => 'legal@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'University Attorney',
+            'office_id' => 21, // set if needed
+        ]);
+        $legal->profile()->create([
+            'honorifics' => 'Unknown',
+            'given_name' => 'Unknown',
+            'middle_name' => 'Unknown',
+            'middle_initial' => 'Unknown',
+            'family_name' => 'Unknown',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Unknown',
+        ]);
+        $legal->office()->update([
+            'head_id' => $legal->id
+        ]);
+
+        $igp = User::create([
+            'name' => 'Unknown',
+            'email' => 'igp@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'IGP Office Head',
+            'office_id' => 22, // set if needed
+        ]);
+        $igp->profile()->create([
+            'honorifics' => 'Unknown',
+            'given_name' => 'Unknown',
+            'middle_name' => 'Unknown',
+            'middle_initial' => 'Unknown',
+            'family_name' => 'Unknown',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Unknown',
+        ]);
+        $igp->office()->update([
+            'head_id' => $igp->id
         ]);
     }
 }

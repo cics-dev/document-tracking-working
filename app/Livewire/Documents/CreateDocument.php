@@ -15,7 +15,7 @@ class CreateDocument extends Component
 {
     public $office_type = '';
     public $document_type = '';
-    public $attachments = '';
+    public $attachment = '';
     public $subject = '';
     public $content = '';
     public $document_type_id = '';
@@ -27,6 +27,12 @@ class CreateDocument extends Component
     public $offices;
     public $cf_offices = [];
     public $selected_cf_office = '';
+    public $routingRequirements = [
+        'budget_office' => false,
+        'motor_pool' => false,
+        'legal_review' => false,
+        'igp_review' => false,
+    ];
 
     public function handleUpdateDocumentType()
     {
@@ -64,7 +70,7 @@ class CreateDocument extends Component
             $this->document_type_id = $data['document_type_id'];
             $this->subject = $data['subject'];
             $this->content = $data['content'];
-            $this->attachments = $data['attachments'];
+            $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf'];
         }
         
@@ -162,7 +168,7 @@ class CreateDocument extends Component
                 'documentNumber' => $documentNumber,
                 'signatories' => $signatories->toJson(),
                 'cfs' => $cfs->toJson(),
-                'attachments' => $this->attachments
+                'attachment' => $this->attachment
             ]);
 
             $this->dispatch('open-preview-tab', [
@@ -196,6 +202,10 @@ class CreateDocument extends Component
                     (Auth::user()->office->office_type != ''?('(' . Auth::user()->office->office_type . ')'):'')
                     . '-' . $documentType['abbreviation'] . '-' .($lastNumber + 1). '-' . date('Y');
             }
+            
+            if ($this->document_type_id == 2) {
+                $status = 'Waiting for approval';
+            }
                 
             $document = Document::create([
                 'from_id' => $from_user->office->id,
@@ -214,6 +224,32 @@ class CreateDocument extends Component
                 'action' => 'sent',
                 'description' => 'Document Sent'
             ]);
+
+            $selectedRoutes = collect($this->routingRequirements)
+                ->filter(fn ($value) => $value === true)
+                ->keys()
+                ->all();
+            $routeIds = [
+                'budget_office' => 19,
+                'motor_pool' => 20,
+                'legal_review' => 21,
+                'igp_review' => 22,
+            ];
+
+            $selectedRouteIds = [];
+            foreach ($selectedRoutes as $routeKey) {
+                if (isset($routeIds[$routeKey])) {
+                    $selectedRouteIds[] = $routeIds[$routeKey];
+                }
+            }
+
+            if(!empty($selectedRouteIds)) {
+                foreach ($selectedRouteIds as $route) {
+                    $document->routings()->create([
+                        'user_id' => Office::find($route)['head']['id'] ?? null,
+                    ]);
+                }
+            }
 
             if(!empty($this->signatories)) {
                 foreach ($this->signatories as $index => $signatory) {

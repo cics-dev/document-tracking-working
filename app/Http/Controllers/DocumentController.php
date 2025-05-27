@@ -13,7 +13,11 @@ class DocumentController extends Controller
     {
         $officeId = Auth::user()->office->id;
 
-        if ($mode === 'sent') {
+        if ($mode === 'all') {
+            return Document::with(['documentType', 'fromOffice', 'cfs', 'signatories', 'routings'])->get();
+        }
+
+        else if ($mode === 'sent') {
             $userId = Auth::id();
             $userOffice = Auth::user()->office;
             if ($userOffice->name === 'Administration') {
@@ -36,23 +40,83 @@ class DocumentController extends Controller
                 ->get();
         }
 
-        if ($mode === 'received') {
+        else if ($mode === 'received') {
             $userId = Auth::id();
             $userOffice = Auth::user()->office;
 
             function filterPendingDocuments($documents, $userId) {
                 return $documents->filter(function ($document) use ($userId) {
+                    $sequence = [];
+                    $routings = $document->routings->sortBy('created_at')->values();
                     $signatories = $document->signatories->sortBy('sequence')->values();
-                    if ($signatories->isEmpty()) {
+
+                    foreach ($routings as $routing) array_push($sequence, $routing);
+                    foreach ($signatories as $signatory) array_push($sequence, $signatory);
+                    $sequenceCollection = collect($sequence);
+                    
+                    if ($sequenceCollection->isEmpty()) {
                         return true;
                     }
-                    $current = $signatories->firstWhere('user_id', $userId);
+                    $mySequence = $sequenceCollection->firstWhere('user_id', $userId);
+                    
+                    if (!$mySequence) return false;
+
+                    return $sequenceCollection
+                        ->filter(function($sequence, $index) use ($mySequence, $sequenceCollection) {
+                            $myIndex = $sequenceCollection->search(function ($item) use ($mySequence) {
+                                return $item === $mySequence;
+                            });
+                            
+                            return $index < $myIndex;
+                        })
+                        ->every(function($sequence) {
+                            if (isset($sequence->reviewed_at)) {
+                                return !is_null($sequence->reviewed_at);
+                            }
+                            elseif (isset($sequence->signed_at)) {
+                                return !is_null($sequence->signed_at);
+                            }
+                            return false;
+                        });
+                    
+
+
+                    // $routings = $document->routings->sortBy('created_at')->values();
+
+                    // if ($routings->isNotEmpty()) {
+                    //     $pendingRouting = $routings->firstWhere('status', 'pending');
+                    //     dd($pendingRouting);
+                        
+                    //     if ($pendingRouting && $pendingRouting->user_id == $userId) {
+                    //         $isFirstPending = $routings
+                    //             ->takeWhile(fn($r) => $r->id != $pendingRouting->id)
+                    //             ->every(fn($r) => $r->status == 'reviewed');
+                            
+                    //         if ($isFirstPending) {
+                    //             return true;
+                    //         }
+                    //     }
+                        
+                    //     if ($pendingRouting) {
+                    //         return false;
+                    //     }
+                        
+                    //     if ($routings->where('status', 'returned')->isNotEmpty()) {
+                    //         return false;
+                    //     }
+                    // }
+
+                    // $signatories = $document->signatories->sortBy('sequence')->values();
+                    // if ($signatories->isEmpty()) {
+                    //     return true;
+                    // }
+                    // $current = $signatories->firstWhere('user_id', $userId);
         
-                    if (!$current) return false;
+                    // if (!$current) return false;
         
-                    return $signatories
-                        ->filter(fn($sig) => $sig->sequence < $current->sequence)
-                        ->every(fn($sig) => !is_null($sig->signed_at));
+                    // return $signatories
+                    //     ->filter(fn($sig) => $sig->sequence < $current->sequence)
+                    //     ->every(fn($sig) => !is_null($sig->signed_at));
                 })->values();
             }
 
@@ -61,6 +125,17 @@ class DocumentController extends Controller
                 ->get();
 
             $directDocs = filterPendingDocuments($directDocs, $userId);
+
+            $routingDocs = Document::whereHas('routings', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->where('status', '!=', 'draft')
+            ->with(['documentType', 'fromOffice', 'routings'])
+            ->get();
+
+            $routingDocs = filterPendingDocuments($routingDocs, $userId);
+            
+            $directDocs = $directDocs->merge($routingDocs)->unique('id')->values();
 
             $signatoryDocs = Document::whereHas('signatories', function ($query) use ($userId) {
                 $query->where('user_id', $userId);

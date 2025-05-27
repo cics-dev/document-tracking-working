@@ -17,7 +17,7 @@
                 {{ __('To') }}
             </label>
 
-            <flux:select wire:model="document_to_id" placeholder="Choose document type...">
+            <flux:select wire:model="document_to_id" placeholder="Choose recipient...">
                 @foreach ($offices as $office)
                     <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
                 @endforeach
@@ -80,6 +80,76 @@
     </div>
 
     @if ($document_type != 'IOM')
+        <div class="space-y-4">
+            <label class="block text-sm font-medium text-gray-700">
+                {{ __('Routing Requirements') }} - select applicable review offices
+            </label>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Column 1 -->
+                <div class="space-y-3">
+                    <!-- Budget Office -->
+                    <div class="flex items-center">
+                        <input 
+                            wire:model="routingRequirements.budget_office" 
+                            id="budget_office" 
+                            type="checkbox" 
+                            value="1"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        >
+                        <label for="budget_office" class="ml-2 block text-sm text-gray-700">
+                            Budget Office
+                        </label>
+                    </div>
+                    
+                    <!-- Motor Pool -->
+                    <div class="flex items-center">
+                        <input 
+                            wire:model="routingRequirements.motor_pool" 
+                            id="motor_pool" 
+                            type="checkbox" 
+                            value="2"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        >
+                        <label for="motor_pool" class="ml-2 block text-sm text-gray-700">
+                            Motor Pool
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Column 2 -->
+                <div class="space-y-3">
+                    <!-- Legal Review -->
+                    <div class="flex items-center">
+                        <input 
+                            wire:model="routingRequirements.legal_review" 
+                            id="legal_review" 
+                            type="checkbox" 
+                            value="3"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        >
+                        <label for="legal_review" class="ml-2 block text-sm text-gray-700">
+                            Legal/Compliance
+                        </label>
+                    </div>
+                    
+                    <!-- IGP Review -->
+                    <div class="flex items-center">
+                        <input 
+                            wire:model="routingRequirements.igp_review" 
+                            id="igp_review" 
+                            type="checkbox" 
+                            value="4"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        >
+                        <label for="igp_review" class="ml-2 block text-sm text-gray-700">
+                            IGP Review
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="space-y-4">
             <label class="block text-sm font-medium text-gray-700">
                 {{ __('Signatories') }}

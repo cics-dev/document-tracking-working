@@ -1,5 +1,5 @@
 <div class="container mx-auto px-4">
-    <h1 class="text-2xl font-bold mb-4">Create New Office</h1>
+    <h1 class="text-2xl font-bold mb-4">Create New User</h1>
     <form wire:submit.prevent="submitDocument" class="mt-6 space-y-6">
         <div class="flex gap-4">
             <div class="flex-1/4">
@@ -55,8 +55,43 @@
                 <flux:checkbox wire:model="is_head" label="Is head" />
             </div>
         </div>
+        <div class="flex gap-4 items-center">
+            <div class="flex-1/4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                <div class="flex items-center gap-4">
+                    <!-- Image Preview -->
+                    @if($signature)
+                        <div class="relative">
+                            <img src="{{ $signature->temporaryUrl() }}" class="w-40 h-20 object-cover border-2 border-gray-300">
+                            <button wire:click="removePhoto" type="button" class="absolute -top-2 -right-2 bg-red-500 text-white p-1 text-xs">
+                                ✕
+                            </button>
+                        </div>
+                    @else
+                        <div class="w-40 h-20 bg-gray-200 flex items-center justify-center text-gray-500">
+                            No Image
+                        </div>
+                    @endif
+                    
+                    <!-- File Input -->
+                    <div>
+                        <input 
+                            type="file" 
+                            wire:model="signature" 
+                            id="signature"
+                            accept="image/*"
+                            class="hidden"
+                        >
+                        <label for="signature" class="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            {{ $signature ? 'Change' : 'Upload' }}
+                        </label>
+                        @error('signature') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="mt-4 flex justify-end">
-            <button type="button" wire:click.prevent="saveUser" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <button type="button" wire:click.prevent="saveUser" class="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">
                 Save
             </button>
         </div>

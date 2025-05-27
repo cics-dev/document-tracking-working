@@ -9,7 +9,7 @@
     <div class="mt-6 bg-white shadow-md rounded-lg p-6">
         <h3 class="text-lg font-semibold mb-4">Document Actions</h3>
         <ul class="space-y-4">
-            @foreach($document->logs as $log)
+            @foreach($document->logs->sortByDesc('created_at') as $log)
                 <li class="text-gray-700">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">

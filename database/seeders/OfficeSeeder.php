@@ -120,5 +120,29 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'SAO',
             'office_type' => 'ADMIN'
         ]);
+        
+        Office::create([
+            'name' => 'Budget Office',
+            'abbreviation' => 'Budget Office',
+            'office_type' => ''
+        ]);
+        
+        Office::create([
+            'name' => 'Motorpool Office',
+            'abbreviation' => 'Motorpool Office',
+            'office_type' => ''
+        ]);
+        
+        Office::create([
+            'name' => 'Legal Office',
+            'abbreviation' => 'Legal Office',
+            'office_type' => ''
+        ]);
+        
+        Office::create([
+            'name' => 'Income Generating Program Office',
+            'abbreviation' => 'IGP Office',
+            'office_type' => ''
+        ]);
     }
 }

@@ -4,12 +4,26 @@
     <meta charset="UTF-8">
     <title>{{ $documentNumber ?? 'Document Preview' }}</title>
     <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                margin-left: 40px;
+            }
+
+            .page {
+                width: 816px;
+                height: 1248px;
+                margin: 0 auto;
+                padding: 40px;
+            }
+        }
         .page-break { page-break-after: always; }
         body {
             font-family: 'Arial', sans-serif;
             font-size: 13px;
             margin-top: 40px;
-            margin-botton: 10px;
+            margin-bottom: 10px;
         }
         span {
             font-size: 10px;
@@ -51,7 +65,7 @@
             flex: 1 1 280px;
             max-width: 280px;
             margin-right: 50px;
-            margin-top: 50px;
+            margin-top: 10px;
             vertical-align: top;
             padding-top: 5px;
         }
@@ -137,7 +151,7 @@
 
     <hr style="margin: 10px 0;">
 
-    <div class="memo-info" style="margin: 0;">
+    <div class="memo-info">
         <p><strong>{{ strtoupper($documentType) }}</strong><br>
         {{ $documentNumber }}</p>
         <table>
@@ -148,8 +162,9 @@
                 </td>
             </tr>
             <tr>
-                <td class="label">FROM</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
+                <td class="label" style="padding-top: 30px;">FROM</td>
+                <td>
+                    : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
                 </td>
             </tr>
@@ -159,14 +174,14 @@
             </tr>
             <tr>
                 <td class="label">DATE</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date)->format('F d, Y') }}</td>
+                <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}</td>
             </tr>
         </table>
     </div>
 
     <hr>
 
-    <div class="content" style="margin: 0;">
+    <div class="content">
         {!! $content !!}
     </div>
 
@@ -181,7 +196,14 @@
                     <div class="signatory-row">
                         @foreach($grouped as $signatory)
                             <div class="signatory-box">
-                                <strong>{{ $signatory['user_name'] }}</strong><br>
+                                @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                    <img 
+                                        src="{{ public_path('storage/' . $signatory['signature']) }}" 
+                                        alt="Signature" 
+                                        style="height: 50px; margin-bottom: 10px;"
+                                    >
+                                @endif
+                                <br><strong>{{ $signatory['user_name'] }}</strong><br>
                                 {{ $signatory['position'] }}
                             </div>
                         @endforeach
@@ -202,8 +224,57 @@
         </div>
     @endif
 
-    @if ($attachments)
+    {{-- <div class="page-break"></div>  <!-- This forces a page break -->
+
+    <div style="text-align: center; margin-top: 50px;">
+        <h3>ATTACHMENT</h3>
+        
+        @if(isset($attachment) && $attachment) --}}
+            <!-- Option 1: Display as embedded PDF (if the PDF renderer supports it) -->
+            {{-- <embed 
+                src="{{ public_path('storage/' . $attachment) }}" 
+                type="application/pdf" 
+                width="80%" 
+                height="600px"
+                style="border: 1px solid #ccc; margin-top: 20px;"
+            > --}}
+            
+            <!-- Option 2: Display as image (if you've converted the first page to an image) -->
+            {{-- <img 
+                src="{{ public_path('storage/' . $attachment) }}" 
+                alt="PDF Attachment Preview" 
+                style="max-width: 80%; border: 1px solid #ccc; margin-top: 20px;"
+            >
+            
+            <p style="margin-top: 10px;">
+                <strong>Attachment:</strong> {{ basename($attachment) }}
+            </p>
+        @else
+            <p>No attachment available</p>
+        @endif
+    </div> --}}
+
+    {{-- @php
+        use Spatie\PdfToImage\Pdf;
+
+        $pdfPath = storage_path('app/public/' . $attachment);
+        $pdf = new Pdf($pdfPath);
+
+        $pages = $pdf->getNumberOfPages();
+        $imagePaths = [];
+
+        for ($i = 1; $i <= $pages; $i++) {
+            $imagePath = storage_path("app/public/pdf_images/attachment_page_$i.jpg");
+            $pdf->setPage($i)->saveImage($imagePath);
+            $imagePaths[] = 'storage/pdf_images/attachment_page_' . $i . '.jpg';
+        }
+        dd($imagePaths);
+    @endphp
+
+    @if ($imagePaths)
         <div class="page-break"></div>
-    @endif
+        <h3>Attachment</h3>
+        <img src="{{ public_path('storage/' . $imagePaths) }}" style="max-width: 100%; height: auto;" alt="Attachment">
+    @endif --}}
 </body>
 </html>
