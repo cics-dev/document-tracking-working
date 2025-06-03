@@ -28,10 +28,51 @@
                         <td class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">{{ $office->office_type }}</td>
                         <td class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">{{ $office->head->name??'Not set' }}</td>
                         <td class="px-4 py-3 text-center border-r border-gray-300 dark:border-gray-600">
-                            <div class="flex justify-center space-x-2">
+                          <!--  <div class="flex justify-center space-x-2">
                                 <button wire:click="editOffice({{ $office['id'] }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
                                 <button wire:click="deleteOffice('{{ $office['id'] }}')" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Delete</button>
-                            </div>
+                            </div> -->
+
+    <!---END ICON WITH HOVER--->
+                            <div class="flex justify-center">
+    <div class="relative" x-data="{ open: false }">
+        <!-- Edit icon button with hover effect -->
+        <div class="flex justify-center">
+            <button 
+                @click="open = !open" 
+                class="text-gray-600 focus:outline-none transition-all duration-200 rounded-full p-1 hover:bg-gray-200 hover:shadow-sm"
+            >
+                <img src="https://cdn-icons-png.flaticon.com/128/5972/5972963.png" alt="Edit" class="h-6 w-6 hover:scale-140 transition-transform">
+            </button>
+        </div>
+        
+        <!-- Centered dropdown menu -->
+        <div x-show="open" 
+             @click.away="open = false"
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-100">
+            <div class="py-1">
+                <button wire:click="editOffice({{ $office['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-green-200 hover:text-green-700 transition-colors">
+    <!-- Changed from SVG to image icon -->
+                    <img src="https://cdn-icons-png.flaticon.com/128/12493/12493756.png" alt="Edit" class="h-4 w-4 mr-2">
+                        <b> Edit </b>
+                        </button>
+                <button wire:click="deleteOffice({{ $office['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-red-200 hover:text-red-700 transition-colors">
+    <!-- Changed from SVG to image icon -->
+                    <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Edit" class="h-4 w-4 mr-2">
+                        <b> Delete </b>
+                        </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!---END ICON WITH HOVER--->
+
                         </td>
                     </tr>
                 @empty

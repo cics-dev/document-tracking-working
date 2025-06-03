@@ -28,16 +28,41 @@
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->name }}</td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->email }}</td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->position }}</td>
-                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->office->name??'No Office' }}</td>
-                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->is_head??'No' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->office->name ?? 'No Office' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $user->is_head ?? 'No' }}</td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">
-                            <div class="flex items-center space-x-2">
-                                <button wire:click="edituser({{ $user['id'] }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">
-                                    Edit
-                                </button>
-                                <button wire:click="deleteuser('{{ $user['id'] }}')" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">
-                                    Delete
-                                </button>
+                            <div class="flex justify-center">
+                                <div class="relative" x-data="{ open: false }">
+                                    <div class="flex justify-center">
+                                        <button 
+                                            @click="open = !open" 
+                                            class="text-gray-600 focus:outline-none transition-all duration-200 rounded-full p-1 hover:bg-gray-200 hover:shadow-sm dark:hover:bg-gray-600"
+                                        >
+                                            <img src="https://cdn-icons-png.flaticon.com/128/5972/5972963.png" alt="Edit" class="h-6 w-6 hover:scale-140 transition-transform">
+                                        </button>
+                                    </div>
+                                    
+                                    <div x-show="open" 
+                                         @click.away="open = false"
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="transform opacity-0 scale-95"
+                                         x-transition:enter-end="transform opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="transform opacity-100 scale-100"
+                                         x-transition:leave-end="transform opacity-0 scale-95"
+                                         class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-100 dark:border-gray-600">
+                                        <div class="py-1">
+                                            <button wire:click="edituser({{ $user['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-200 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-200 transition-colors">
+                                                <img src="https://cdn-icons-png.flaticon.com/128/12493/12493756.png" alt="Edit" class="h-4 w-4 mr-2">
+                                               <b> Edit </b>
+                                            </button>
+                                            <button wire:click="deleteuser({{ $user['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-200 transition-colors">
+                                                <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Delete" class="h-4 w-4 mr-2">
+                                               <b> Delete </b>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -58,7 +83,9 @@
                     <div class="mb-2"><strong>Position:</strong> {{ $user->position }}</div>
                     <div class="mb-2"><strong>Office:</strong> {{ $user->office->name ?? 'No Office' }}</div>
                     <div class="mb-4"><strong>Is Head:</strong> {{ $user->is_head ?? 'No' }}</div>
-                    <div class="flex justify-end space-x-2">
+
+                    <!-- Inline Action Buttons for Mobile -->
+                    <div class="flex justify-end space-x-2 mt-2">
                         <button wire:click="edituser({{ $user['id'] }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
                         <button wire:click="deleteuser('{{ $user['id'] }}')" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Delete</button>
                     </div>

@@ -12,8 +12,11 @@
                 <x-app-logo />
             </a>
 
+              <!-- Added black line divider -->
+          <!--  <div class="my-0 border-t border-black dark:border-white"></div> -->
+
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
+                <flux:navlist.group :heading="__('Navigation')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                     @if (auth()->user()?->position === 'Administrator')
                         <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
