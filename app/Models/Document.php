@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Document extends Model
 {
-    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url'];
+    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'thru', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url'];
 
     protected function viewedAt(): Attribute
     {

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('from_id')->constrained('offices')->onDelete('cascade');
             $table->foreignId('to_id')->constrained('offices')->onDelete('cascade');
             $table->foreignId('document_type_id')->constrained('document_types')->onDelete('cascade');
+            $table->string('thru')->nullable();
             $table->string('subject');
             $table->text('content');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');

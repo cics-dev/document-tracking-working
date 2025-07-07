@@ -125,6 +125,7 @@ class ViewDocument extends Component
             'date_sent' => $this->document->date_sent,
             'subject' => $this->document->subject,
             'content' => $this->document->content,
+            'thru' => $this->document->thru,
             'toName' => $this->document->toOffice->head->name ?? 'N/A',
             'toPosition' => $toPosition,
             'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
@@ -233,7 +234,7 @@ class ViewDocument extends Component
         $this->document->save();
 
         if ($this->document->attachments()->latest()->first() != null) {
-            $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->id);
+            $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->attachment_document_id);
             $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
             $lastSignatory = $docSignatories->last();
             $lastSignatory->signed_at = now();
@@ -262,6 +263,7 @@ class ViewDocument extends Component
                 'date_sent' => $attachmentDetails->date_sent,
                 'subject' => $attachmentDetails->subject,
                 'content' => $attachmentDetails->content,
+                'thru' => $attachmentDetails->thru,
                 'toName' => $attachmentDetails->toOffice->head->name ?? 'N/A',
                 'toPosition' => $toPosition,
                 'fromName' => $attachmentDetails->fromOffice->head->name ?? 'N/A',
@@ -321,7 +323,6 @@ class ViewDocument extends Component
             $filename = 'document_' . $this->document->document_number . '.pdf';
             Storage::disk('public')->put('assets/files/' . $filename, $pdf->output());
             $this->document->attachments()->create([
-                'document_id'=>2,
                 'document_number'=>$this->document->document_number,
                 'attachment_document_id'=>$this->document->id,
                 'status'=>'Waiting for Signature',
@@ -338,8 +339,10 @@ class ViewDocument extends Component
             'to' => $this->document->fromOffice->id,
             'from' => $this->document->toOffice->id,
             'subject' => 'RE: ' . $this->document->subject,
+            'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
             'content' => '<p>Pursuant to the approved-request letter memorandum (<b>' . $this->document->document_number . '</b>)',
+            'thru' => null,
             'cf' => $this->document->signatories
                 ->map(fn($s) => $s->user->office->id ?? null)
                 // ->filter(fn($id) => $id !== Office::where('name', 'Office of the University President')->value('id'))

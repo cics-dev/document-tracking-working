@@ -5,6 +5,7 @@ namespace App\Livewire\Documents;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
+use App\Models\DocumentAttachment;
 use App\Models\Document;
 use App\Models\Office;
 use App\Models\User;
@@ -13,9 +14,11 @@ use Livewire\Component;
 
 class CreateDocument extends Component
 {
+    public $original_document_id = '';
     public $office_type = '';
     public $document_type = '';
     public $attachment = '';
+    public $thru = '';
     public $subject = '';
     public $content = '';
     public $document_type_id = '';
@@ -65,11 +68,13 @@ class CreateDocument extends Component
         $data = session('redirect_data');
 
         if ($data) {
+            $this->original_document_id = $data['original_document_id'];
             $this->document_to_id = $data['to'];
             $this->document_from_id = $data['from'];
             $this->document_type_id = $data['document_type_id'];
             $this->subject = $data['subject'];
             $this->content = $data['content'];
+            $this->thru = $data['thru'];
             $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf'];
         }
@@ -159,6 +164,7 @@ class CreateDocument extends Component
                 'action' => $action,
                 'subject' => $this->subject,
                 'content' => $this->content,
+                'thru' => $this->thru,
                 'toName' => $toName,
                 'toPosition' => $toPosition,
                 'fromName' => $fromName,
@@ -189,6 +195,14 @@ class CreateDocument extends Component
                     ->latest('created_at')
                     ->first();
 
+                if ($this->document_type_id) {
+                    $latestDoc = Document::where('document_type_id', $this->document_type_id)
+                    ->where('status', '!=', 'draft')
+                    ->whereYear('created_at', date('Y'))
+                    ->latest('created_at')
+                    ->first();
+                }
+
                 $lastNumber = 0;
 
                 if ($latestDoc) {
@@ -213,11 +227,15 @@ class CreateDocument extends Component
                 'document_type_id' => $this->document_type_id,
                 'document_number' => $docNumber,
                 'subject' => $this->subject,
+                'thru' => $this->thru,
                 'content' => $this->content,
                 'created_by' => Auth::id(),
                 'status' => $status,
                 'date_sent' => now(),
             ]);
+
+            DocumentAttachment::where('attachment_document_id', $this->original_document_id)
+                 ->update(['document_id' => $document->id]);
 
             $document->logs()->create([
                 'user_id' => Auth::id(),

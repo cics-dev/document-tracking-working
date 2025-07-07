@@ -22,6 +22,14 @@ class OfficeSeeder extends Seeder
             'name' => 'Inter-Office Memorandum',
             'abbreviation' => 'IOM'
         ]);
+        DocumentType::create([
+            'name' => 'Indorsement Letter',
+            'abbreviation' => ''
+        ]);
+        DocumentType::create([
+            'name' => 'Special Order',
+            'abbreviation' => 'SO'
+        ]);
 
 
 

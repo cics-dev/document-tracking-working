@@ -66,6 +66,14 @@
 
 
     <flux:input
+        wire:model="thru"
+        :label="__('Thru')"
+        type="thru"
+        required
+        autocomplete="thru"
+    />
+
+    <flux:input
         wire:model="subject"
         :label="__('Subject')"
         type="subject"

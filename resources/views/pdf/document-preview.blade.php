@@ -144,9 +144,9 @@
         Region IX, Western Mindanao<br>
         R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
         Telephone No.: 955-4024 / 991-4012
-        @if(isset($office_logo) && $office_logo)
+        {{-- @if(isset($office_logo) && $office_logo)
             <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
-        @endif
+        @endif --}}
     </div>
 
     <hr style="margin: 10px 0;">
@@ -161,9 +161,22 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
                 </td>
             </tr>
+            @if(!empty($thru))
+                <tr>
+                    <td class="label">THRU</td>
+                    <td>
+                        : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($thru) }}</strong><br>
+                    </td>
+                </tr>
+            @endif
             <tr>
-                <td class="label" style="padding-top: 30px;">FROM</td>
+                <td class="label" style="padding-top:35px;">FROM</td>
                 <td>
+                    <img 
+                        src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
+                        alt="Signature" 
+                        style="height: 30px; padding-left: 20px"
+                    ><br>
                     : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
                 </td>

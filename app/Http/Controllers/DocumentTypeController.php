@@ -9,7 +9,7 @@ class DocumentTypeController extends Controller
 {
     public function index($office_type)
     {
-        if ($office_type != 'ADMIN') return DocumentType::where('id', 1)->get();
+        if ($office_type != 'ADMIN') return DocumentType::whereIn('id', [1, 3])->get();
         return DocumentType::all();
     }
 }
