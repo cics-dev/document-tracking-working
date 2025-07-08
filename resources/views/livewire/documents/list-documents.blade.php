@@ -10,6 +10,31 @@
             </a>
         @endif
     </div>
+    
+    <div class="flex space-x-2 mb-4">
+        <button
+            wire:click="switchDocumentTypeTab('inter')"
+            @class([
+                'px-3 py-1 rounded-md text-sm',
+                $documentTypeTab === 'inter'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+            ])
+        >
+            Inter-office Documents
+        </button>
+        <button
+            wire:click="switchDocumentTypeTab('intra')"
+            @class([
+                'px-3 py-1 rounded-md text-sm',
+                $documentTypeTab === 'intra'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+            ])
+        >
+            Intra-office Documents
+        </button>
+    </div>
 
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">
@@ -18,8 +43,8 @@
                     {{-- @if($mode == 'received') <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Access Code</th>@endif --}}
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Document Number</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Subject</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $mode == 'sent'?'To':'From' }}</th>
-                    @if($mode == 'all')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">To</th>@endif
+                    @if($documentTypeTab != 'intra')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $mode == 'sent'?'To':'From' }}</th>@endif
+                    @if($mode == 'all' && $documentTypeTab != 'intra')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">To</th>@endif
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Dcoument Type</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Date Sent</th>
                     {{-- @if($mode == 'sent') <th class="px-4 py-2">Status</th> @endif --}}
@@ -40,16 +65,17 @@
                         </td>
                         @if($mode == 'received')<td class="px-4 py-2">{{ $document->document_number }}</td>@endif
                         <td class="px-4 py-2">{{ $document->subject }}</td>
-                        <td class="px-4 py-2">{{ $mode == 'sent' ? $document->toOffice->name : $document->fromOffice->name }}</td>
-                        @if($mode == 'all')<td class="px-4 py-2">{{ $document->toOffice->name }}</td>@endif
+                        @if($documentTypeTab != 'intra')<td class="px-4 py-2">{{ $mode == 'sent' ? $document->toOffice->name : $document->fromOffice->name }}</td>@endif
+                        @if($mode == 'all' && $documentTypeTab != 'intra')<td class="px-4 py-2">{{ $document->toOffice->name }}</td>@endif
                         <td class="px-4 py-2">{{ $document->documentType->name }}</td>
                         <td class="px-4 py-2">{{ $document->date_sent }}</td>
                         {{-- <td class="px-4 py-2">{{ $document->status }}</td> --}}
                         <td class="px-4 py-2 space-x-2">
-                            @if($mode == 'received')
+                            @if($mode == 'received' || $documentTypeTab == 'intra')
                                 <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
                             @elseif($mode == 'sent')
                                 <button wire:click="trackDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Track</button>
+                                <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
                             @else
                                 <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
                                 <button wire:click="trackDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Track</button>

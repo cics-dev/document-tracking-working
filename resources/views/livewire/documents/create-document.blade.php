@@ -12,17 +12,33 @@
             </flux:select>
         </div>
 
-        <div class="flex-1 space-y-2">
-            <label for="To" class="block text-sm font-medium text-gray-700">
-                {{ __('To') }}
-            </label>
+        @if ($document_type_id)
+            @if ($document_type === 'RLM')
+                <div class="flex-1 space-y-2">
+                    <label for="To" class="block text-sm font-medium text-gray-700">
+                        {{ __('To') }}
+                    </label>
 
-            <flux:select wire:model="document_to_id" placeholder="Choose recipient...">
-                @foreach ($offices as $office)
-                    <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
-        </div>
+                    <flux:select wire:model="document_to_id" placeholder="Choose recipient...">
+                        @foreach ($offices as $office)
+                            <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+            @elseif ($document_type === 'ECLR' || $document_type === 'Intra')
+                <div class="flex-1 space-y-2">
+                    <label for="To" class="block text-sm font-medium text-gray-700">
+                        {{ __('To') }}
+                    </label>
+
+                    <flux:input
+                        wire:model="document_to_text"
+                        placeholder="Enter recipient..."
+                        type="text"
+                    />
+                </div>
+            @endif
+        @endif
     </div>
 
     @if ($office_type == 'ADMIN')
@@ -63,15 +79,15 @@
         </div>
     @endif
 
-
-
-    <flux:input
-        wire:model="thru"
-        :label="__('Thru')"
-        type="thru"
-        required
-        autocomplete="thru"
-    />
+    @if ($document_type != 'Intra')
+        <flux:input
+            wire:model="thru"
+            :label="__('Thru')"
+            type="thru"
+            required
+            autocomplete="thru"
+        />
+    @endif
 
     <flux:input
         wire:model="subject"
@@ -87,7 +103,7 @@
         <input type="hidden" wire:model="content" id="quill-content" />
     </div>
 
-    @if ($document_type != 'IOM')
+    @if ($document_type != 'IOM' && $document_type != 'Intra')
         <div class="space-y-4">
             <label class="block text-sm font-medium text-gray-700">
                 {{ __('Routing Requirements') }} - select applicable review offices
@@ -191,6 +207,39 @@
                 + Add Signatory
             </button>
         </div>
+
+    <div class="space-y-4">
+        <label for="attachments" class="block text-sm font-medium text-gray-700">
+            {{ __('Attachments') }}
+        </label>
+
+        <input 
+            type="file" 
+            wire:model="attachments" 
+            multiple 
+            accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,image/*"
+            class="block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        >
+
+        @error('attachments.*') 
+            <span class="text-red-600 text-sm">{{ $message }}</span> 
+        @enderror
+
+        @if ($attachments)
+            <div class="mt-2 space-y-2">
+                @foreach ($attachments as $attachment)
+                    <div class="flex items-center justify-between bg-gray-100 px-3 py-2 rounded">
+                        <span class="text-xs text-gray-700">
+                            {{ $attachment->getClientOriginalName() }}
+                        </span>
+                        <button type="button" wire:click="removeAttachment('{{ $attachment->getClientOriginalName() }}')" class="text-red-500 hover:text-red-700 text-xs">
+                            Remove
+                        </button>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
     @endif
 
     <div class="mt-4 flex justify-between">
@@ -199,11 +248,15 @@
         </button>
 
         <div class="flex gap-4 ml-auto">
-            <button type="button" wire:click.prevent="submitDocument('preview')" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <button type="button" wire:click.prevent="previewDocument()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Preview
             </button>
             <button type="button" wire:click.prevent="submitDocument('send')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                @if ($document_type != 'Intra')
                 Send
+                @else
+                Save
+                @endif
             </button>
         </div>
     </div>

@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('document_attachments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('document_id')->constrained('documents')->onDelete('cascade');
-            $table->foreignId('attachment_document_id')->constrained('documents')->onDelete('cascade');
+            $table->foreignId('attachment_document_id')->nullable()->constrained('documents')->onDelete('cascade'); //only if generated
             $table->string('document_number')->unique()->nullable();
             $table->text('status')->nullable();
-            $table->string('file_url')->nullable();
+            $table->string('file_url')->nullable(); //only if uploaded
+            $table->boolean('is_upload')->default(0);
             $table->timestamps();
         });
     }

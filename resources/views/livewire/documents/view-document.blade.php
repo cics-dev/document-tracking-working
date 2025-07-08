@@ -44,26 +44,28 @@
         <div class="mt-4 text-lg font-semibold">
             You already signed this document
         </div> --}}
-    @if($office_name != 'Administration' && $office_name != 'Records Section')
-        @if(is_null($signed) && is_null($rejected))
+    @if($document->document_level != 'Intra')
+        @if($office_name != 'Administration' && $office_name != 'Records Section')
+            @if(is_null($signed) && is_null($rejected))
+                <div class="mt-4 flex gap-4">
+                    <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Sign' : 'Set as reviewed' }}</button>
+                    <button wire:click="reject" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Reject' : 'Return with remarks' }}</button>
+                </div>
+            @else
+                <div class="mt-4 text-lg font-semibold">
+                    {{ $display_text }}
+                </div>
+            @endif
+        @elseif ($office_name == 'Administration')
             <div class="mt-4 flex gap-4">
-                <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Sign' : 'Set as reviewed' }}</button>
-                <button wire:click="reject" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Reject' : 'Return with remarks' }}</button>
+                <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
+                {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
             </div>
-        @else
-            <div class="mt-4 text-lg font-semibold">
-                {{ $display_text }}
+        @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
+            <div class="mt-4 flex gap-4">
+                <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send out IOM</button>
+                {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
             </div>
         @endif
-    @elseif ($office_name == 'Administration')
-        <div class="mt-4 flex gap-4">
-            <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
-            {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
-        </div>
-    @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
-        <div class="mt-4 flex gap-4">
-            <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send out IOM</button>
-            {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
-        </div>
     @endif
 </div>

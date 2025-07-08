@@ -11,9 +11,16 @@ use App\Models\Office;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class CreateDocument extends Component
 {
+    use WithFileUploads;
+
+    #[Validate('array')]
+    #[Validate('max:5120')] // Max 5MB total
+    public $attachments = [];
+    
     public $original_document_id = '';
     public $office_type = '';
     public $document_type = '';
@@ -23,6 +30,7 @@ class CreateDocument extends Component
     public $content = '';
     public $document_type_id = '';
     public $document_to_id = '';
+    public $document_to_text;
     public $document_from_id;
     public $signatories = [];
     public $users;
@@ -37,9 +45,32 @@ class CreateDocument extends Component
         'igp_review' => false,
     ];
 
+    public function removeAttachment($filename)
+    {
+        $this->attachments = collect($this->attachments)
+            ->filter(fn($file) => $file->getClientOriginalName() !== $filename)
+            ->values()
+            ->all();
+    }
+
     public function handleUpdateDocumentType()
     {
         $this->document_type = $this->types->firstWhere('id',$this->document_type_id)->abbreviation;
+        $this->document_type == ''? $this->document_type='Intra':$this->document_type;
+        if ($this->document_type === 'RLM') {
+            $this->document_to_id = $this->offices->first()->id ?? null;
+            $this->document_to_text = null;
+        } elseif ($this->document_type === 'ECLR' ||$this->document_type === 'Intra') {
+            $this->document_to_id = null;
+            $this->document_to_text = '';
+        } else {
+            $this->document_to_id = null;
+            $this->document_to_text = null;
+        }
+    }
+
+    public function saveIntra() {
+
     }
 
     public function fetchUsers()
@@ -118,32 +149,33 @@ class CreateDocument extends Component
         return view('livewire.documents.create-document');
     }
 
-    public function submitDocument($action)
+    public function previewDocument()
     {
         $from_user = '';
         if ($this->document_from_id) $from_user = Office::find($this->document_from_id)->head;
         else $from_user = Auth::user();
 
-        if ($action === 'preview') {
+        if ($this->document_type != 'Intra') {
             $toOffice = collect($this->offices)->firstWhere('id', $this->document_to_id);
             $toName = $toOffice['head']['name'] ?? 'N/A';
             $toPosition = $toOffice['head']['position'] ?? 'N/A';
             if ($toPosition !== 'University President' && $toPosition != 'N/A') {
                 $toPosition .= ', ' . $toOffice['name'];
             }
-            
-            $fromName = $from_user->name . ($from_user->profile->title != '' ? ', ' . $from_user->profile->title : '');
-            $fromPosition = $from_user->position ?? 'N/A';
-            $fromLogo = $from_user->office->office_logo;
-            if ($from_user->position !== 'University President' && $fromPosition != 'N/A') {
-                $fromPosition .= ', ' . $from_user->office->name;
-            }
+        }
+        
+        $fromName = $from_user->name . ($from_user->profile->title != '' ? ', ' . $from_user->profile->title : '');
+        $fromPosition = $from_user->position ?? 'N/A';
+        $fromLogo = $from_user->office->office_logo;
+        if ($from_user->position !== 'University President' && $fromPosition != 'N/A') {
+            $fromPosition .= ', ' . $from_user->office->name;
+        }
 
-            $type = collect($this->types)->firstWhere('id', $this->document_type_id);
-            $documentType = $type['name'] ?? 'N/A';
-            $documentTypeAbbr = $type['abbreviation'] ?? 'N/A';
+        $type = collect($this->types)->firstWhere('id', $this->document_type_id);
+        $documentType = $type['name'] ?? 'N/A';
+        $documentTypeAbbr = $type['abbreviation'] ?? 'N/A';
+        if ($this->document_type != 'Intra') {
             $documentNumber = Auth::user()->office->abbreviation . '(' . Auth::user()->office->office_type . ')' . '-' . $documentTypeAbbr . '-_____-' . date('Y');
-
             $signatories = collect($this->signatories)->map(function ($signatory) {
                 return [
                     'role' => $signatory['role'],
@@ -159,90 +191,122 @@ class CreateDocument extends Component
                     'name' => $office['name'] ?? 'Unnamed',
                 ];
             });
-
-            $query = http_build_query([
-                'action' => $action,
-                'subject' => $this->subject,
-                'content' => $this->content,
-                'thru' => $this->thru,
-                'toName' => $toName,
-                'toPosition' => $toPosition,
-                'fromName' => $fromName,
-                'office_logo' => $fromLogo,
-                'fromPosition' => $fromPosition,
-                'documentType' => $documentType,
-                'documentNumber' => $documentNumber,
-                'signatories' => $signatories->toJson(),
-                'cfs' => $cfs->toJson(),
-                'attachment' => $this->attachment
-            ]);
-
-            $this->dispatch('open-preview-tab', [
-                'url' => '/document/preview?' . $query
-            ]);
         }
         else {
-            $status = $action === 'draft' ? 'draft' : 'sent';
-            $office = Auth::user()->office;
-            $documentType = collect($this->types)->firstWhere('id', $this->document_type_id);
-            $docNumber = null;
-            
-            if ($status != 'draft') {
-                $latestDoc = $office->sentDocuments()
-                    ->where('document_type_id', $this->document_type_id)
-                    ->where('status', '!=', 'draft')
-                    ->whereYear('created_at', date('Y'))
-                    ->latest('created_at')
-                    ->first();
+            $documentNumber = 'CM-'.Auth::user()->office->abbreviation . '-_____-' . date('Y');
+        }
 
-                if ($this->document_type_id) {
-                    $latestDoc = Document::where('document_type_id', $this->document_type_id)
-                    ->where('status', '!=', 'draft')
-                    ->whereYear('created_at', date('Y'))
-                    ->latest('created_at')
-                    ->first();
-                }
+        $query = http_build_query([
+            'action' => 'preview',
+            'subject' => $this->subject,
+            'content' => $this->content,
+            'thru' => $this->thru,
+            'toName' => $this->document_type === 'Intra'?$this->document_to_text:$toName,
+            'toPosition' =>$this->document_type === 'Intra'?'':$toPosition,
+            'fromName' => $fromName,
+            'office_logo' => $fromLogo,
+            'fromPosition' => $fromPosition,
+            'documentType' => $this->document_type === 'Intra'?'Intra':$documentType,
+            'documentNumber' => $documentNumber,
+            'signatories' => $signatories?->toJson() ?? null,
+            'cfs' => $cfs?->toJson() ?? null,
+            'attachment' => $this->attachment
+        ]);
 
-                $lastNumber = 0;
+        $this->dispatch('open-preview-tab', [
+            'url' => '/document/preview?' . $query
+        ]);
+    }
 
-                if ($latestDoc) {
-                    $parts = explode('-', $latestDoc->document_number);
-                    if (isset($parts[2])) {
-                        $lastNumber = (int) $parts[2];
-                    }
-                }
+    public function submitDocument($action)
+    {
+        $from_user = '';
+        if ($this->document_from_id) $from_user = Office::find($this->document_from_id)->head;
+        else $from_user = Auth::user();
 
-                $docNumber = Auth::user()->office->abbreviation . 
-                    (Auth::user()->office->office_type != ''?('(' . Auth::user()->office->office_type . ')'):'')
-                    . '-' . $documentType['abbreviation'] . '-' .($lastNumber + 1). '-' . date('Y');
+        $status = $action === 'draft' ? 'draft' : 'sent';
+        $office = Auth::user()->office;
+        $documentType = collect($this->types)->firstWhere('id', $this->document_type_id);
+        $docNumber = null;
+        
+        if ($status != 'draft') {
+            $latestDoc = $office->sentDocuments()
+                ->where('document_type_id', $this->document_type_id)
+                ->where('status', '!=', 'draft')
+                ->whereYear('created_at', date('Y'))
+                ->latest('created_at')
+                ->first();
+
+            if ($this->document_type_id) {
+                $latestDoc = Document::where('document_type_id', $this->document_type_id)
+                ->where('status', '!=', 'draft')
+                ->whereYear('created_at', date('Y'))
+                ->latest('created_at')
+                ->first();
             }
-            
-            if ($this->document_type_id == 2) {
-                $status = 'Waiting for approval';
+
+            $lastNumber = 0;
+
+            if ($latestDoc) {
+                $parts = explode('-', $latestDoc->document_number);
+                if (isset($parts[2])) {
+                    $lastNumber = (int) $parts[2];
+                }
             }
-                
-            $document = Document::create([
-                'from_id' => $from_user->office->id,
-                'to_id' => $this->document_to_id,
-                'document_type_id' => $this->document_type_id,
-                'document_number' => $docNumber,
-                'subject' => $this->subject,
-                'thru' => $this->thru,
-                'content' => $this->content,
-                'created_by' => Auth::id(),
-                'status' => $status,
-                'date_sent' => now(),
-            ]);
 
-            DocumentAttachment::where('attachment_document_id', $this->original_document_id)
-                 ->update(['document_id' => $document->id]);
+            if ($this->document_type != 'Intra')
+            $docNumber = Auth::user()->office->abbreviation . 
+                (Auth::user()->office->office_type != ''?('(' . Auth::user()->office->office_type . ')'):'')
+                . '-' . $documentType['abbreviation'] . '-' .($lastNumber + 1). '-' . date('Y');
+            else
+            $docNumber = 'CM-'.Auth::user()->office->abbreviation . 
+                (Auth::user()->office->office_type != ''?('(' . Auth::user()->office->office_type . ')'):'').'-' .($lastNumber + 1). '-' . date('Y');
+        }
+        
+        if ($this->document_type_id == 2) {
+            $status = 'Waiting for approval';
+        }
+            
+        $document = Document::create([
+            'from_id' => $from_user->office->id,
+            'to_id' => $this->document_type == 'Intra'?null:$this->document_to_id,
+            'to_text' => $this->document_type == 'Intra'?$this->document_to_text:null,
+            'document_type_id' => $this->document_type_id,
+            'document_number' => $docNumber,
+            'subject' => $this->subject,
+            'thru' => $this->thru,
+            'content' => $this->content,
+            'created_by' => Auth::id(),
+            'status' => $status,
+            'date_sent' => now(),
+            'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
+        ]);
 
-            $document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'sent',
-                'description' => 'Document Sent'
-            ]);
+        if ($this->document_type === 'IOM')
+        $document->attachments()->create([
+                'attachment_document_id' => $this->original_document_id,
+                'status' => 'approved',
+                'is_upload' => false
+        ]);
+        // DocumentAttachment::where('attachment_document_id', $this->original_document_id)
+        //         ->update(['document_id' => $document->id]);
+        else
+            foreach ($this->attachments as $file) {
+                $path = $file->store('attachments', 'public');
+                $document->attachments()->create([
+                    'status' => 'sent',
+                    'file_url' => $path,
+                    'is_upload' => true
+                ]);
+            }
 
+        $document->logs()->create([
+            'user_id' => Auth::id(),
+            'action' => 'sent',
+            'description' => 'Document Sent'
+        ]);
+
+        if($this->document_type != 'Intra') {
             $selectedRoutes = collect($this->routingRequirements)
                 ->filter(fn ($value) => $value === true)
                 ->keys()
@@ -289,10 +353,10 @@ class CreateDocument extends Component
                     ]);
                 }
             }
-
-            session()->flash('message', $status === 'draft' ? 'Document saved as draft.' : 'Document successfully sent.');
-
-            return redirect()->route('documents.list-documents', ['mode' => 'sent']);
         }
+
+        session()->flash('message', $status === 'draft' ? 'Document saved as draft.' : 'Document successfully sent.');
+
+        return redirect()->route('documents.list-documents', ['mode' => 'sent']);
     }
 }

@@ -119,6 +119,7 @@ class ViewDocument extends Component
 
         // dd($this->document->attachments()->latest()->first()->file_url);
     
+        // dd($this->document->attachments[0]->file_url);
         $this->document_query = [
             'document' => $this->document->toJson(),
             'action' => 'sent',
@@ -126,15 +127,15 @@ class ViewDocument extends Component
             'subject' => $this->document->subject,
             'content' => $this->document->content,
             'thru' => $this->document->thru,
-            'toName' => $this->document->toOffice->head->name ?? 'N/A',
+            'toName' => $this->document->toOffice->head->name ?? $this->document->to_text,
             'toPosition' => $toPosition,
             'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
-            'documentType' => $this->document->documentType->name ?? 'N/A',
+            'documentType' => $this->document->document_level=='Intra'?'Intra':($this->document->documentType->name ?? 'N/A'),
             'documentNumber' => $this->document->document_number,
             'signatories' => $signatories->toJson(),
-            'attachment' => $this->document->attachments()->latest()->first()?->file_url
+            'attachments' => $this->document->attachments->toJson(),
         ];
 
         $this->previewUrl = '/document/preview?' . http_build_query($this->document_query);
@@ -322,13 +323,16 @@ class ViewDocument extends Component
 
             $filename = 'document_' . $this->document->document_number . '.pdf';
             Storage::disk('public')->put('assets/files/' . $filename, $pdf->output());
-            $this->document->attachments()->create([
-                'document_number'=>$this->document->document_number,
-                'attachment_document_id'=>$this->document->id,
-                'status'=>'Waiting for Signature',
-                'file_url'=>'assets/files/' . $filename,
-            ]);
+            // $this->document->attachments()->create([
+            //     'document_number'=>$this->document->document_number,
+            //     'attachment_document_id'=>$this->document->id,
+            //     'status'=>'Waiting for Signature',
+            //     'file_url'=>'assets/files/' . $filename,
+            // ]);
             $filename = 'assets/files/' . $filename;
+            $this->document->update([
+                'file_url'=>$filename
+            ]);
 
         // }
         // else {

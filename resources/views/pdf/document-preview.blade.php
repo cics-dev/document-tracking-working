@@ -144,21 +144,27 @@
         Region IX, Western Mindanao<br>
         R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
         Telephone No.: 955-4024 / 991-4012
-        {{-- @if(isset($office_logo) && $office_logo)
+        @if(isset($office_logo) && $office_logo && $documentType=='Intra')
             <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
-        @endif --}}
+        @endif
     </div>
 
     <hr style="margin: 10px 0;">
 
     <div class="memo-info">
-        <p><strong>{{ strtoupper($documentType) }}</strong><br>
+        @if($documentType == 'Intra')
+            <p><strong>College Memorandum</strong><br>
+        @else
+            <p><strong>{{ strtoupper($documentType) }}</strong><br>
+        @endif
         {{ $documentNumber }}</p>
         <table>
             <tr>
-                <td class="label">FOR</td>
+                <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
                 <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
+                    @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
+                    @endif
                 </td>
             </tr>
             @if(!empty($thru))
@@ -170,7 +176,7 @@
                 </tr>
             @endif
             <tr>
-                <td class="label" style="padding-top:35px;">FROM</td>
+                <td class="label" style="padding-top:25px;">FROM</td>
                 <td>
                     <img 
                         src="{{ public_path('storage/assets/img/fakesig1.png') }}" 

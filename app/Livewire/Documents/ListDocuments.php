@@ -12,12 +12,21 @@ class ListDocuments extends Component
     public $office_name;
     public $documents = [];
     public $document;
+    public $documentTypeTab = 'inter';
     public string $mode = 'received';
 
     public function fetchDocuments()
     {
         $response = app(DocumentController::class)->index($this->mode);
+
         $this->documents = $response;
+
+        
+        if ($this->documentTypeTab === 'intra') {
+            $this->documents = $this->documents->where('document_level', 'Intra');
+        } else {
+            $this->documents = $this->documents->where('document_level', '!=', 'Intra');
+        }
 
         foreach ($this->documents as $document) {
             $mySignatory = $document->signatories->firstWhere('user_id', Auth::id());
@@ -32,6 +41,12 @@ class ListDocuments extends Component
 
             // if ($mySignatory?->viewed_at) $document->viewed_at = $mySignatory?->viewed_at;
         }     
+    }
+
+    public function switchDocumentTypeTab($tab)
+    {
+        $this->documentTypeTab = $tab;
+        $this->fetchDocuments();
     }
 
     public function mount($mode = 'received')

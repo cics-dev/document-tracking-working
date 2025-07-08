@@ -24,11 +24,19 @@ class OfficeSeeder extends Seeder
         ]);
         DocumentType::create([
             'name' => 'Indorsement Letter',
-            'abbreviation' => ''
+            'abbreviation' => 'IL'
         ]);
         DocumentType::create([
             'name' => 'Special Order',
             'abbreviation' => 'SO'
+        ]);
+        DocumentType::create([
+            'name' => 'External Communication Response Letter',
+            'abbreviation' => 'ECLR'
+        ]);
+        DocumentType::create([
+            'name' => 'Memorandum',
+            'abbreviation' => ''
         ]);
 
 

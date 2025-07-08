@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('document_number')->unique()->nullable();
             $table->foreignId('from_id')->constrained('offices')->onDelete('cascade');
-            $table->foreignId('to_id')->constrained('offices')->onDelete('cascade');
+            $table->foreignId('to_id')->nullable()->constrained('offices')->onDelete('cascade');
             $table->foreignId('document_type_id')->constrained('document_types')->onDelete('cascade');
             $table->string('thru')->nullable();
             $table->string('subject');
@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('status')->default('draft');
             $table->date('date_sent')->nullable();
             $table->string('file_url')->nullable();
+            $table->string('document_level')->default('Inter'); //Inter, Intra, External
+            $table->string('to_text')->nullable(); //Inter, Intra, External
             $table->timestamps();
         });
     }
