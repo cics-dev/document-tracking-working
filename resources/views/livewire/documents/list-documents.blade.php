@@ -11,17 +11,17 @@
         @endif
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="text-xs text-gray-500 uppercase border-b dark:text-gray-400 dark:border-gray-600">
+            <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
-                    {{-- @if($mode == 'received') <th class="px-4 py-2">Access Code</th>@endif --}}
-                    <th class="px-4 py-2">Document Number</th>
-                    <th class="px-4 py-2">Subject</th>
-                    <th class="px-4 py-2">{{ $mode == 'sent'?'To':'From' }}</th>
-                    @if($mode == 'all')<th class="px-4 py-2">To</th>@endif
-                    <th class="px-4 py-2">Dcoument Type</th>
-                    <th class="px-4 py-2">Date Sent</th>
+                    {{-- @if($mode == 'received') <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Access Code</th>@endif --}}
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Document Number</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Subject</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $mode == 'sent'?'To':'From' }}</th>
+                    @if($mode == 'all')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">To</th>@endif
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Dcoument Type</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Date Sent</th>
                     {{-- @if($mode == 'sent') <th class="px-4 py-2">Status</th> @endif --}}
                     <th class="px-4 py-2">Actions</th>
                 </tr>
@@ -29,7 +29,7 @@
             <tbody>
                 @forelse ($documents->sortByDesc('created_at') as $index => $document)
                     <tr class="border-b dark:border-gray-600 {{ $document->viewed_at || $mode == 'sent' || $office_name == 'Administration' || $office_name == 'Records Section' ? 'font-normal' : 'font-bold' }}">
-                        <td class="px-4 py-2 flex items-center gap-2">
+                        <td class="px-4 py-2 flex items-center gap-2 border-r border-gray-300 dark:border-gray-600">
                             @if(is_null($document->viewed_at) && $mode != 'sent' && $office_name != 'Administration' && $office_name != 'Records Section')
                                 <span class="h-2 w-2 rounded-full bg-blue-500"></span>
                             @endif
