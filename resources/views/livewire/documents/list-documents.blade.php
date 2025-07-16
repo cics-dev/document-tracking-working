@@ -3,8 +3,8 @@
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ ucfirst($mode) . ' Documents' }}</h2>
         @if($mode == 'sent')
             <a
-                href="{{route('documents.create-document')}}"
-                class="text-sm bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition"
+                href="{{ route('documents.create-document') }}"
+                class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition"
             >
                 + Create Document
             </a>
@@ -17,7 +17,7 @@
             @class([
                 'px-3 py-1 rounded-md text-sm',
                 $documentTypeTab === 'inter'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
             ])
         >
@@ -28,7 +28,7 @@
             @class([
                 'px-3 py-1 rounded-md text-sm',
                 $documentTypeTab === 'intra'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
             ])
         >
@@ -40,15 +40,17 @@
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
-                    {{-- @if($mode == 'received') <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Access Code</th>@endif --}}
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Document Number</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Subject</th>
-                    @if($documentTypeTab != 'intra')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $mode == 'sent'?'To':'From' }}</th>@endif
-                    @if($mode == 'all' && $documentTypeTab != 'intra')<th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">To</th>@endif
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Dcoument Type</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Date Sent</th>
-                    {{-- @if($mode == 'sent') <th class="px-4 py-2">Status</th> @endif --}}
-                    <th class="px-4 py-2">Actions</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Document Number</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Subject</th>
+                    @if($documentTypeTab != 'intra')
+                        <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">{{ $mode == 'sent' ? 'To' : 'From' }}</th>
+                    @endif
+                    @if($mode == 'all' && $documentTypeTab != 'intra')
+                        <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">To</th>
+                    @endif
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Document Type</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Date Sent</th>
+                    <th class="px-4 py-2 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,34 +58,72 @@
                     <tr class="border-b dark:border-gray-600 {{ $document->viewed_at || $mode == 'sent' || $office_name == 'Administration' || $office_name == 'Records Section' ? 'font-normal' : 'font-bold' }}">
                         <td class="px-4 py-2 flex items-center gap-2 border-r border-gray-300 dark:border-gray-600">
                             @if(is_null($document->viewed_at) && $mode != 'sent' && $office_name != 'Administration' && $office_name != 'Records Section')
-                                <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                                <span class="h-2 w-2 rounded-full bg-blue-600"></span>
                             @endif
-                            {{-- @if($mode == 'received') {{ auth()->user()->office->abbreviation.$document->fromOffice->abbreviation.'-MEMO-DOC-2025-#'.$index + 1 }}
-                            @else {{ $document->document_number }}
-                            @endif --}}
                             {{ $document->document_number }}
                         </td>
-                        @if($mode == 'received')<td class="px-4 py-2">{{ $document->document_number }}</td>@endif
-                        <td class="px-4 py-2">{{ $document->subject }}</td>
-                        @if($documentTypeTab != 'intra')<td class="px-4 py-2">{{ $mode == 'sent' ? $document->toOffice->name : $document->fromOffice->name }}</td>@endif
-                        @if($mode == 'all' && $documentTypeTab != 'intra')<td class="px-4 py-2">{{ $document->toOffice->name }}</td>@endif
-                        <td class="px-4 py-2">{{ $document->documentType->name }}</td>
-                        <td class="px-4 py-2">{{ $document->date_sent }}</td>
-                        {{-- <td class="px-4 py-2">{{ $document->status }}</td> --}}
-                        <td class="px-4 py-2 space-x-2">
-                            @if($mode == 'received' || $documentTypeTab == 'intra')
-                                <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
-                            @elseif($mode == 'sent')
-                                <button wire:click="trackDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Track</button>
-                                <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
-                            @else
-                                <button wire:click="viewDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">View</button>
-                                <button wire:click="trackDocument('{{ $document['document_number'] }}')" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Track</button>
-                            @endif
-                            @if($document->status == 'draft')
-                                <button wire:click="editDocument({{ $document['id'] }})" class="text-[#3366FF] dark:text-[#99BBFF] hover:underline">Edit</button>
-                                <button wire:click="deleteDocument('{{ $document['id'] }}')" class="text-[#f53003] dark:text-[#FF4433] hover:underline">Delete</button>
-                            @endif
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->subject }}</td>
+                        @if($documentTypeTab != 'intra')
+                            <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">
+                                {{ $mode == 'sent' ? ($document->toOffice->name ?? 'N/A') : ($document->fromOffice->name ?? 'N/A') }}
+                            </td>
+                        @endif
+                        @if($mode == 'all' && $documentTypeTab != 'intra')
+                            <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->toOffice->name ?? 'N/A' }}</td>
+                        @endif
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->documentType->name ?? 'N/A' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->date_sent }}</td>
+                        <td class="px-4 py-2">
+                            <div class="flex justify-center space-x-2">
+                                @if($mode == 'received' || $documentTypeTab == 'intra')
+                                    <button 
+                                        wire:click="viewDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                @elseif($mode == 'sent')
+                                    <button 
+                                        wire:click="trackDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
+                                    >
+                                        Track
+                                    </button>
+                                    <button 
+                                        wire:click="viewDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                @else
+                                    <button 
+                                        wire:click="viewDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                    <button 
+                                        wire:click="trackDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
+                                    >
+                                        Track
+                                    </button>
+                                @endif
+                                @if($document->status == 'draft')
+                                    <button 
+                                        wire:click="editDocument({{ $document['id'] }})" 
+                                        class="px-3 py-1 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button 
+                                        wire:click="deleteDocument('{{ $document['id'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors"
+                                    >
+                                        Delete
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

@@ -14,9 +14,20 @@ use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
 
+
+// Route for the public landing page at "/"
 Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    return view('landing'); // shows landing.blade.php
+})->name('landing');
+
+Route::get('/learn', function () {
+    return view('learn'); // shows landing.blade.php
+})->name('learn');
+
+// Route for the internal "home" page (after login), e.g., at "/home"
+Route::get('/home', function () {
+    return view('welcome'); // shows welcome.blade.php
+})->middleware('auth')->name('home');
 
 Route::view('dashboard', 'dashboard')
 ->middleware(['auth', 'verified'])

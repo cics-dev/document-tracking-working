@@ -175,7 +175,6 @@
         </div>
         <div style="flex: 1; padding-left: 10px;">
             <p style="font-size: 13px; color: #4CAF50;">↑ 3.48% from last month</p>
-            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
         </div>
       </div>
 
