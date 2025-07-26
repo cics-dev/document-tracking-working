@@ -10,7 +10,7 @@
             </a>
         @endif
     </div>
-    @if($mode == 'sent')
+    
     <div class="flex space-x-2 mb-4">
         <button
             wire:click="switchDocumentTypeTab('inter')"
@@ -35,7 +35,6 @@
             Intra-office Documents
         </button>
     </div>
-    @endif
 
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">

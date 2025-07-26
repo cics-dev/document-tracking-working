@@ -6,7 +6,6 @@
     <title>DTS-ZPPSU | University Document Tracking System</title>
 
     <!-- Fonts and Icons -->
-    <!-- favicon -->
     <link rel="shortcut icon" href="{{ asset('/assets/img/hd-logo.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,8 +13,17 @@
     <!-- SweetAlert CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+    <!-- Three.js import map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+        }
+    }
+    </script>
+
     <style>
-    /* Combined CSS Styles */
     :root {
         --univ-maroon: #800020;
         --univ-dark-maroon: #5a0018;
@@ -27,6 +35,9 @@
         --univ-gray: #94a3b8;
         --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+        --accent: var(--univ-gold);
+        --primary: var(--univ-maroon);
     }
 
     * {
@@ -37,12 +48,16 @@
     }
 
     body {
-        background-color: var(--univ-maroon);
+        background: linear-gradient(54deg, var(--univ-maroon) 75%, var(--univ-gold) 100%);
         color: var(--univ-dark);
-        line-height: 1.6;
+        padding-right: 0 !important;
     }
 
-    /* Navbar Styles with both login and logout functionality */
+    body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) {
+        overflow-y: auto !important;
+    }
+
+    /* Navbar Styles */
     header {
         background: white;
         box-shadow: var(--shadow);
@@ -57,6 +72,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 15px 30px;
+        position: relative;
     }
 
     .nav-left {
@@ -89,7 +105,6 @@
         display: flex;
         align-items: center;
         gap: 20px;
-        position: relative;
     }
 
     .nav-links {
@@ -99,7 +114,7 @@
     }
 
     .nav-links li {
-        margin-left: 12px;  /*Adjust the Dashboard buttona and Logout Margin*/
+        margin-left: 12px;
     }
 
     .nav-links a {
@@ -122,7 +137,7 @@
         cursor: pointer;
     }
 
-    /* Uiverse.io Login Button Styles */
+    /* Login Button Styles */
     .login-btn {
         padding: 8px 28px;
         border: unset;
@@ -196,15 +211,15 @@
         top: -50px;
     }
 
-    /* User Greeting and Dashboard Link */
+    /* User Greeting */
     .welcome-user {
         font-weight: 600;
-        color: var(--univ-gold);
+        color: var(--univ-maroon);
         margin-right: 15px;
     }
 
-    /* Updated Dashboard Button Styles */
-    .dashboard-btn {
+    /* Dashboard and Logout Buttons */
+    .nav-button {
         background-color: var(--univ-maroon);
         color: white !important;
         padding: 10px 16px;
@@ -213,93 +228,45 @@
         font-weight: 600;
         text-decoration: none;
         transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
     }
 
-    .dashboard-btn:hover {
+    .nav-button:hover {
         background-color: white !important;
         color: var(--univ-maroon) !important;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
     }
 
-    /* Logout Button with Dropdown */
-    .logout-container {
-        position: relative;
+    .nav-button i {
+        margin-right: 8px;
     }
 
-    .logout-icon {
-        font-size: 1.2rem;
-        color: var(--univ-dark);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: none;
-        border: none;
-        padding: 8px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .logout-icon:hover {
-        background-color: rgba(0, 0, 0, 0.1);
-    }
-
-    .logout-img {
-        width: 28px;
-        height: 28px;
-        transition: all 0.3s ease;
-    }
-
-    .logout-dropdown {
+    /* Mobile Dropdown Menu */
+    .mobile-dropdown {
+        display: none;
         position: absolute;
-        right: 0;
-        top: 120%;
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow-lg);
-        padding: 10px 0;
-        min-width: 180px;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 100;
-    }
-
-    .logout-container:hover .logout-dropdown {
-        opacity: 1;
-        visibility: visible;
         top: 100%;
+        right: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: var(--shadow-lg);
+        padding: 10px;
+        min-width: 200px;
+        z-index: 1000;
     }
 
-    .logout-dropdown form {
+    .mobile-dropdown.active {
         display: block;
-        width: 100%;
     }
 
-    .logout-dropdown button {
+    .mobile-dropdown .nav-button {
         width: 100%;
+        margin: 5px 0;
         text-align: left;
-        padding: 12px 20px;
-        background: none;
-        border: none;
-        color: var(--univ-dark);
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-    }
-
-    .logout-dropdown button .logout-img {
-        margin-right: 10px;
-        width: 18px;
-        height: 18px;
-    }
-
-    .logout-dropdown button:hover {
-        background-color: var(--univ-cream);
-        color: var(--univ-maroon);
     }
 
     /* Main Content Styles */
@@ -311,8 +278,8 @@
     }
 
     section {
-        padding: 80px 0;
-        margin-top: 80px; /* Added to account for fixed header */
+        padding: 60px 0;
+        margin-top: 60px;
     }
 
     h1, h2, h3, h4 {
@@ -350,7 +317,7 @@
         transition: all 0.3s ease;
         cursor: pointer;
         border: none;
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
     .btn-primary {
@@ -370,11 +337,9 @@
     }
 
     .btn-secondary:hover {
-        background-color: #c9a227;
-        transform: translateY(-9px);
-        box-shadow: var(--shadow-lg);
         background-color: white !important;
         color: maroon !important;
+        transform: translateY(-6px);
         box-shadow: 0 4px 12px rgba(128, 0, 32, 0.2);
     }
 
@@ -396,8 +361,8 @@
 
     /* Hero Section */
     .hero {
-        padding-top: 115px;
-        background: linear-gradient(135deg, rgba(248, 244, 233, 0.9) 0%, rgba(248, 244, 233, 0.95) 100%), 
+        padding-top: 90px;
+        background: linear-gradient(135deg, rgba(248, 233, 233, 0.9)25%, rgba(248, 244, 233, 0.95) 100%), 
                     url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
         background-size: cover;
         background-position: center;
@@ -419,6 +384,7 @@
     .hero-image {
         flex: 1;
         min-width: 300px;
+        animation: bounce 4s ease-in-out infinite;
     }
 
     .hero-image img {
@@ -439,27 +405,47 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 30px;
-        margin-top: 50px;
+        margin-top: 30px;
     }
 
     .feature-card {
-        background-color: white;
-        border-radius: 12px;
-        padding: 30px;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
         box-shadow: var(--shadow);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-top: 4px solid var(--univ-maroon);
+        transition: var(--transition);
+        min-height: 150px;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
     }
 
     .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--shadow-lg);
-        background: rgba(248, 244, 233, 0.3);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(128, 0, 0, 0.4), 0 0 15px rgba(255, 215, 0, 0.5);
+    }
+
+    .feature-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to right, var(--accent), var(--primary));
+        transition: var(--transition);
+    }
+
+    .feature-card:hover::after {
+        height: 10px;
     }
 
     .feature-icon {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
         margin-bottom: 20px;
     }
 
@@ -472,7 +458,7 @@
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
-        margin-top: 50px;
+        margin-top: 30px;
         position: relative;
     }
 
@@ -495,14 +481,14 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         margin: 0 auto 20px;
     }
 
     .steps::before {
         content: '';
         position: absolute;
-        top: 25px;
+        top: 35px;
         left: 0;
         right: 0;
         height: 3px;
@@ -513,24 +499,25 @@
 
     /* CTA Section */
     .cta {
-        background: linear-gradient(135deg, var(--univ-maroon) 0%, var(--univ-dark-maroon) 100%);
+        background: linear-gradient(135deg, var(--univ-dark-maroon) 0%, var(--univ-gold) 100%);
         color: white;
         text-align: center;
+        padding: 40px 0;
     }
 
     .cta h2 {
         color: white;
+        margin-bottom: 1rem;
     }
 
     .cta p {
         color: rgba(255, 255, 255, 0.9);
         max-width: 700px;
-        margin: 0 auto 30px;
+        margin: 0 auto 20px;
     }
 
     .cta-buttons {
         display: flex;
-     /*   justify-content: center; */
         gap: 20px;
         flex-wrap: wrap;
     }
@@ -540,22 +527,7 @@
         color: var(--univ-dark);
     }
 
-    .cta .btn-secondary:hover {
-        background-color: #c9a227;
-    }
-
-    /* Footer Copyright*/
-    .copyright {
-        text-align: center;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(12, 11, 11, 0.7);
-        font-size: 0.9rem;
-    }
-
     /* Document Tracker Styles */
-   
-
     #trackForm {
         display: flex;
         gap: 0.5rem;
@@ -565,7 +537,7 @@
     #trackingID {
         flex: 1;
         padding: 0.8rem 1rem;
-        border: 2px solid #ddd;
+        border: 2px solid #A9A9A9;
         border-radius: 5px;
         font-size: 1rem;
         transition: all 0.3s ease;
@@ -584,6 +556,7 @@
         padding: 0 1.5rem;
         border-radius: 5px;
         cursor: pointer;
+        font-size: 1rem;
         font-weight: 600;
         transition: all 0.3s ease;
         display: flex;
@@ -593,7 +566,7 @@
 
     #trackForm button:hover {
         background: linear-gradient(to right, var(--univ-dark-maroon), var(--univ-maroon));
-        transform: translateY(-2px);
+        transform: translateY(-4px);
     }
 
     #trackResult {
@@ -604,20 +577,6 @@
         border-left: 4px solid var(--univ-maroon);
         text-align: left;
         display: none;
-    }
-
-    .status-item {
-        display: flex;
-        margin-bottom: 0.8rem;
-    }
-
-    .status-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .status-icon {
-        margin-right: 0.8rem;
-        color: var(--univ-maroon);
     }
 
     /* Responsive Styles */
@@ -665,58 +624,33 @@
             font-size: 0.7rem;
         }
 
-        .nav-links {
-            position: fixed;
-            top: 80px;
-            left: -100%;
-            width: 100%;
-            height: calc(100vh - 80px);
-            background-color: white;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 0;
-            transition: left 0.3s ease;
-        }
-
-        .nav-links.active {
-            left: 0;
-        }
-
-        .nav-links li {
-            margin: 15px 0;
-        }
-
+        /* Mobile Navigation Styles */
         .mobile-menu-btn {
             display: block;
         }
 
+        .nav-links {
+            display: none;
+        }
+
         .welcome-user {
             font-size: 0.9rem;
+            margin: 10px 0;
+            color: var(--univ-maroon);
         }
 
-        .dashboard-btn {
-            padding: 6px 12px;
-            font-size: 0.9rem;
-        }
-
-        .logout-dropdown {
-            position: static;
-            opacity: 1;
-            visibility: visible;
-            box-shadow: none;
-            padding: 0;
-            margin-top: 10px;
-            background: none;
-        }
-
-        .logout-dropdown button {
-            padding: 8px 15px;
+        .nav-button {
+            width: 100%;
+            margin: 5px 0;
+            text-align: left;
         }
 
         /* Adjust Uiverse button for mobile */
         .login-btn {
             padding: 12px 20px;
             font-size: 15px;
+            margin: 10px 0;
+            width: 100%;
         }
 
         /* Mobile tracker form */
@@ -727,6 +661,7 @@
         #trackForm button {
             justify-content: center;
             padding: 0.8rem;
+            width: 100%;
         }
     }
 
@@ -744,20 +679,227 @@
         }
 
         .feature-icon {
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
         }
 
         .welcome-user {
-            display: none;
+            display: block;
         }
 
         .login-btn {
             padding: 10px 18px;
             font-size: 14px;
         }
+        
+        .step-number {
+            width: 60px;
+            height: 60px;
+            font-size: 1.3rem;
+        }
     }
-</style>
+
+    /* Custom SweetAlert Popup Styles */
+    .swal2-popup {
+        border-radius: 12px !important;
+        padding: 1.5rem !important;
+        width: 450px !important;
+        max-width: 90% !important;
+        margin-right: 0 !important;
+    }
+
+    .swal2-container {
+        padding-right: 0 !important;
+    }
+
+    .swal2-title {
+        color: dark !important;
+        font-size: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .swal2-html-container {
+        text-align: left !important;
+        font-size: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: var(--univ-maroon) !important;
+        border: none !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: var(--univ-dark-maroon) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: var(--shadow-lg) !important;
+    }
+
+    /* Updated Footer Styles */
+    .footer {
+        width: 100%;
+        padding: 40px 0 20px;
+        background: linear-gradient(135deg, var(--univ-dark-maroon) 0%, var(--univ-gold) 100%);
+        color: var(--univ-cream);
+    }
+
+    .footer .container {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .footer-top {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 2rem;
+        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(248, 244, 233, 0.2);
+    }
+
+    .footer-col:first-child {
+        flex: 2;
+        min-width: 300px;
+    }
+
+    .footer-col {
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .footer-logo-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .footer-logo-title img {
+        width: 70px;
+        height: 70px;
+        margin-right: 15px;
+    }
+
+    .footer-logo-title h4 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--univ-cream);
+    }
+
+    .footer-logo-subtitle {
+        font-size: 16px;
+        color: var(--univ-gold);
+        margin-bottom: 16px;
+        font-weight: 500;
+    }
+
+    .footer-description {
+        font-size: 15px;
+        color: rgba(248, 244, 233, 0.8);
+        max-width: 400px;
+    }
+
+    .footer-col h3 {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--univ-cream);
+    }
+
+    .footer-links,
+    .footer-contact {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: rgba(248, 244, 233, 0.8);
+    }
+
+    .footer-links li,
+    .footer-contact li {
+        margin-bottom: 10px;
+        cursor: default;
+        transition: color 0.25s ease;
+    }
+
+    .footer-links li:hover,
+    .footer-contact li:hover {
+        color: var(--univ-gold);
+    }
+
+    .footer-contact li {
+        font-size: 14px;
+        white-space: pre-line;
+    }
+
+    .footer-bottom {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 24px;
+        font-size: 13px;
+        color: rgba(248, 244, 233, 0.6);
+    }
+
+    .footer-bottom .copyright {
+        flex: 1 1 300px;
+    }
+
+    .footer-bottom .policy-links {
+        display: flex;
+        gap: 20px;
+        flex: 1 1 300px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .footer-bottom .policy-links a {
+        color: rgba(248, 244, 233, 0.6);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.25s ease;
+    }
+
+    .footer-bottom .policy-links a:hover {
+        color: var(--univ-gold);
+    }
+
+    @media (max-width: 720px) {
+        .footer-top {
+            flex-direction: column;
+        }
+        .footer-bottom {
+            justify-content: center;
+            text-align: center;
+        }
+        .footer-bottom .policy-links {
+            justify-content: center;
+            margin-top: 8px;
+        }
+    }
+
+    /* 3D Viewer Styles */
+    #viewModelText {
+        color: var(--univ-gold);
+        cursor: pointer;
+        text-decoration: underline;
+        transition: all 0.3s ease;
+    }
+
+    #viewModelText:hover {
+        color: white;
+    }
+
+    #three-container {
+        width: 100%;
+        height: 400px;
+        background: transparent;
+    }
+    </style>
 </head>
 <body>
     <!-- Header with both login and logout functionality -->
@@ -778,7 +920,6 @@
             <ul class="nav-links">
                 @guest
                 <li>
-                    
                     <form action="{{ route('login') }}" method="GET">
                         <button type="submit" class="login-btn">
                             LOGIN
@@ -791,23 +932,44 @@
                     Welcome, {{ Auth::user()->name }}
                 </li>
                 <li>
-                    <a href="{{ route('dashboard') }}" class="dashboard-btn">Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="nav-button">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
                 </li>
-                <li class="logout-container">
-                    <button class="logout-icon" title="Logout">
-                        <img src="{{ asset('/assets/img/switch.png') }}" alt="Logout" class="logout-img">
-                    </button>
-                    <div class="logout-dropdown">
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <button type="submit">
-                                <img src="{{ asset('/assets/img/exit.png') }}" alt="Logout" class="logout-img"> <b>Logout</b>
-                            </button>
-                        </form>
-                    </div>
+                <li>
+                    <form action="{{ route('logout') }}" method="POST" id="logout-form">
+                        @csrf
+                        <button type="submit" class="nav-button">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
                 </li>
                 @endguest
             </ul>
+
+            <!-- Mobile Dropdown Menu -->
+            <div class="mobile-dropdown" id="mobile-dropdown">
+                @guest
+                <form action="{{ route('login') }}" method="GET">
+                    <button type="submit" class="login-btn">
+                        LOGIN
+                    </button>
+                </form>
+                @else
+                <div class="welcome-user">
+                    Welcome, {{ Auth::user()->name }}
+                </div>
+                <a href="{{ route('dashboard') }}" class="nav-button">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="nav-button">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </form>
+                @endguest
+            </div>
         </nav>
     </header>
 
@@ -819,18 +981,15 @@
                     <h1>Streamline Your Documents Workflow with <span class="text-primary">DTS-ZPPSU</span></h1>
                     <p>The advanced document tracking system designed to revolutionize how ZPPSU manages, tracks, and processes official documents. Save time, reduce errors, and enhance productivity.</p>
                     <div class="tracker">
-                        
                         <form id="trackForm">
                             <div class="cta-buttons">
-                        <a href="{{ route('learn') }}" class="btn btn-secondary">Learn More</a>
-                    </div>
-                            <button type="submit"><i class="fas fa-search"></i> Track</button>
-                            <input type="text" id="trackingID" placeholder="Enter Tracking ID" required>
-                            
+                                <a href="{{ route('learn') }}" class="btn btn-secondary">Learn More</a>
+                                <button type="submit"><i class="fas fa-search"></i> Track</button>
+                                <input type="text" id="trackingID" placeholder="Enter Tracking ID" required>
+                            </div>
                         </form>
                         <div id="trackResult"></div>
                     </div>
-                    
                 </div>
                 <div class="hero-image">
                     <img src="{{ asset('/assets/img/field.png') }}" alt="Logout" class="logout-img">
@@ -849,42 +1008,42 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/9080/9080367.png" alt="Real-time Tracking" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/9080/9080367.png" alt="Real-time Tracking" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Real-time Tracking</h3>
                     <p>Monitor document status in real-time with our intuitive dashboard. Know exactly where your documents are at any moment.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/9821/9821144.png" alt="Automated Notifications" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/9821/9821144.png" alt="Automated Notifications" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Automated Notifications</h3>
                     <p>Receive instant alerts for document actions, approvals, and deadlines. Never miss an important update again.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2041/2041643.png" alt="Advanced Analytics" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/2041/2041643.png" alt="Advanced Analytics" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Advanced Analytics</h3>
                     <p>Gain valuable insights with comprehensive reporting tools. Identify bottlenecks and optimize your workflow.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2592/2592258.png" alt="Secure Access" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/2592/2592258.png" alt="Secure Access" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Secure Access</h3>
                     <p>Role-based permissions ensure sensitive documents are only accessible to authorized personnel.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2920/2920329.png" alt="Mobile Friendly" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/2920/2920329.png" alt="Mobile Friendly" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Mobile Friendly</h3>
                     <p>Access the system from any device, anywhere. Our responsive design works perfectly on all screen sizes.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/10435/10435204.png" alt="Version Control" style="width: 40px; height: 40px;">
+                        <img src="https://cdn-icons-png.flaticon.com/128/10435/10435204.png" alt="Version Control" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Version Control</h3>
                     <p>Maintain complete document history with our robust version control system. Track changes and revert when needed.</p>
@@ -931,17 +1090,69 @@
             <div class="text-center">
                 <h2>Ready to Transform Your Document Management?</h2>
                 <p>Join dozens of departments at ZPPSU who have streamlined their workflows with our advanced tracking system</p>
-                <div class="cta-buttons">
-                    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Dashboard</a>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="copyright">
-            <p>&copy; All rights reserved. Zamboanga Peninsula Polytechnic State University</p>
+    <!-- Updated Footer Section -->
+    <footer class="footer" aria-label="Site Footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <div class="footer-logo-title">
+                        <img src="https://zppsu.edu.ph/wp-content/uploads/2023/09/1111.png" alt="Zamboanga Peninsula Polytechnic State University official seal in red and gold with detailed emblematic design" />
+                        <div>
+                            <h4>DTS-ZPPSU</h4>
+                            <div class="footer-logo-subtitle">Document Tracking System</div>
+                        </div>
+                    </div>
+                    <p class="footer-description">
+                        Streamlining document management for Zamboanga Peninsula Polytechnic State University with cutting-edge technology and user-friendly interfaces. 
+                       <span id="viewModelText">3D LOGO</span>
+                    </p>
+                </div>
+
+                <div class="footer-col" aria-labelledby="quick-links-title">
+                    <h3 id="quick-links-title">Quick Links</h3>
+                    <ul class="footer-links" role="list">
+                        <li tabindex="0">Dashboard</li>
+                        <li tabindex="0">Track Document</li>
+                        <li tabindex="0">Submit Request</li>
+                        <li tabindex="0">Help Center</li>
+                    </ul>
+                </div>
+
+                <div class="footer-col" aria-labelledby="services-title">
+                    <h3 id="services-title">Services</h3>
+                    <ul class="footer-links" role="list">
+                        <li tabindex="0">Transcript of Records</li>
+                        <li tabindex="0">Diploma Processing</li>
+                        <li tabindex="0">Certificate Requests</li>
+                        <li tabindex="0">Official Documents</li>
+                    </ul>
+                </div>
+
+                <div class="footer-col" aria-labelledby="contact-title">
+                    <h3 id="contact-title">Contact</h3>
+                    <ul class="footer-contact" role="list">
+                        <li tabindex="0">Zamboanga Peninsula Polytechnic State University</li>
+                        <li tabindex="0">R.T. Lim Boulevard, Zamboanga City</li>
+                        <li tabindex="0"><a href="mailto:support@zppsu.edu.ph" style="color:var(--univ-cream); text-decoration:none;">support@zppsu.edu.ph</a></li>
+                        <li tabindex="0">+63 912 345 6789</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="copyright" aria-label="Copyright notice">
+                    © 2025 Zamboanga Peninsula Polytechnic State University. All rights reserved.
+                </div>
+                <nav class="policy-links" aria-label="Privacy and terms navigation">
+                    <a href="#" tabindex="0">Privacy Policy</a>
+                    <a href="#" tabindex="0">Terms of Service</a>
+                    <a href="#" tabindex="0">Support</a>
+                </nav>
+            </div>
         </div>
     </footer>
 
@@ -954,10 +1165,17 @@
         
         // Mobile menu toggle
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
+        const mobileDropdown = document.getElementById('mobile-dropdown');
         
         mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
+            mobileDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.mobile-menu-btn') && !e.target.closest('.mobile-dropdown')) {
+                mobileDropdown.classList.remove('active');
+            }
         });
         
         // Add shadow to header on scroll
@@ -970,130 +1188,280 @@
             }
         });
 
-        // Enhanced logout functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const logoutContainer = document.querySelector('.logout-container');
-            const logoutDropdown = document.querySelector('.logout-dropdown');
-            
-            logoutContainer.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const isVisible = logoutDropdown.style.opacity === '1';
-                logoutDropdown.style.opacity = isVisible ? '0' : '1';
-                logoutDropdown.style.visibility = isVisible ? 'hidden' : 'visible';
-                logoutDropdown.style.top = isVisible ? '120%' : '100%';
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function() {
-                logoutDropdown.style.opacity = '0';
-                logoutDropdown.style.visibility = 'hidden';
-                logoutDropdown.style.top = '120%';
-            });
+        // Document tracking functionality
+        const trackForm = document.getElementById('trackForm');
+        const trackingID = document.getElementById('trackingID');
 
-            // Document tracking functionality
-            const trackForm = document.getElementById('trackForm');
-            const trackingID = document.getElementById('trackingID');
+        // Sample tracking data (replace with API calls in a real system)
+        const sampleData = {
+            "DTS-2023-001": {
+                status: "Approved",
+                document: "Transcript of Records",
+                date: "2023-10-15",
+                estimated: "Ready for pickup",
+                icon: "success",
+                color: "#28a745"
+            },
+            "DTS-2023-002": {
+                status: "Processing",
+                document: "Certificate of Enrollment",
+                date: "2023-10-18",
+                estimated: "3 business days",
+                icon: "info",
+                color: "#17a2b8"
+            },
+            "DTS-2023-003": {
+                status: "Pending",
+                document: "Diploma Copy",
+                date: "2023-10-20",
+                estimated: "Under review",
+                icon: "warning",
+                color: "#ffc107"
+            }
+        };
 
-            // Sample tracking data (replace with API calls in a real system)
-            const sampleData = {
-                "DTS-2023-001": {
-                    status: "Approved",
-                    document: "Transcript of Records",
-                    date: "2023-10-15",
-                    estimated: "Ready for pickup",
-                    icon: "success",
-                    color: "#28a745"
-                },
-                "DTS-2023-002": {
-                    status: "Processing",
-                    document: "Certificate of Enrollment",
-                    date: "2023-10-18",
-                    estimated: "3 business days",
-                    icon: "info",
-                    color: "#17a2b8"
-                },
-                "DTS-2023-003": {
-                    status: "Pending",
-                    document: "Diploma Copy",
-                    date: "2023-10-20",
-                    estimated: "Under review",
-                    icon: "warning",
-                    color: "#ffc107"
+        // Form submission
+        trackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = trackingID.value.trim();
+
+            @guest
+            // If user is not logged in, show login required alert
+            Swal.fire({
+                icon: 'warning',
+                title: 'Login Required',
+                html: '<center><b>For Security Purpose</b></center><br><center>You need to login first before tracking documents.</center>',
+                confirmButtonColor: '#800020',
+                showCancelButton: true,
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Login Now',
+                cancelButtonText: 'Cancel',
+                scrollbarPadding: false,
+                width: '400px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route('login') }}';
                 }
-            };
+            });
+            return;
+            @endguest
 
-            // Form submission
-            trackForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const id = trackingID.value.trim();
+            if (!id) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please enter a valid Tracking ID.',
+                    confirmButtonColor: '#800020',
+                    scrollbarPadding: false,
+                    width: '400px'
+                });
+                return;
+            }
 
-                if (!id) {
+            // Show loading state
+            Swal.fire({
+                title: 'Searching...',
+                html: 'Please wait while we search for your document.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+                scrollbarPadding: false,
+                width: '400px'
+            });
+
+            // Simulate API delay
+            setTimeout(() => {
+                if (sampleData[id]) {
+                    const data = sampleData[id];
+                    
+                    // Create HTML content for the popup
+                    const htmlContent = `
+                        <div style="text-align: left;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <i class="fas fa-file-alt" style="font-size: 28px; color: ${data.color}; margin-right: 10px;"></i>
+                                <strong style="font-size: 16px;">Document:</strong> ${data.document}
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <i class="fas fa-calendar-check" style="font-size: 28px; color: ${data.color}; margin-right: 10px;"></i>
+                                <strong style="font-size: 16px;">Request Date:</strong> ${data.date}
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <i class="fas fa-tasks" style="font-size: 28px; color: ${data.color}; margin-right: 10px;"></i>
+                                <strong style="font-size: 16px;">Status:</strong> <span style="color: ${data.color}">${data.status}</span>
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-clock" style="font-size: 28px; color: ${data.color}; margin-right: 10px;"></i>
+                                <strong style="font-size: 16px;">Estimated:</strong> ${data.estimated}
+                            </div>
+                        </div>
+                    `;
+
+                    Swal.fire({
+                        icon: data.icon,
+                        title: 'Document Tracking Result',
+                        html: htmlContent,
+                        confirmButtonColor: '#800020',
+                        scrollbarPadding: false,
+                        width: '400px',
+                        customClass: {
+                            popup: 'custom-swal-popup'
+                        }
+                    });
+                } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error',
-                        text: 'Please enter a valid Tracking ID.',
-                        confirmButtonColor: '#800020'
+                        title: 'Not Found',
+                        text: 'No record found for this Tracking ID. Please verify and try again.',
+                        confirmButtonColor: '#800020',
+                        scrollbarPadding: false,
+                        width: '400px'
                     });
-                    return;
+                }
+            }, 1500);
+        });
+
+        // 3D Logo Viewer Functionality
+document.getElementById('viewModelText').addEventListener('click', async () => {
+    await Swal.fire({
+        title: '<span style="color: white;">ZPPSU 3D LOGO VIEWER</span>', // Added white color here
+        html: '<div id="three-container"></div>',
+        width: 600,
+        padding: '1em',
+        background: 'linear-gradient(135deg, #800000, #ffcc00)', // Maroon-Gold gradient
+        showCloseButton: true,
+        showConfirmButton: false,
+        didOpen: () => {
+            init3DViewer();
+        }
+    });
+});
+
+        async function init3DViewer() {
+            const THREE = await import('three');
+            const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+
+            let scene, camera, renderer, controls, particleSystem, logoPlane;
+            const clock = new THREE.Clock();
+            const container = document.getElementById('three-container');
+            const numParticles = 25000;
+
+            const params = {
+                particleSize: 0.035,
+                particleColor: 0xff5900,
+                rotationSpeed: 0.1
+            };
+
+            init();
+            animate();
+
+            function init() {
+                scene = new THREE.Scene();
+                scene.background = null;
+
+                camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+                camera.position.z = 5;
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
+
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+
+                scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(2, 2, 2);
+                scene.add(light);
+
+                createParticles();
+                createLogo();
+                window.addEventListener('resize', onWindowResize);
+            }
+
+            function createParticles() {
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(numParticles * 3);
+                const colors = new Float32Array(numParticles * 3);
+
+                for (let i = 0; i < numParticles; i++) {
+                    const phi = Math.acos(-1 + (2 * i) / numParticles);
+                    const theta = Math.sqrt(numParticles * Math.PI) * phi;
+                    const x = Math.sin(phi) * Math.cos(theta);
+                    const y = Math.sin(phi) * Math.sin(theta);
+                    const z = Math.cos(phi);
+
+                    const index = i * 3;
+                    positions[index] = x * 1.5;
+                    positions[index + 1] = y * 1.5;
+                    positions[index + 2] = z * 1.5;
+
+                    const color = new THREE.Color(params.particleColor);
+                    color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.5);
+                    colors[index] = color.r;
+                    colors[index + 1] = color.g;
+                    colors[index + 2] = color.b;
                 }
 
-                // Show loading state
-                Swal.fire({
-                    title: 'Searching...',
-                    html: 'Please wait while we search for your document.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: params.particleSize,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
+                    sizeAttenuation: true,
+                    blending: THREE.AdditiveBlending
                 });
 
-                // Simulate API delay
-                setTimeout(() => {
-                    if (sampleData[id]) {
-                        const data = sampleData[id];
-                        
-                        // Create HTML content for the popup
-                        const htmlContent = `
-                            <div style="text-align: left;">
-                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                    <i class="fas fa-file-alt" style="font-size: 24px; color: ${data.color}; margin-right: 10px;"></i>
-                                    <strong style="font-size: 16px;">Document:</strong> ${data.document}
-                                </div>
-                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                    <i class="fas fa-calendar-check" style="font-size: 24px; color: ${data.color}; margin-right: 10px;"></i>
-                                    <strong style="font-size: 16px;">Request Date:</strong> ${data.date}
-                                </div>
-                                <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                    <i class="fas fa-tasks" style="font-size: 24px; color: ${data.color}; margin-right: 10px;"></i>
-                                    <strong style="font-size: 16px;">Status:</strong> <span style="color: ${data.color}">${data.status}</span>
-                                </div>
-                                <div style="display: flex; align-items: center;">
-                                    <i class="fas fa-clock" style="font-size: 24px; color: ${data.color}; margin-right: 10px;"></i>
-                                    <strong style="font-size: 16px;">Estimated:</strong> ${data.estimated}
-                                </div>
-                            </div>
-                        `;
+                particleSystem = new THREE.Points(geometry, material);
+                scene.add(particleSystem);
+            }
 
-                        Swal.fire({
-                            icon: data.icon,
-                            title: 'Document Tracking Result',
-                            html: htmlContent,
-                            confirmButtonColor: '#800020',
-                            customClass: {
-                                popup: 'custom-swal-popup'
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Not Found',
-                            text: 'No record found for this Tracking ID. Please verify and try again.',
-                            confirmButtonColor: '#800020'
-                        });
-                    }
-                }, 1500);
-            });
-        });
+            function createLogo() {
+                const textureLoader = new THREE.TextureLoader();
+                const logoURL = 'https://upload.wikimedia.org/wikipedia/en/8/8e/Zamboanga_Peninsula_Polytechnic_State_University_-_Emblem.png';
+
+                textureLoader.load(logoURL, (texture) => {
+                    texture.encoding = THREE.sRGBEncoding;
+                    texture.anisotropy = 16;
+
+                    const geometry = new THREE.PlaneGeometry(2.5, 2.5); // Increased logo size
+                    const material = new THREE.MeshStandardMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide,
+                        roughness: 0.4,
+                        metalness: 0.2,
+                        transparent: true,
+                        alphaTest: 0.1,
+                        opacity: 1
+                    });
+
+                    logoPlane = new THREE.Mesh(geometry, material);
+                    logoPlane.position.set(0, 0, 0);
+                    scene.add(logoPlane);
+                });
+            }
+
+            function onWindowResize() {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const delta = clock.getDelta();
+
+                if (particleSystem) particleSystem.rotation.y += delta * params.rotationSpeed;
+                if (logoPlane) logoPlane.rotation.y += delta * 0.3;
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+        }
     </script>
 </body>
 </html>

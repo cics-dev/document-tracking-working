@@ -1,6 +1,6 @@
-<form wire:submit.prevent="submitDocument" class="max mx-auto bg-white rounded-xl shadow-[0_0_5px_0_rgba(0,0,0,0.5)] overflow-hidden p-6">
+<form wire:submit.prevent="submitDocument" class="max-w-4xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6">
     <!-- Document Type Section -->
-    <div class="mb-2">
+    <div class="mb-8">
         <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">Document Details</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -57,7 +57,7 @@
 
     <!-- CF Offices Section (Admin Only) -->
     @if ($office_type == 'ADMIN')
-    <div class="mb-2 bg-gray-50 p-4 rounded-lg">
+    <div class="mb-8 bg-gray-50 p-4 rounded-lg">
         <label class="block text-sm font-medium text-gray-900 mb-2">
             {{ __('CF to Offices') }}
         </label>
@@ -115,7 +115,7 @@
     @endif
 
     <!-- Subject and Content Section -->
-    <div class="mb-2">
+    <div class="mb-8">
         @if ($document_type != 'Intra')
         <div class="mb-4">
             <flux:input
@@ -153,7 +153,7 @@
 
     <!-- Routing Requirements Section -->
     @if ($document_type != 'IOM' && $document_type != 'Intra')
-    <div class="mb-2 bg-gray-50 p-4 rounded-lg">
+    <div class="mb-8 bg-gray-50 p-4 rounded-lg">
         <label class="block text-sm font-medium text-gray-900 mb-3">
             {{ __('Routing Requirements') }} - select applicable review offices
         </label>
@@ -224,7 +224,7 @@
     </div>
 
     <!-- Signatories Section -->
-    <div class="mb-2">
+    <div class="mb-8">
         <div class="flex items-center justify-between mb-3">
             <label class="block text-sm font-medium text-gray-900">
                 {{ __('Signatories') }}
@@ -288,7 +288,7 @@
     </div>
 
     <!-- Attachments Section -->
-    <div class="mb-2">
+    <div class="mb-8">
         <label for="attachments" class="block text-sm font-medium text-gray-900 mb-2">
             {{ __('Attachments') }} <span class="text-gray-500 text-xs">(Max 100MB per file)</span>
         </label>

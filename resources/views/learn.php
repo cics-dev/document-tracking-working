@@ -8,9 +8,9 @@
     <style>
         /* ===== Global Styles ===== */
         :root {
-            --primary: #0056b3;
-            --secondary: #003366;
-            --accent: #00a8e8;
+            --primary: #800000; /* ZPPSU Maroon */
+            --secondary: #660710; /* Darker Maroon */
+            --accent: #FFD700; /* Gold accent */
             --light: #f8f9fa;
             --dark: #343a40;
             --success: #28a745;
@@ -18,6 +18,11 @@
             --danger: #dc3545;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s ease;
+            --univ-maroon: #800020;
+            --univ-dark-maroon: #5a0018;
+            --univ-light-maroon: #a30029;
+            --univ-cream: #f8f4e9;
+            --univ-gold: #d4af37;
         }
 
         * {
@@ -28,17 +33,19 @@
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e6e6e6 100%);
             min-height: 100vh;
             color: var(--dark);
-            line-height: 1.6;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ===== Header ===== */
         header {
             background: linear-gradient(to right, var(--secondary), var(--primary));
             color: white;
-            padding: 2rem 0;
+            padding: 1.8rem 0;
             text-align: center;
             box-shadow: var(--shadow);
             position: relative;
@@ -62,8 +69,8 @@
         }
 
         header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+            margin-bottom: 0.4rem;
             position: relative;
             animation: fadeInDown 1s ease;
         }
@@ -73,169 +80,6 @@
             opacity: 0.9;
             position: relative;
             animation: fadeInUp 1s ease 0.3s both;
-        }
-
-        /* ===== Main Content ===== */
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, var(--accent), var(--primary));
-            transition: var(--transition);
-        }
-
-        .feature-card:hover::after {
-            height: 10px;
-        }
-
-        .feature-card h3 {
-            color: var(--primary);
-            margin-bottom: 0.8rem;
-            font-size: 1.3rem;
-        }
-
-        .feature-card p {
-            color: #555;
-        }
-
-        /* ===== Tracking Section ===== */
-        .tracker {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-            animation: fadeIn 1s ease 0.6s both;
-        }
-
-        .tracker h2 {
-            color: var(--secondary);
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-        }
-
-        #trackForm {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        #trackingID {
-            flex: 1;
-            padding: 0.8rem 1rem;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        #trackingID:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2);
-        }
-
-        #trackForm button {
-            background: linear-gradient(to right, var(--primary), var(--accent));
-            color: white;
-            border: none;
-            padding: 0 1.5rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        #trackForm button:hover {
-            background: linear-gradient(to right, var(--secondary), var(--primary));
-            transform: translateY(-2px);
-        }
-
-        #trackResult {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid var(--accent);
-            text-align: left;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .status-item {
-            display: flex;
-            margin-bottom: 0.8rem;
-        }
-
-        .status-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .status-icon {
-            margin-right: 0.8rem;
-            color: var(--accent);
-        }
-
-        /* ===== Footer ===== */
-        footer {
-            background: var(--dark);
-            color: white;
-            text-align: center;
-            padding: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* ===== Animations ===== */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         @keyframes fadeInDown {
@@ -260,19 +104,302 @@
             }
         }
 
-        /* ===== Responsive ===== */
-        @media (max-width: 768px) {
-            .features {
-                grid-template-columns: 1fr;
-            }
+        /* Home Button */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
 
-            #trackForm {
+        .home-btn:hover, .home-btn:active, .home-btn:focus {
+            background-color: white;
+            transform: translateY(-2px);
+            outline: none;
+        }
+
+        /* ===== Main Content ===== */
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .features-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .top-row, .bottom-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            width: 100%;
+        }
+
+        .top-row {
+            margin-bottom: 1.2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            min-height: 150px;
+            width: calc(33.333% - 1.2rem);
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Adjust width for bottom row cards */
+        .bottom-row .feature-card {
+            width: calc(50% - 1.2rem);
+            max-width: 400px;
+        }
+
+        /* Hover effects from first code */
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--accent), var(--primary));
+            transition: var(--transition);
+        }
+
+        .feature-card:hover::after {
+            height: 10px;
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card h3 i {
+            color: var(--accent);
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-top: auto;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .top-row, .bottom-row {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature-card, 
+            .bottom-row .feature-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .home-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin: 0 auto 1rem;
+                display: inline-flex;
+            }
+            
+            .container {
+                margin: 1.5rem auto;
+                padding: 0 1rem;
+            }
+            
+            .feature-card {
+                padding: 1.2rem;
+                min-height: 140px;
+            }
+        }
+
+        /* ===== Footer Styles ===== */
+        .footer {
+            width: 100%;
+            padding: 40px 0 20px;
+            background: linear-gradient(135deg, var(--univ-dark-maroon) 0%, var(--univ-gold) 100%);
+            color: var(--univ-cream);
+        }
+
+        .footer .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-top {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(248, 244, 233, 0.2);
+        }
+
+        .footer-col:first-child {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .footer-logo-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .footer-logo-title img {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+        }
+
+        .footer-logo-title h4 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--univ-cream);
+        }
+
+        .footer-logo-subtitle {
+            font-size: 16px;
+            color: var(--univ-gold);
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .footer-description {
+            font-size: 15px;
+            color: rgba(248, 244, 233, 0.8);
+            max-width: 400px;
+        }
+
+        .footer-col h3 {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--univ-cream);
+        }
+
+        .footer-links,
+        .footer-contact {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: rgba(248, 244, 233, 0.8);
+        }
+
+        .footer-links li,
+        .footer-contact li {
+            margin-bottom: 10px;
+            cursor: default;
+            transition: color 0.25s ease;
+        }
+
+        .footer-links li:hover,
+        .footer-contact li:hover {
+            color: var(--univ-gold);
+        }
+
+        .footer-contact li {
+            font-size: 14px;
+            white-space: pre-line;
+        }
+
+        .footer-bottom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 24px;
+            font-size: 13px;
+            color: rgba(248, 244, 233, 0.6);
+        }
+
+        .footer-bottom .copyright {
+            flex: 1 1 300px;
+        }
+
+        .footer-bottom .policy-links {
+            display: flex;
+            gap: 20px;
+            flex: 1 1 300px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .footer-bottom .policy-links a {
+            color: rgba(248, 244, 233, 0.6);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.25s ease;
+        }
+
+        .footer-bottom .policy-links a:hover {
+            color: var(--univ-gold);
+        }
+
+        @media (max-width: 720px) {
+            .footer-top {
                 flex-direction: column;
             }
-
-            #trackForm button {
+            .footer-bottom {
                 justify-content: center;
-                padding: 0.8rem;
+                text-align: center;
+            }
+            .footer-bottom .policy-links {
+                justify-content: center;
+                margin-top: 8px;
             }
         }
     </style>
@@ -280,130 +407,126 @@
 <body>
     <!-- Header -->
     <header>
+        <button class="home-btn" onclick="window.location.href='/'">
+            <i class="fas fa-home"></i> Home
+        </button>
         <h1><i class="fas fa-file-alt"></i> DTS-ZPPSU</h1>
         <p>Zamboanga Peninsula Polytechnic State University</p>
     </header>
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Features Section -->
-        <section class="features">
-            <div class="feature-card">
-                <h3><i class="fas fa-paper-plane"></i> Easy Document Requests</h3>
-                <p>Submit and track requests (e.g., academic records) with real-time updates.</p>
+        <div class="features-grid">
+            <!-- Top 3 Centered Cards -->
+            <div class="top-row">
+                <div class="feature-card">
+                    <h3><i class="fas fa-paper-plane"></i> Easy Document Requests</h3>
+                    <p>Submit and track document requests with real-time status updates for better workflow management.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-bolt"></i> Quick Processing</h3>
+                    <p>Experience faster turnaround times for all your academic document requirements.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-user-friends"></i> User-Friendly Interface</h3>
+                    <p>Simple and intuitive design ensures easy navigation for all users.</p>
+                </div>
             </div>
-            <div class="feature-card">
-                <h3><i class="fas fa-bolt"></i> Quick Processing</h3>
-                <p>Faster turnaround times for document requests.</p>
+            
+            <!-- Bottom 2 Centered Cards -->
+            <div class="bottom-row">
+                <div class="feature-card">
+                    <h3><i class="fas fa-lock"></i> Secure & Confidential</h3>
+                    <p>Your sensitive data is protected with enterprise-grade security measures.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-database"></i> Centralized System</h3>
+                    <p>Automated document workflows with complete tracking and audit trails.</p>
+                </div>
             </div>
-            <div class="feature-card">
-                <h3><i class="fas fa-user-friends"></i> User-Friendly Interface</h3>
-                <p>Intuitive design for easy navigation.</p>
-            </div>
-            <div class="feature-card">
-                <h3><i class="fas fa-lock"></i> Security & Confidentiality</h3>
-                <p>Robust protection for sensitive data.</p>
-            </div>
-            <div class="feature-card">
-                <h3><i class="fas fa-database"></i> Centralized Management</h3>
-                <p>Automated workflows and audit trails.</p>
-            </div>
-        </section>
-
-        <!-- Document Tracker -->
-        <section class="tracker">
-            <h2><i class="fas fa-search"></i> Track Your Document</h2>
-            <form id="trackForm">
-                <input type="text" id="trackingID" placeholder="Enter Tracking ID (e.g., DTS-2023-001)" required>
-                <button type="submit"><i class="fas fa-search"></i> Track</button>
-            </form>
-            <div id="trackResult"></div>
-        </section>
+        </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2023 DTS-ZPPSU | Contact: <a href="mailto:support@zppsu.edu.ph">support@zppsu.edu.ph</a></p>
+    <!-- Updated Footer Section -->
+    <footer class="footer" aria-label="Site Footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-col">
+                    <div class="footer-logo-title">
+                        <img src="https://zppsu.edu.ph/wp-content/uploads/2023/09/1111.png" alt="Zamboanga Peninsula Polytechnic State University official seal in red and gold with detailed emblematic design" />
+                        <div>
+                            <h4>DTS-ZPPSU</h4>
+                            <div class="footer-logo-subtitle">Document Tracking System</div>
+                        </div>
+                    </div>
+                    <p class="footer-description">
+                        Streamlining document management for Zamboanga Peninsula Polytechnic State University with cutting-edge technology and user-friendly interfaces.
+                    </p>
+                </div>
+
+                <div class="footer-col" aria-labelledby="quick-links-title">
+                    <h3 id="quick-links-title">Quick Links</h3>
+                    <ul class="footer-links" role="list">
+                        <li tabindex="0">Dashboard</li>
+                        <li tabindex="0">Track Document</li>
+                        <li tabindex="0">Submit Request</li>
+                        <li tabindex="0">Help Center</li>
+                    </ul>
+                </div>
+
+                <div class="footer-col" aria-labelledby="services-title">
+                    <h3 id="services-title">Services</h3>
+                    <ul class="footer-links" role="list">
+                        <li tabindex="0">Transcript of Records</li>
+                        <li tabindex="0">Diploma Processing</li>
+                        <li tabindex="0">Certificate Requests</li>
+                        <li tabindex="0">Official Documents</li>
+                    </ul>
+                </div>
+
+                <div class="footer-col" aria-labelledby="contact-title">
+                    <h3 id="contact-title">Contact</h3>
+                    <ul class="footer-contact" role="list">
+                        <li tabindex="0">Zamboanga Peninsula Polytechnic State University</li>
+                        <li tabindex="0">R.T. Lim Boulevard, Zamboanga City</li>
+                        <li tabindex="0"><a href="mailto:support@zppsu.edu.ph" style="color:var(--univ-cream); text-decoration:none;">support@zppsu.edu.ph</a></li>
+                        <li tabindex="0">+63 912 345 6789</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="copyright" aria-label="Copyright notice">
+                    © 2025 Zamboanga Peninsula Polytechnic State University. All rights reserved.
+                </div>
+                <nav class="policy-links" aria-label="Privacy and terms navigation">
+                    <a href="#" tabindex="0">Privacy Policy</a>
+                    <a href="#" tabindex="0">Terms of Service</a>
+                    <a href="#" tabindex="0">Support</a>
+                </nav>
+            </div>
+        </div>
     </footer>
 
-    <!-- JavaScript -->
+    <!-- JavaScript for enhanced button functionality -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const trackForm = document.getElementById('trackForm');
-            const trackingID = document.getElementById('trackingID');
-            const trackResult = document.getElementById('trackResult');
-
-            // Sample tracking data (replace with API calls in a real system)
-            const sampleData = {
-                "DTS-2023-001": {
-                    status: "Approved",
-                    document: "Transcript of Records",
-                    date: "2023-10-15",
-                    estimated: "Ready for pickup"
-                },
-                "DTS-2023-002": {
-                    status: "Processing",
-                    document: "Certificate of Enrollment",
-                    date: "2023-10-18",
-                    estimated: "3 business days"
-                },
-                "DTS-2023-003": {
-                    status: "Pending",
-                    document: "Diploma Copy",
-                    date: "2023-10-20",
-                    estimated: "Under review"
-                }
-            };
-
-            // Form submission
-            trackForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const id = trackingID.value.trim();
-
-                if (!id) {
-                    showResult("Please enter a valid Tracking ID.", "error");
-                    return;
-                }
-
-                // Simulate API delay
-                trackResult.innerHTML = '<div class="status-item"><i class="fas fa-spinner fa-spin status-icon"></i> Searching...</div>';
-                trackResult.style.display = "block";
-
-                setTimeout(() => {
-                    if (sampleData[id]) {
-                        const data = sampleData[id];
-                        let statusColor = "#28a745"; // Green for Approved
-                        if (data.status === "Processing") statusColor = "#ffc107"; // Yellow
-                        if (data.status === "Pending") statusColor = "#dc3545"; // Red
-
-                        trackResult.innerHTML = `
-                            <div class="status-item">
-                                <i class="fas fa-file-alt status-icon" style="color: ${statusColor}"></i>
-                                <strong>Document:</strong> ${data.document}
-                            </div>
-                            <div class="status-item">
-                                <i class="fas fa-calendar-check status-icon" style="color: ${statusColor}"></i>
-                                <strong>Request Date:</strong> ${data.date}
-                            </div>
-                            <div class="status-item">
-                                <i class="fas fa-tasks status-icon" style="color: ${statusColor}"></i>
-                                <strong>Status:</strong> <span style="color: ${statusColor}">${data.status}</span>
-                            </div>
-                            <div class="status-item">
-                                <i class="fas fa-clock status-icon" style="color: ${statusColor}"></i>
-                                <strong>Estimated:</strong> ${data.estimated}
-                            </div>
-                        `;
-                    } else {
-                        showResult("No record found for this Tracking ID. Please verify and try again.", "error");
-                    }
-                }, 1500);
-            });
-
-            // Helper function to show messages
-            function showResult(message, type) {
-                trackResult.innerHTML = `<div class="status-item"><i class="fas fa-exclamation-circle status-icon" style="color: ${type === 'error' ? '#dc3545' : '#28a745'}"></i> ${message}</div>`;
-                trackResult.style.display = "block";
+        // Improved button responsiveness
+        const homeBtn = document.querySelector('.home-btn');
+        
+        // For better touch devices support
+        homeBtn.addEventListener('touchstart', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        homeBtn.addEventListener('touchend', function() {
+            this.style.transform = '';
+            window.location.href = '/';
+        });
+        
+        // For better keyboard accessibility
+        homeBtn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                window.location.href = '/';
             }
         });
     </script>
