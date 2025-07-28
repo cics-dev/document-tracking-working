@@ -1,4 +1,4 @@
-<form wire:submit.prevent="submitDocument" class="max-w-4xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6">
+<form wire:submit.prevent="submitDocument" class="max-w-7xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6">
     <!-- Document Type Section -->
     <div class="mb-8">
         <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">Document Details</h2>
