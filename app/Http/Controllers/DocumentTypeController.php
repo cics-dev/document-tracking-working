@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class DocumentTypeController extends Controller
 {
-    public function index($office_type)
+    public function index($user)
     {
-        if ($office_type == 'ADMIN') return DocumentType::whereIn('id', [1, 2, 3, 5])->get();
-        else if ($office_type == 'ACAD') return DocumentType::whereIn('id', [1, 3, 5, 6])->get();
+        if ($user->office->id == 18) return DocumentType::whereIn('id', [1, 2, 3, 4, 5])->get();
+        else if ($user->office->office_type == 'ADMIN') return DocumentType::whereIn('id', [1, 2, 3, 5])->get();
+        else if ($user->office->office_type == 'ACAD') return DocumentType::whereIn('id', [1, 3, 5, 6])->get();
         return DocumentType::all();
     }
 }

@@ -37,6 +37,16 @@ function initQuillEditor() {
         // quill.on('text-change', function () {
         //     Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'))?.set('content', quill.root.innerHTML);
         // });
+        window.addEventListener('update-quill', event => {
+            const content = event.detail[0].content || '';
+            quill.root.innerHTML = content;
+
+            const quillContentInput = document.getElementById('quill-content');
+            if (quillContentInput) {
+                quillContentInput.value = content;
+                quillContentInput.dispatchEvent(new Event('input'));
+            }
+        });
     }
 }
 

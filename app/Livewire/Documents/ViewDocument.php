@@ -39,6 +39,19 @@ class ViewDocument extends Component
     {
         $response = app(DocumentController::class)->getDocument($number);
         $this->document = $response;
+
+        $updated = $this->document->cfs()
+            ->where('user_id', Auth::id())
+            ->whereNull('viewed_at')
+            ->update(['viewed_at' => now()]);
+
+        if ($updated) {
+            $this->document->logs()->create([
+                'user_id' => Auth::id(),
+                'action' => 'viewed',
+                'description' => Auth::user()->office->name . ' viewed the document'
+            ]);
+        }
         
         $signatories = $this->document->signatories->map(function ($signatory) {
             return [
@@ -234,7 +247,7 @@ class ViewDocument extends Component
         $this->document->status = 'Approved';
         $this->document->save();
 
-        if ($this->document->attachments()->latest()->first() != null) {
+        if ($this->document->document_type_id == 2 && $this->document->attachments()->latest()->first() != null) {
             $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->attachment_document_id);
             $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
             $lastSignatory = $docSignatories->last();

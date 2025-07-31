@@ -150,24 +150,46 @@
     </div>
 
     <hr style="margin: 10px 0;">
-
+    
+    @if ($documentType == 'External Communication Response Letter')
+    <br>{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}<br><br><br>
+    @endif
+    @if ($documentType != 'External Communication Response Letter')
     <div class="memo-info">
         @if($documentType == 'Intra')
             <p><strong>College Memorandum</strong><br>
         @else
             <p><strong>{{ strtoupper($documentType) }}</strong><br>
         @endif
-        {{ $documentNumber }}</p>
+        @if($documentType != 'Special Order')
+            {{ $documentNumber }}</p>
+        @else
+            <?php
+                $code = 'SAO(ADMIN)-SO-4-2025';
+
+                $parts = explode('-', $code); // ['SAO(ADMIN)', 'SO', '4', '2025']
+
+                if (count($parts) === 4) {
+                    $number = $parts[2];
+                    $year = $parts[3];
+                    $formatted = 'No. ' . $number . ', s. ' . $year;
+
+                    echo $formatted; // Output: No. 4, s. 2025
+                }
+            ?>
+        @endif
         <table>
-            <tr>
-                <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
-                    @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
-                    @endif
-                </td>
-            </tr>
-            @if(!empty($thru))
+            @if(!empty($toName) && $documentType != 'Special Order')
+                <tr>
+                    <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
+                    <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
+                        @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
+                        @endif
+                    </td>
+                </tr>
+            @endif
+            @if(!empty($thru) && $documentType != 'Special Order')
                 <tr>
                     <td class="label">THRU</td>
                     <td>
@@ -175,32 +197,35 @@
                     </td>
                 </tr>
             @endif
-            <tr>
-                <td class="label" style="padding-top:25px;">FROM</td>
-                <td>
-                    <img 
-                        src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
-                        alt="Signature" 
-                        style="height: 30px; padding-left: 20px"
-                    ><br>
-                    : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
-                </td>
-            </tr>
+            @if ($documentType != 'Special Order')
+                <tr>
+                    <td class="label" style="padding-top:25px;">FROM</td>
+                    <td>
+                        <img 
+                            src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
+                            alt="Signature" 
+                            style="height: 30px; padding-left: 20px"
+                        ><br>
+                        : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td class="label">SUBJECT</td>
                 <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ $subject }}</u></strong></td>
             </tr>
+            <br>
             <tr>
                 <td class="label">DATE</td>
                 <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}</td>
             </tr>
         </table>
     </div>
-
     <hr>
+    @endif
 
-    <div class="content">
+    <div class="content" style="line-height: {{ $documentType == 'External Communication Response Letter' ? '0.25' : '1.5' }};">
         {!! $content !!}
     </div>
 
@@ -208,7 +233,7 @@
         <div class="signatory">
             @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
                 <div class="signatory-group">
-                    @if (!empty($role))
+                    @if (!empty($role) && $documentType == 'Request Letter Memorandum')
                         <p class="signatory-label">{{ $role }}:</p>
                     @endif
 
@@ -220,9 +245,9 @@
                                         src="{{ public_path('storage/' . $signatory['signature']) }}" 
                                         alt="Signature" 
                                         style="height: 50px; margin-bottom: 10px;"
-                                    >
+                                    ><br>
                                 @endif
-                                <br><strong>{{ $signatory['user_name'] }}</strong><br>
+                                <strong>{{ $signatory['user_name'] }}</strong><br>
                                 {{ $signatory['position'] }}
                             </div>
                         @endforeach
@@ -242,6 +267,12 @@
             </div>
         </div>
     @endif
+
+    <footer style="position: fixed; bottom: 30px; width: 100%; text-align: left; font-size: 12px;">
+        @if ($documentType === 'Special Order' || $documentType === 'External Communication Response Letter')
+            {{ $documentNumber }}
+        @endif
+    </footer>
 
     {{-- <div class="page-break"></div>  <!-- This forces a page break -->
 

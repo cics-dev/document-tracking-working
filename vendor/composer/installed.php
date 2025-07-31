@@ -3,7 +3,7 @@
         'name' => 'laravel/livewire-starter-kit',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'd1c7b1feb3effde0c5d3ec144ba41064f14a3045',
+        'reference' => '2a6132c7b54686d9449425bb47dcd362db339b33',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -469,7 +469,7 @@
         'laravel/livewire-starter-kit' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'd1c7b1feb3effde0c5d3ec144ba41064f14a3045',
+            'reference' => '2a6132c7b54686d9449425bb47dcd362db339b33',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

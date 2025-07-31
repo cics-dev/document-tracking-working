@@ -21,6 +21,11 @@ class DocumentController extends Controller
             $userId = Auth::id();
             $userOffice = Auth::user()->office;
             if ($userOffice->name === 'Administration') {
+                $ownDocs = Document::where('from_id', $userOffice->id)
+                    ->with(['documentType', 'fromOffice', 'signatories'])
+                    ->get();
+
+                $allDocs = $ownDocs;
                 $presidentOfficeId = Office::whereHas('users', function ($query) {
                     $query->where('position', 'University President');
                 })->pluck('id')->first();
@@ -31,8 +36,9 @@ class DocumentController extends Controller
                         ->with(['documentType', 'fromOffice', 'signatories'])
                         ->get();
             
-                    return $presidentDocs;
+                    $allDocs = $ownDocs->merge($presidentDocs);
                 }
+                return $allDocs;
             }
 
             return Auth::user()->office->sentDocuments()
@@ -155,7 +161,7 @@ class DocumentController extends Controller
             ->with(['documentType', 'fromOffice', 'cfs'])
             ->get();
 
-            $cfDocs = filterPendingDocuments($cfDocs, $userId);
+            // $cfDocs = filterPendingDocuments($cfDocs, $userId);
             $directDocs = $directDocs->merge($cfDocs)->unique('id')->values();
 
             if ($userOffice->name === 'Administration') {

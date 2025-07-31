@@ -44,7 +44,7 @@
         <div class="mt-4 text-lg font-semibold">
             You already signed this document
         </div> --}}
-    @if($document->document_level != 'Intra')
+    @if($document->document_level != 'Intra' && (($document->document_type_id == 5 && auth()->user()->id == 2) || ($document->document_type_id == 4 && auth()->user()->id == 2)))
         @if($office_name != 'Administration' && $office_name != 'Records Section')
             @if(is_null($signed) && is_null($rejected))
                 <div class="mt-4 flex gap-4">

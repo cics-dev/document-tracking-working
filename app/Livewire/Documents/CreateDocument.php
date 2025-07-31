@@ -87,7 +87,7 @@ class CreateDocument extends Component
 
     public function fetchDocumentTypes()
     {
-        $response = app(DocumentTypeController::class)->index(Auth::user()->office->office_type);
+        $response = app(DocumentTypeController::class)->index(Auth::user());
         $this->types = $response;
 
         if ($this->document_type_id != '') $this->document_type = $this->types->firstWhere('id',$this->document_type_id)->abbreviation;
@@ -266,11 +266,14 @@ class CreateDocument extends Component
         if ($this->document_type_id == 2) {
             $status = 'Waiting for approval';
         }
+        if ($this->document_type_id == 5) {
+            $docNumber = 'ZPPSU-'.$docNumber;
+        }
             
         $document = Document::create([
             'from_id' => $from_user->office->id,
-            'to_id' => $this->document_type == 'Intra'?null:$this->document_to_id,
-            'to_text' => $this->document_type == 'Intra'?$this->document_to_text:null,
+            'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
+            'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
             'document_type_id' => $this->document_type_id,
             'document_number' => $docNumber,
             'subject' => $this->subject,
@@ -282,15 +285,16 @@ class CreateDocument extends Component
             'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
         ]);
 
-        if ($this->document_type === 'IOM')
-        $document->attachments()->create([
-                'attachment_document_id' => $this->original_document_id,
-                'status' => 'approved',
-                'is_upload' => false
-        ]);
-        // DocumentAttachment::where('attachment_document_id', $this->original_document_id)
-        //         ->update(['document_id' => $document->id]);
-        else
+        if ($this->document_type === 'IOM') {
+            $document->attachments()->create([
+                    'attachment_document_id' => $this->original_document_id,
+                    'status' => 'approved',
+                    'is_upload' => false
+            ]);
+            // DocumentAttachment::where('attachment_document_id', $this->original_document_id)
+            //         ->update(['document_id' => $document->id]);
+        }
+        else {
             foreach ($this->attachments as $file) {
                 $path = $file->store('attachments', 'public');
                 $document->attachments()->create([
@@ -299,6 +303,7 @@ class CreateDocument extends Component
                     'is_upload' => true
                 ]);
             }
+        }
 
         $document->logs()->create([
             'user_id' => Auth::id(),
@@ -307,30 +312,36 @@ class CreateDocument extends Component
         ]);
 
         if($this->document_type != 'Intra') {
-            $selectedRoutes = collect($this->routingRequirements)
-                ->filter(fn ($value) => $value === true)
-                ->keys()
-                ->all();
-            $routeIds = [
-                'budget_office' => 19,
-                'motor_pool' => 20,
-                'legal_review' => 21,
-                'igp_review' => 22,
-            ];
+            if ($this->document_type == 'RLM') {
+                $selectedRoutes = collect($this->routingRequirements)
+                    ->filter(fn ($value) => $value === true)
+                    ->keys()
+                    ->all();
+                $routeIds = [
+                    'budget_office' => 19,
+                    'motor_pool' => 20,
+                    'legal_review' => 21,
+                    'igp_review' => 22,
+                ];
 
-            $selectedRouteIds = [];
-            foreach ($selectedRoutes as $routeKey) {
-                if (isset($routeIds[$routeKey])) {
-                    $selectedRouteIds[] = $routeIds[$routeKey];
+                $selectedRouteIds = [];
+                foreach ($selectedRoutes as $routeKey) {
+                    if (isset($routeIds[$routeKey])) {
+                        $selectedRouteIds[] = $routeIds[$routeKey];
+                    }
+                }
+
+                if(!empty($selectedRouteIds)) {
+                    foreach ($selectedRouteIds as $route) {
+                        $document->routings()->create([
+                            'user_id' => Office::find($route)['head']['id'] ?? null,
+                        ]);
+                    }
                 }
             }
 
-            if(!empty($selectedRouteIds)) {
-                foreach ($selectedRouteIds as $route) {
-                    $document->routings()->create([
-                        'user_id' => Office::find($route)['head']['id'] ?? null,
-                    ]);
-                }
+            if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
+                $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
             }
 
             if(!empty($this->signatories)) {
@@ -359,4 +370,23 @@ class CreateDocument extends Component
 
         return redirect()->route('documents.list-documents', ['mode' => 'sent']);
     }
+
+    public function updateContentWithTo()
+    {
+        if ($this->document_type === 'ECLR') {
+            $this->dispatch('update-quill', [
+                'content' => '<strong>' . strtoupper($this->document_to_text) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . strtoupper($this->subject) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]'
+            ]);
+        }
+    }
+
+    public function updateContentWithSubject()
+    {
+        if ($this->document_type === 'ECLR') {
+            $this->dispatch('update-quill', [
+                'content' => '<strong>' . strtoupper($this->document_to_text) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . strtoupper($this->subject) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]'
+            ]);
+        }
+    }
+
 }
