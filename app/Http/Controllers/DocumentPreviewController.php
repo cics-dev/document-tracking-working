@@ -41,10 +41,9 @@ class DocumentPreviewController extends Controller
 
         $filesToMerge = [$tempGeneratedPdf];
 
-        // dd($data['attachments']);
-
         
         if (!empty($data['attachments'])) {
+            // dd('asdjasgd');
             foreach ($data['attachments'] as $attachment) {
                 // Process the top-level attachment
                 $this->processAttachment($attachment, $filesToMerge);
