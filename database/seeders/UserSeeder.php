@@ -19,6 +19,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'position' => 'Administrator',
+            'role_id' => 1,
             'office_id' => null, // set if needed
         ]);
 
@@ -27,6 +28,7 @@ class UserSeeder extends Seeder
             'email' => 'president@example.com',
             'password' => Hash::make('password'),
             'position' => 'University President',
+            'role_id' => 2,
             'signature' => 'assets/img/fakesig1.png',
             'office_id' => 1, // set if needed
         ]);
@@ -49,6 +51,7 @@ class UserSeeder extends Seeder
             'email' => 'vpsas@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Student Affairs and Services',
+            'role_id' => 3,
             'signature' => 'assets/img/fakesig2.png',
             'office_id' => 2, // set if needed
         ]);
@@ -71,6 +74,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaa@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Academic Affairs',
+            'role_id' => 3,
             'signature' => 'assets/img/fakesig3.png',
             'office_id' => 3, // set if needed
         ]);
@@ -93,6 +97,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaf@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Administration and Finance',
+            'role_id' => 3,
             'signature' => 'assets/img/fakesig4.png',
             'office_id' => 4, // set if needed
         ]);
@@ -115,6 +120,7 @@ class UserSeeder extends Seeder
             'email' => 'vprde@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Research Development and Extension',
+            'role_id' => 3, 
             'signature' => 'assets/img/fakesig5.png',
             'office_id' => 5, // set if needed
         ]);
@@ -137,6 +143,7 @@ class UserSeeder extends Seeder
             'email' => 'cics_dean@example.com',
             'password' => Hash::make('password'),
             'position' => 'Dean',
+            'role_id' => 8,
             'office_id' => 9, // set if needed
         ]);
         $cics_dean->profile()->create([
@@ -158,6 +165,7 @@ class UserSeeder extends Seeder
             'email' => 'drrmo@example.com',
             'password' => Hash::make('password'),
             'position' => 'Director',
+            'role_id' => 9,
             'office_id' => 6, // set if needed
         ]);
         $drrmo->profile()->create([
@@ -179,6 +187,7 @@ class UserSeeder extends Seeder
             'email' => 'records@example.com',
             'password' => Hash::make('password'),
             'position' => 'Records Officer',
+            'role_id' => 10,
             'office_id' => 17, // set if needed
         ]);
         $records->profile()->create([
@@ -197,9 +206,10 @@ class UserSeeder extends Seeder
 
         $sao = User::create([
             'name' => 'Arnel H. Lee',
-            'email' => 'sao@example.com',
+            'email' => 'sao-a@example.com',
             'password' => Hash::make('password'),
             'position' => 'Supervising Administrative Officer for Administration',
+            'role_id' => 4,
             'office_id' => 18, // set if needed
         ]);
         $sao->profile()->create([
@@ -221,6 +231,7 @@ class UserSeeder extends Seeder
             'email' => 'budget@example.com',
             'password' => Hash::make('password'),
             'position' => 'Budget Office Head',
+            'role_id' => 10,
             'office_id' => 19, // set if needed
         ]);
         $budget->profile()->create([
@@ -242,6 +253,7 @@ class UserSeeder extends Seeder
             'email' => 'motorpool@example.com',
             'password' => Hash::make('password'),
             'position' => 'Motorpool Office Head',
+            'role_id' => 10,
             'office_id' => 20, // set if needed
         ]);
         $motorpool->profile()->create([
@@ -263,6 +275,7 @@ class UserSeeder extends Seeder
             'email' => 'legal@example.com',
             'password' => Hash::make('password'),
             'position' => 'University Attorney',
+            'role_id' => 10,
             'office_id' => 21, // set if needed
         ]);
         $legal->profile()->create([
@@ -284,6 +297,7 @@ class UserSeeder extends Seeder
             'email' => 'igp@example.com',
             'password' => Hash::make('password'),
             'position' => 'IGP Office Head',
+            'role_id' => 10,
             'office_id' => 22, // set if needed
         ]);
         $igp->profile()->create([

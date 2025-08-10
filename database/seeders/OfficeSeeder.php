@@ -35,7 +35,7 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'ECLR'
         ]);
         DocumentType::create([
-            'name' => 'Memorandum',
+            'name' => 'Office Memorandum',
             'abbreviation' => ''
         ]);
 

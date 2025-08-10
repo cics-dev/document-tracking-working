@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('position')->default('Administrator');
+            $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('office_id')->nullable()->constrained()->nullOnDelete();
             $table->string('signature')->nullable();
             $table->timestamps();

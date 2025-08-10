@@ -5,22 +5,6 @@ namespace App\Models {
     /**
      * App\Models\Document
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $to_text
-     * @property string $document_level
-     * @property string|null $file_url
-     * @property string|null $date_sent
-     * @property string $status
-     * @property mixed $created_by
-     * @property string $content
-     * @property string $subject
-     * @property string|null $thru
-     * @property mixed $document_type_id
-     * @property mixed $to_id
-     * @property mixed $from_id
-     * @property string|null $document_number
-     * @property int $id
      * @property-read mixed $viewed_at
      * @property-read mixed $current_recipient
      * @property-read \App\Models\Office $fromOffice
@@ -37,22 +21,6 @@ namespace App\Models {
      * @property-read int|null $cfs_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DocumentLog> $logs
      * @property-read int|null $logs_count
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDocumentNumber($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereFromId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereToId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDocumentTypeId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereThru($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereSubject($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereContent($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedBy($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDateSent($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereFileUrl($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereDocumentLevel($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereToText($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Document>|Document query()
@@ -350,24 +318,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentAttachment
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property bool $is_upload
-     * @property string|null $status
-     * @property string|null $document_number
-     * @property mixed $attachment_document_id
-     * @property mixed $document_id
-     * @property int $id
      * @property-read mixed $file_url
      * @property-read \App\Models\Document $attachmentDocument
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereAttachmentDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereDocumentNumber($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereIsUpload($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment query()
@@ -665,20 +617,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentCarbonCopy
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $viewed_at
-     * @property mixed $user_id
-     * @property mixed $document_id
-     * @property int $id
      * @property-read \App\Models\Document $document
      * @property-read \App\Models\User $user
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereUserId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereViewedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentCarbonCopy>|DocumentCarbonCopy query()
@@ -976,22 +916,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentLog
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $description
-     * @property string $action
-     * @property mixed $user_id
-     * @property mixed $document_id
-     * @property int $id
      * @property-read \App\Models\Document $document
      * @property-read \App\Models\User $user
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereUserId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereAction($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereDescription($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentLog>|DocumentLog query()
@@ -1289,28 +1215,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentRouting
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $returned_at
-     * @property string|null $reviewed_at
-     * @property string|null $viewed_at
-     * @property mixed $status
-     * @property string|null $comments
-     * @property mixed $user_id
-     * @property mixed $document_id
-     * @property int $id
      * @property-read \App\Models\Document $document
      * @property-read \App\Models\User $user
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereUserId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereComments($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereViewedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereReviewedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereReturnedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentRouting>|DocumentRouting query()
@@ -1608,32 +1514,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentSignatory
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property mixed $sequence
-     * @property string|null $rejected_at
-     * @property string|null $signed_at
-     * @property string|null $viewed_at
-     * @property mixed $status
-     * @property string|null $comments
-     * @property string $signatory_label
-     * @property mixed $user_id
-     * @property mixed $document_id
-     * @property int $id
      * @property-read \App\Models\Document $document
      * @property-read \App\Models\User $user
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereUserId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereSignatoryLabel($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereComments($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereStatus($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereViewedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereSignedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereRejectedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereSequence($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentSignatory>|DocumentSignatory query()
@@ -1931,18 +1813,8 @@ namespace App\Models {
     /**
      * App\Models\DocumentType
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string $abbreviation
-     * @property string $name
-     * @property int $id
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $documents
      * @property-read int|null $documents_count
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType whereName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType whereAbbreviation($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentType>|DocumentType query()
@@ -2240,14 +2112,6 @@ namespace App\Models {
     /**
      * App\Models\Office
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $office_logo
-     * @property mixed $head_id
-     * @property mixed $office_type
-     * @property string $abbreviation
-     * @property string $name
-     * @property int $id
      * @property-read \App\Models\User $head
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
      * @property-read int|null $users_count
@@ -2255,14 +2119,6 @@ namespace App\Models {
      * @property-read int|null $sentDocuments_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Document> $receivedDocuments
      * @property-read int|null $receivedDocuments_count
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereAbbreviation($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereOfficeType($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereHeadId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereOfficeLogo($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Office>|Office query()
@@ -2558,17 +2414,604 @@ namespace App\Models {
     }
 
     /**
+     * App\Models\Role
+     *
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RoleDocumentType> $role_document_types
+     * @property-read int|null $role_document_types_count
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role newModelQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role newQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role query()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role select(array|mixed $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role selectSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role selectRaw(string $expression)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role fromSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role fromRaw(string $expression, mixed $bindings)
+     * @method static array createSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static array parseSub(mixed $query)
+     * @method static mixed prependDatabaseNameIfCrossDatabaseQuery(mixed $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addSelect(array|mixed $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role distinct()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role from(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $table, string|null $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role useIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role forceIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role ignoreIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role join(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second, string $type, bool $where)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role joinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string $second, string $type)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role joinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second, string $type, bool $where)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role joinLateral(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role leftJoinLateral(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role leftJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role leftJoinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role leftJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role rightJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role rightJoinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role rightJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role crossJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string|null $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role crossJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Query\JoinClause newJoinClause(string $type, \Illuminate\Contracts\Database\Query\Expression|string $table)
+     * @method static \Illuminate\Database\Query\JoinLateralClause newJoinLateralClause(string $type, \Illuminate\Contracts\Database\Query\Expression|string $table)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role mergeWheres(array $wheres, array $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role where(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addArrayOfWheres(array $column, string $boolean, string $method)
+     * @method static array prepareValueAndOperator(string $value, string $operator, bool $useDefault)
+     * @method static bool invalidOperatorAndValue(string $operator, mixed $value)
+     * @method static bool invalidOperator(string $operator)
+     * @method static bool isBitwiseOperator(string $operator)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhere(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNot(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNot(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereColumn(\Illuminate\Contracts\Database\Query\Expression|string|array $first, string|null $operator, string|null $second, string|null $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereColumn(\Illuminate\Contracts\Database\Query\Expression|string|array $first, string|null $operator, string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereRaw(string $sql, mixed $bindings, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereRaw(string $sql, mixed $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereIntegerInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereIntegerInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereIntegerNotInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereIntegerNotInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNull(string|array|\Illuminate\Contracts\Database\Query\Expression $columns, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNull(string|array|\Illuminate\Contracts\Database\Query\Expression $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotNull(string|array|\Illuminate\Contracts\Database\Query\Expression $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereBetween(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereBetween(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotBetween(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotBetween(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotNull(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereDate(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereDate(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereTime(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereTime(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereDay(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereDay(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereMonth(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereMonth(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereYear(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereYear(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addDateBasedWhere(string $type, \Illuminate\Contracts\Database\Query\Expression|string $column, string $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNested(string $boolean)
+     * @method static \Illuminate\Database\Query\Builder forNestedWhere()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addNestedWhereQuery(\Illuminate\Database\Query\Builder $query, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereSub(\Illuminate\Contracts\Database\Query\Expression|string $column, string $operator, \Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNotExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNotExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addWhereExistsQuery(string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereRowValues(array $columns, string $operator, array $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereRowValues(array $columns, string $operator, array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonContains(string $column, mixed $value, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonContains(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonDoesntContain(string $column, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonDoesntContain(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonOverlaps(string $column, mixed $value, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonOverlaps(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonDoesntOverlap(string $column, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonDoesntOverlap(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonContainsKey(string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonContainsKey(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonDoesntContainKey(string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonDoesntContainKey(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereJsonLength(string $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereJsonLength(string $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role dynamicWhere(string $method, array $parameters)
+     * @method static void addDynamic(string $segment, string $connector, array $parameters, int $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereFullText(string|string[] $columns, string $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereFullText(string|string[] $columns, string $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereAll(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereAll(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereAny(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereAny(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNone(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNone(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role groupBy(array|\Illuminate\Contracts\Database\Query\Expression|string ...$groups)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role groupByRaw(string $sql)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role having(\Illuminate\Contracts\Database\Query\Expression|\Closure|string $column, string|int|float|null $operator, string|int|float|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orHaving(\Illuminate\Contracts\Database\Query\Expression|\Closure|string $column, string|int|float|null $operator, string|int|float|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role havingNested(string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addNestedHavingQuery(\Illuminate\Database\Query\Builder $query, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role havingNull(array|string $columns, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orHavingNull(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role havingNotNull(array|string $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orHavingNotNull(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role havingBetween(string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role havingRaw(string $sql, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orHavingRaw(string $sql)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orderBy(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $column, string $direction)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orderByDesc(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role latest(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role oldest(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role inRandomOrder(string|int $seed)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orderByRaw(string $sql, array $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role skip(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role offset(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role take(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role limit(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role groupLimit(int $value, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role forPage(int $page, int $perPage)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role forPageBeforeId(int $perPage, int|null $lastId, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role forPageAfterId(int $perPage, int|null $lastId, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role reorder(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string|null $column, string $direction)
+     * @method static array removeExistingOrdersFor(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role union(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $query, bool $all)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role unionAll(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role lock(string|bool $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role lockForUpdate()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role sharedLock()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role beforeQuery()
+     * @method static void applyBeforeQueryCallbacks()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role afterQuery()
+     * @method static mixed applyAfterQueryCallbacks(mixed $result)
+     * @method static string toSql()
+     * @method static string toRawSql()
+     * @method static Role|null find(int|string $id, array|string $columns)
+     * @method static mixed findOr(mixed $id, callable|list<string>|string $columns, callable|null $callback)
+     * @method static mixed value(string $column)
+     * @method static mixed rawValue()
+     * @method static mixed soleValue(string $column)
+     * @method static \Illuminate\Support\Collection<int,\stdClass> get(array|string $columns)
+     * @method static array runSelect()
+     * @method static \Illuminate\Support\Collection withoutGroupLimitKeys(\Illuminate\Support\Collection $items)
+     * @method static \Illuminate\Pagination\LengthAwarePaginator paginate(int|\Closure $perPage, array|string $columns, string $pageName, int|null $page, \Closure|int|null $total)
+     * @method static \Illuminate\Contracts\Pagination\Paginator simplePaginate(int $perPage, array|string $columns, string $pageName, int|null $page)
+     * @method static \Illuminate\Contracts\Pagination\CursorPaginator cursorPaginate(int|null $perPage, array|string $columns, string $cursorName, \Illuminate\Pagination\Cursor|string|null $cursor)
+     * @method static \Illuminate\Support\Collection ensureOrderForCursorPagination(bool $shouldReverse)
+     * @method static int getCountForPagination(array $columns)
+     * @method static array runPaginationCountQuery(array $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role cloneForPaginationCount()
+     * @method static array withoutSelectAliases()
+     * @method static \Illuminate\Support\LazyCollection<int,\stdClass> cursor()
+     * @method static void enforceOrderBy()
+     * @method static mixed pluck(\Illuminate\Contracts\Database\Query\Expression|string $column, string|null $key)
+     * @method static string|null stripTableForPluck(string $column)
+     * @method static \Illuminate\Support\Collection pluckFromObjectColumn(array $queryResult, string $column, string $key)
+     * @method static \Illuminate\Support\Collection pluckFromArrayColumn(array $queryResult, string $column, string $key)
+     * @method static string implode(string $column, string $glue)
+     * @method static bool exists()
+     * @method static bool doesntExist()
+     * @method static mixed existsOr()
+     * @method static mixed doesntExistOr()
+     * @method static int count(\Illuminate\Contracts\Database\Query\Expression|string $columns)
+     * @method static mixed min(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed max(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed sum(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed avg(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed average(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed aggregate(string $function, array $columns)
+     * @method static float|int numericAggregate(string $function, array $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role setAggregate(string $function, array $columns)
+     * @method static mixed onceWithColumns(array $columns, callable $callback)
+     * @method static bool insert()
+     * @method static int insertOrIgnore()
+     * @method static int insertGetId(string|null $sequence)
+     * @method static int insertUsing(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static int insertOrIgnoreUsing(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static int update()
+     * @method static int updateFrom()
+     * @method static bool updateOrInsert()
+     * @method static int upsert(array|string $uniqueBy, array|null $update)
+     * @method static int increment(string $column, float|int $amount)
+     * @method static int incrementEach(array<string,float|int|numeric-string> $columns, array<string,mixed> $extra)
+     * @method static int decrement(string $column, float|int $amount)
+     * @method static int decrementEach(array<string,float|int|numeric-string> $columns, array<string,mixed> $extra)
+     * @method static int delete(mixed $id)
+     * @method static void truncate()
+     * @method static \Illuminate\Database\Query\Builder newQuery()
+     * @method static \Illuminate\Database\Query\Builder forSubQuery()
+     * @method static array getColumns()
+     * @method static \Illuminate\Contracts\Database\Query\Expression raw(mixed $value)
+     * @method static \Illuminate\Support\Collection getUnionBuilders()
+     * @method static mixed getLimit()
+     * @method static mixed getOffset()
+     * @method static array getBindings()
+     * @method static array getRawBindings()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role setBindings(string $type)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role addBinding(mixed $value, string $type)
+     * @method static mixed castBinding(mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role mergeBindings()
+     * @method static array cleanBindings()
+     * @method static mixed flattenValue(mixed $value)
+     * @method static string defaultKeyName()
+     * @method static \Illuminate\Database\ConnectionInterface getConnection()
+     * @method static \Illuminate\Database\Query\Processors\Processor getProcessor()
+     * @method static \Illuminate\Database\Query\Grammars\Grammar getGrammar()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role useWritePdo()
+     * @method static bool isQueryable(mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role clone()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role cloneWithout()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role cloneWithoutBindings()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role dump(mixed ...$args)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role dumpRawSql()
+     * @method static void dd()
+     * @method static void ddRawSql()
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role wherePast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNowOrPast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWherePast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNowOrPast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereNowOrFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereNowOrFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role wherePastOrFuture(array|string $columns, string $operator, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereToday(array|string $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereBeforeToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereTodayOrBefore(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereAfterToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereTodayOrAfter(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereBeforeToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereTodayOrBefore(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereAfterToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role orWhereTodayOrAfter(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role whereTodayBeforeOrAfter(array|string $columns, string $operator, string $boolean)
+     * @method static bool chunk(int $count, callable $callback)
+     * @method static mixed chunkMap(callable $callback, int $count)
+     * @method static bool each(callable $callback, int $count)
+     * @method static bool chunkById(int $count, callable $callback, string|null $column, string|null $alias)
+     * @method static bool chunkByIdDesc(int $count, callable $callback, string|null $column, string|null $alias)
+     * @method static bool orderedChunkById(int $count, callable $callback, string|null $column, string|null $alias, bool $descending)
+     * @method static bool eachById(callable $callback, int $count, string|null $column, string|null $alias)
+     * @method static mixed lazy(int $chunkSize)
+     * @method static mixed lazyById(int $chunkSize, string|null $column, string|null $alias)
+     * @method static mixed lazyByIdDesc(int $chunkSize, string|null $column, string|null $alias)
+     * @method static \Illuminate\Support\LazyCollection orderedLazyById(int $chunkSize, string|null $column, string|null $alias, bool $descending)
+     * @method static Role|null first(array|string $columns)
+     * @method static Role firstOrFail(array|string $columns, string|null $message)
+     * @method static Role sole(array|string $columns)
+     * @method static \Illuminate\Contracts\Pagination\CursorPaginator paginateUsingCursor(int $perPage, array|string $columns, string $cursorName, \Illuminate\Pagination\Cursor|string|null $cursor)
+     * @method static string getOriginalColumnNameForCursorPagination(\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $builder, string $parameter)
+     * @method static \Illuminate\Pagination\LengthAwarePaginator paginator(\Illuminate\Support\Collection $items, int $total, int $perPage, int $currentPage, array $options)
+     * @method static \Illuminate\Pagination\Paginator simplePaginator(\Illuminate\Support\Collection $items, int $perPage, int $currentPage, array $options)
+     * @method static \Illuminate\Pagination\CursorPaginator cursorPaginator(\Illuminate\Support\Collection $items, int $perPage, \Illuminate\Pagination\Cursor $cursor, array $options)
+     * @method static \Illuminate\Database\Eloquent\Builder<Role>|Role tap(callable $callback)
+     * @method static mixed when(callable|\TWhenParameter|null $value, callable|null $callback, callable|null $default)
+     * @method static mixed unless(callable|\TUnlessParameter|null $value, callable|null $callback, callable|null $default)
+     * @method static \Illuminate\Support\Collection explain()
+     * @method static mixed forwardCallTo(mixed $object, string $method, array $parameters)
+     * @method static mixed forwardDecoratedCallTo(mixed $object, string $method, array $parameters)
+     * @method static void throwBadMethodCallException(string $method)
+     * @method static void macro(string $name, object|callable $macro)
+     * @method static void mixin(object $mixin, bool $replace)
+     * @method static bool hasMacro(string $name)
+     * @method static void flushMacros()
+     * @method static mixed macroCall(string $method, array $parameters)
+     * @mixin \Illuminate\Database\Query\Builder
+     */
+    class Role extends \Illuminate\Database\Eloquent\Model
+    {
+        //
+    }
+
+    /**
+     * App\Models\RoleDocumentType
+     *
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType newModelQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType newQuery()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType query()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType select(array|mixed $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType selectSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType selectRaw(string $expression)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType fromSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType fromRaw(string $expression, mixed $bindings)
+     * @method static array createSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static array parseSub(mixed $query)
+     * @method static mixed prependDatabaseNameIfCrossDatabaseQuery(mixed $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addSelect(array|mixed $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType distinct()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType from(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $table, string|null $as)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType useIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType forceIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType ignoreIndex(string $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType join(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second, string $type, bool $where)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType joinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string $second, string $type)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType joinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second, string $type, bool $where)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType joinLateral(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType leftJoinLateral(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType leftJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType leftJoinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType leftJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType rightJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType rightJoinWhere(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string $operator, \Illuminate\Contracts\Database\Query\Expression|string $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType rightJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as, \Closure|\Illuminate\Contracts\Database\Query\Expression|string $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType crossJoin(\Illuminate\Contracts\Database\Query\Expression|string $table, \Closure|\Illuminate\Contracts\Database\Query\Expression|string|null $first, string|null $operator, \Illuminate\Contracts\Database\Query\Expression|string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType crossJoinSub(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query, string $as)
+     * @method static \Illuminate\Database\Query\JoinClause newJoinClause(string $type, \Illuminate\Contracts\Database\Query\Expression|string $table)
+     * @method static \Illuminate\Database\Query\JoinLateralClause newJoinLateralClause(string $type, \Illuminate\Contracts\Database\Query\Expression|string $table)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType mergeWheres(array $wheres, array $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType where(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addArrayOfWheres(array $column, string $boolean, string $method)
+     * @method static array prepareValueAndOperator(string $value, string $operator, bool $useDefault)
+     * @method static bool invalidOperatorAndValue(string $operator, mixed $value)
+     * @method static bool invalidOperator(string $operator)
+     * @method static bool isBitwiseOperator(string $operator)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhere(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNot(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNot(\Closure|string|array|\Illuminate\Contracts\Database\Query\Expression $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereColumn(\Illuminate\Contracts\Database\Query\Expression|string|array $first, string|null $operator, string|null $second, string|null $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereColumn(\Illuminate\Contracts\Database\Query\Expression|string|array $first, string|null $operator, string|null $second)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereRaw(string $sql, mixed $bindings, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereRaw(string $sql, mixed $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotLike(\Illuminate\Contracts\Database\Query\Expression|string $column, string $value, bool $caseSensitive)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotIn(\Illuminate\Contracts\Database\Query\Expression|string $column, mixed $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereIntegerInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereIntegerInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereIntegerNotInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereIntegerNotInRaw(string $column, \Illuminate\Contracts\Support\Arrayable|array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNull(string|array|\Illuminate\Contracts\Database\Query\Expression $columns, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNull(string|array|\Illuminate\Contracts\Database\Query\Expression $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotNull(string|array|\Illuminate\Contracts\Database\Query\Expression $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereBetween(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereBetween(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotBetween(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotBetween(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotBetweenColumns(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotNull(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereDate(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereDate(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereTime(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereTime(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|null $operator, \DateTimeInterface|string|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereDay(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereDay(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereMonth(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereMonth(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereYear(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereYear(\Illuminate\Contracts\Database\Query\Expression|string $column, \DateTimeInterface|string|int|null $operator, \DateTimeInterface|string|int|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addDateBasedWhere(string $type, \Illuminate\Contracts\Database\Query\Expression|string $column, string $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNested(string $boolean)
+     * @method static \Illuminate\Database\Query\Builder forNestedWhere()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addNestedWhereQuery(\Illuminate\Database\Query\Builder $query, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereSub(\Illuminate\Contracts\Database\Query\Expression|string $column, string $operator, \Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNotExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNotExists(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $callback)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addWhereExistsQuery(string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereRowValues(array $columns, string $operator, array $values, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereRowValues(array $columns, string $operator, array $values)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonContains(string $column, mixed $value, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonContains(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonDoesntContain(string $column, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonDoesntContain(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonOverlaps(string $column, mixed $value, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonOverlaps(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonDoesntOverlap(string $column, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonDoesntOverlap(string $column, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonContainsKey(string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonContainsKey(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonDoesntContainKey(string $column, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonDoesntContainKey(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereJsonLength(string $column, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereJsonLength(string $column, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType dynamicWhere(string $method, array $parameters)
+     * @method static void addDynamic(string $segment, string $connector, array $parameters, int $index)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereFullText(string|string[] $columns, string $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereFullText(string|string[] $columns, string $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereAll(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereAll(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereAny(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereAny(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNone(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNone(\Illuminate\Contracts\Database\Query\Expression[]|\Closure[]|string[] $columns, mixed $operator, mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType groupBy(array|\Illuminate\Contracts\Database\Query\Expression|string ...$groups)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType groupByRaw(string $sql)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType having(\Illuminate\Contracts\Database\Query\Expression|\Closure|string $column, string|int|float|null $operator, string|int|float|null $value, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orHaving(\Illuminate\Contracts\Database\Query\Expression|\Closure|string $column, string|int|float|null $operator, string|int|float|null $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType havingNested(string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addNestedHavingQuery(\Illuminate\Database\Query\Builder $query, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType havingNull(array|string $columns, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orHavingNull(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType havingNotNull(array|string $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orHavingNotNull(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType havingBetween(string $column, string $boolean, bool $not)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType havingRaw(string $sql, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orHavingRaw(string $sql)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orderBy(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $column, string $direction)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orderByDesc(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType latest(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType oldest(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType inRandomOrder(string|int $seed)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orderByRaw(string $sql, array $bindings)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType skip(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType offset(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType take(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType limit(int $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType groupLimit(int $value, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType forPage(int $page, int $perPage)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType forPageBeforeId(int $perPage, int|null $lastId, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType forPageAfterId(int $perPage, int|null $lastId, string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType reorder(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Contracts\Database\Query\Expression|string|null $column, string $direction)
+     * @method static array removeExistingOrdersFor(string $column)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType union(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $query, bool $all)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType unionAll(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $query)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType lock(string|bool $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType lockForUpdate()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType sharedLock()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType beforeQuery()
+     * @method static void applyBeforeQueryCallbacks()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType afterQuery()
+     * @method static mixed applyAfterQueryCallbacks(mixed $result)
+     * @method static string toSql()
+     * @method static string toRawSql()
+     * @method static RoleDocumentType|null find(int|string $id, array|string $columns)
+     * @method static mixed findOr(mixed $id, callable|list<string>|string $columns, callable|null $callback)
+     * @method static mixed value(string $column)
+     * @method static mixed rawValue()
+     * @method static mixed soleValue(string $column)
+     * @method static \Illuminate\Support\Collection<int,\stdClass> get(array|string $columns)
+     * @method static array runSelect()
+     * @method static \Illuminate\Support\Collection withoutGroupLimitKeys(\Illuminate\Support\Collection $items)
+     * @method static \Illuminate\Pagination\LengthAwarePaginator paginate(int|\Closure $perPage, array|string $columns, string $pageName, int|null $page, \Closure|int|null $total)
+     * @method static \Illuminate\Contracts\Pagination\Paginator simplePaginate(int $perPage, array|string $columns, string $pageName, int|null $page)
+     * @method static \Illuminate\Contracts\Pagination\CursorPaginator cursorPaginate(int|null $perPage, array|string $columns, string $cursorName, \Illuminate\Pagination\Cursor|string|null $cursor)
+     * @method static \Illuminate\Support\Collection ensureOrderForCursorPagination(bool $shouldReverse)
+     * @method static int getCountForPagination(array $columns)
+     * @method static array runPaginationCountQuery(array $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType cloneForPaginationCount()
+     * @method static array withoutSelectAliases()
+     * @method static \Illuminate\Support\LazyCollection<int,\stdClass> cursor()
+     * @method static void enforceOrderBy()
+     * @method static mixed pluck(\Illuminate\Contracts\Database\Query\Expression|string $column, string|null $key)
+     * @method static string|null stripTableForPluck(string $column)
+     * @method static \Illuminate\Support\Collection pluckFromObjectColumn(array $queryResult, string $column, string $key)
+     * @method static \Illuminate\Support\Collection pluckFromArrayColumn(array $queryResult, string $column, string $key)
+     * @method static string implode(string $column, string $glue)
+     * @method static bool exists()
+     * @method static bool doesntExist()
+     * @method static mixed existsOr()
+     * @method static mixed doesntExistOr()
+     * @method static int count(\Illuminate\Contracts\Database\Query\Expression|string $columns)
+     * @method static mixed min(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed max(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed sum(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed avg(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed average(\Illuminate\Contracts\Database\Query\Expression|string $column)
+     * @method static mixed aggregate(string $function, array $columns)
+     * @method static float|int numericAggregate(string $function, array $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType setAggregate(string $function, array $columns)
+     * @method static mixed onceWithColumns(array $columns, callable $callback)
+     * @method static bool insert()
+     * @method static int insertOrIgnore()
+     * @method static int insertGetId(string|null $sequence)
+     * @method static int insertUsing(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static int insertOrIgnoreUsing(\Closure|\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed>|string $query)
+     * @method static int update()
+     * @method static int updateFrom()
+     * @method static bool updateOrInsert()
+     * @method static int upsert(array|string $uniqueBy, array|null $update)
+     * @method static int increment(string $column, float|int $amount)
+     * @method static int incrementEach(array<string,float|int|numeric-string> $columns, array<string,mixed> $extra)
+     * @method static int decrement(string $column, float|int $amount)
+     * @method static int decrementEach(array<string,float|int|numeric-string> $columns, array<string,mixed> $extra)
+     * @method static int delete(mixed $id)
+     * @method static void truncate()
+     * @method static \Illuminate\Database\Query\Builder newQuery()
+     * @method static \Illuminate\Database\Query\Builder forSubQuery()
+     * @method static array getColumns()
+     * @method static \Illuminate\Contracts\Database\Query\Expression raw(mixed $value)
+     * @method static \Illuminate\Support\Collection getUnionBuilders()
+     * @method static mixed getLimit()
+     * @method static mixed getOffset()
+     * @method static array getBindings()
+     * @method static array getRawBindings()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType setBindings(string $type)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType addBinding(mixed $value, string $type)
+     * @method static mixed castBinding(mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType mergeBindings()
+     * @method static array cleanBindings()
+     * @method static mixed flattenValue(mixed $value)
+     * @method static string defaultKeyName()
+     * @method static \Illuminate\Database\ConnectionInterface getConnection()
+     * @method static \Illuminate\Database\Query\Processors\Processor getProcessor()
+     * @method static \Illuminate\Database\Query\Grammars\Grammar getGrammar()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType useWritePdo()
+     * @method static bool isQueryable(mixed $value)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType clone()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType cloneWithout()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType cloneWithoutBindings()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType dump(mixed ...$args)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType dumpRawSql()
+     * @method static void dd()
+     * @method static void ddRawSql()
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType wherePast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNowOrPast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWherePast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNowOrPast(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereNowOrFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereNowOrFuture(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType wherePastOrFuture(array|string $columns, string $operator, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereToday(array|string $columns, string $boolean)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereBeforeToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereTodayOrBefore(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereAfterToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereTodayOrAfter(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereBeforeToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereTodayOrBefore(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereAfterToday(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType orWhereTodayOrAfter(array|string $columns)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType whereTodayBeforeOrAfter(array|string $columns, string $operator, string $boolean)
+     * @method static bool chunk(int $count, callable $callback)
+     * @method static mixed chunkMap(callable $callback, int $count)
+     * @method static bool each(callable $callback, int $count)
+     * @method static bool chunkById(int $count, callable $callback, string|null $column, string|null $alias)
+     * @method static bool chunkByIdDesc(int $count, callable $callback, string|null $column, string|null $alias)
+     * @method static bool orderedChunkById(int $count, callable $callback, string|null $column, string|null $alias, bool $descending)
+     * @method static bool eachById(callable $callback, int $count, string|null $column, string|null $alias)
+     * @method static mixed lazy(int $chunkSize)
+     * @method static mixed lazyById(int $chunkSize, string|null $column, string|null $alias)
+     * @method static mixed lazyByIdDesc(int $chunkSize, string|null $column, string|null $alias)
+     * @method static \Illuminate\Support\LazyCollection orderedLazyById(int $chunkSize, string|null $column, string|null $alias, bool $descending)
+     * @method static RoleDocumentType|null first(array|string $columns)
+     * @method static RoleDocumentType firstOrFail(array|string $columns, string|null $message)
+     * @method static RoleDocumentType sole(array|string $columns)
+     * @method static \Illuminate\Contracts\Pagination\CursorPaginator paginateUsingCursor(int $perPage, array|string $columns, string $cursorName, \Illuminate\Pagination\Cursor|string|null $cursor)
+     * @method static string getOriginalColumnNameForCursorPagination(\Illuminate\Database\Query\Builder|\Illuminate\Database\Eloquent\Builder<mixed> $builder, string $parameter)
+     * @method static \Illuminate\Pagination\LengthAwarePaginator paginator(\Illuminate\Support\Collection $items, int $total, int $perPage, int $currentPage, array $options)
+     * @method static \Illuminate\Pagination\Paginator simplePaginator(\Illuminate\Support\Collection $items, int $perPage, int $currentPage, array $options)
+     * @method static \Illuminate\Pagination\CursorPaginator cursorPaginator(\Illuminate\Support\Collection $items, int $perPage, \Illuminate\Pagination\Cursor $cursor, array $options)
+     * @method static \Illuminate\Database\Eloquent\Builder<RoleDocumentType>|RoleDocumentType tap(callable $callback)
+     * @method static mixed when(callable|\TWhenParameter|null $value, callable|null $callback, callable|null $default)
+     * @method static mixed unless(callable|\TUnlessParameter|null $value, callable|null $callback, callable|null $default)
+     * @method static \Illuminate\Support\Collection explain()
+     * @method static mixed forwardCallTo(mixed $object, string $method, array $parameters)
+     * @method static mixed forwardDecoratedCallTo(mixed $object, string $method, array $parameters)
+     * @method static void throwBadMethodCallException(string $method)
+     * @method static void macro(string $name, object|callable $macro)
+     * @method static void mixin(object $mixin, bool $replace)
+     * @method static bool hasMacro(string $name)
+     * @method static void flushMacros()
+     * @method static mixed macroCall(string $method, array $parameters)
+     * @mixin \Illuminate\Database\Query\Builder
+     */
+    class RoleDocumentType extends \Illuminate\Database\Eloquent\Model
+    {
+        //
+    }
+
+    /**
      * App\Models\User
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $signature
-     * @property mixed $office_id
-     * @property string $position
-     * @property string $password
-     * @property string $email
-     * @property string $name
-     * @property int $id
      * @property-read mixed $is_head
      * @property-read \App\Models\UserProfile $profile
      * @property-read \App\Models\Office $office
@@ -2578,15 +3021,6 @@ namespace App\Models {
      * @property-read int|null $signatories_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
      * @property-read int|null $notifications_count
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereEmail($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePassword($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User wherePosition($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereOfficeId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereSignature($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User query()
@@ -2884,31 +3318,7 @@ namespace App\Models {
     /**
      * App\Models\UserProfile
      *
-     * @property \Illuminate\Support\Carbon|null $updated_at
-     * @property \Illuminate\Support\Carbon|null $created_at
-     * @property string|null $gender
-     * @property string|null $titles
-     * @property string|null $suffix
-     * @property string $family_name
-     * @property string|null $middle_initial
-     * @property string|null $middle_name
-     * @property string $given_name
-     * @property string|null $honorifics
-     * @property mixed $user_id
-     * @property int $id
      * @property-read \App\Models\User $user
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereUserId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereHonorifics($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereGivenName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereMiddleName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereMiddleInitial($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereFamilyName($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereSuffix($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereTitles($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereGender($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereCreatedAt($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<UserProfile>|UserProfile query()
