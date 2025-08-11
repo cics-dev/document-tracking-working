@@ -177,6 +177,12 @@ class DocumentController extends Controller
                 $presidentDocs = filterPendingDocuments($presidentDocs, $presidentUserId);
                 $directDocs = $directDocs->merge($presidentDocs)->unique('id')->values();
             }
+
+            if(auth()->user()->position == 'University President') {
+                $directDocs = $directDocs->reject(function ($doc) {
+                    return $doc->document_type_id == 1;
+                });
+            }
     
     
             return $directDocs;

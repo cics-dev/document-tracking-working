@@ -160,5 +160,11 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'IGP Office',
             'office_type' => ''
         ]);
+        
+        Office::create([
+            'name' => 'Office of the Chief Administrative Officer',
+            'abbreviation' => 'CAO',
+            'office_type' => ''
+        ]);
     }
 }

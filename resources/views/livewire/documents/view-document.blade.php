@@ -43,8 +43,9 @@
     {{-- @if($document->document_type_id == 2 && auth()->user()->position == 'University President')
         <div class="mt-4 text-lg font-semibold">
             You already signed this document
+            @if($document->document_level != 'Intra' && (($document->document_type_id == 5 && auth()->user()->id == 2) || ($document->document_type_id == 4 && auth()->user()->id == 2)))
         </div> --}}
-    @if($document->document_level != 'Intra' && (($document->document_type_id == 5 && auth()->user()->id == 2) || ($document->document_type_id == 4 && auth()->user()->id == 2)))
+    @if($document->document_level != 'Intra' && ($document['from_id'] != auth()->user()->office->id || auth()->user()->id == 2))
         @if($office_name != 'Administration' && $office_name != 'Records Section')
             @if(is_null($signed) && is_null($rejected))
                 <div class="mt-4 flex gap-4">

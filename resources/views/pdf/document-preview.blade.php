@@ -213,7 +213,7 @@
             @endif
             <tr>
                 <td class="label">SUBJECT</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ $subject }}</u></strong></td>
+                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ strtoupper($subject) }}</u></strong></td>
             </tr>
             <br>
             <tr>
@@ -229,30 +229,105 @@
         {!! $content !!}
     </div>
 
+    
     @if(!empty($signatories))
-        <div class="signatory">
-            @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
-                <div class="signatory-group">
-                    @if (!empty($role) && $documentType == 'Request Letter Memorandum')
-                        <p class="signatory-label">{{ $role }}:</p>
-                    @endif
+    <div class="signatory">
+        @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
+                @if($role != "Approved by" 
+    || 
+    ($role == "Approved by" && $documentType != 'Request Letter Memorandum' && $documentType != 'Indorsement Letter'))
+                    <div class="signatory-group">
+                        @if (!empty($role) && $documentType == 'Request Letter Memorandum')
+                            <p class="signatory-label">{{ $role }}:</p>
+                        @endif
 
-                    <div class="signatory-row">
-                        @foreach($grouped as $signatory)
-                            <div class="signatory-box">
-                                @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
-                                    <img 
-                                        src="{{ public_path('storage/' . $signatory['signature']) }}" 
-                                        alt="Signature" 
-                                        style="height: 50px; margin-bottom: 10px;"
-                                    ><br>
-                                @endif
-                                <strong>{{ $signatory['user_name'] }}</strong><br>
-                                {{ $signatory['position'] }}
-                            </div>
-                        @endforeach
+                        <div class="signatory-row">
+                            @foreach($grouped as $signatory)
+                                <div class="signatory-box">
+                                    @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                        <img 
+                                            src="{{ public_path('storage/' . $signatory['signature']) }}" 
+                                            alt="Signature" 
+                                            style="height: 50px; margin-bottom: 10px;"
+                                        ><br>
+                                    @endif
+                                    <strong>{{ strtoupper($signatory['user_name']) }}</strong><br>
+                                    {{ $signatory['position'] }}
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @elseif($documentType === 'Request Letter Memorandum' || $documentType === 'Indorsement Letter')
+                    <br><br>   
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <!-- Left empty cell, half width -->
+                            <td style="width: 50%;"></td>
+
+                            <!-- Right cell, half width -->
+                            <td style="width: 50%; vertical-align: middle;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding-right: 1.5rem;">
+                                            <p class="signatory-label">ACTION:</p>
+                                        </td>
+                                    </tr>
+                                    <tr><td style="height: 12px;"></td></tr>
+                                    <tr>
+                                        <td style="padding-right: 1.5rem;">
+                                            <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                                <input type="checkbox" name="status" value="Approved" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
+                                                    {{ $document['status'] == 'Approved' ? 'checked' : '' }}>
+                                                APPROVED
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr><td style="height: 12px;"></td></tr>
+                                    <tr>
+                                        <td style="padding-right: 1.5rem;">
+                                            <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                                <input type="checkbox" name="checkbox1" value="Rejected" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
+                                                    {{ $document['status'] == 'Rejected' ? 'checked' : '' }}>
+                                                DISAPPROVED
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr><td style="height: 12px;"></td></tr>
+                                    <tr>
+                                        <td style="padding-right: 1.5rem;">
+                                            <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                                <input type="checkbox" name="checkbox1" value="1" style="transform: scale(2); vertical-align: middle; margin-right: 6px;">
+                                                OTHER COMMENT/S:
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr><td style="height: 12px;"></td></tr>
+                                    <tr>
+                                        <td style="width: 40%">
+                                            <div class="signatory-row" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; width: 200px;">
+
+                                                @foreach($grouped as $signatory)
+                                                    <div class="signatory-box" style="text-align: center; width: 200px; padding-left: 40px;">
+                                                        @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                                            <img 
+                                                                src="{{ public_path('storage/' . $signatory['signature']) }}" 
+                                                                alt="Signature" 
+                                                                style="height: 50px; margin-bottom: 10px;"
+                                                            ><br>
+                                                        @endif
+                                                        <strong>{{ strtoupper($signatory['user_name']) }}</strong><br>
+                                                        {{ $signatory['position'] }}
+                                                    </div>
+                                                @endforeach
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                @endif
             @endforeach
         </div>
     @endif

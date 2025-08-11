@@ -133,9 +133,9 @@
         </div>
 
         <div class="mt-4 flex justify-end">
-            <button type="submit" class="custom-button">
+            <flux-button type="submit" class="custom-button">
                 Save
-            </button>
+            </flux-button>
         </div>
     </form>
 </div>

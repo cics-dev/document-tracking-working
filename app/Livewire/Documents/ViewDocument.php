@@ -156,7 +156,7 @@ class ViewDocument extends Component
 
     public function sign()
     {        
-        if ($this->mySignatory != null || ($this->document->document_type_id == 2 && auth()->user()->position == 'University President'))
+        if ($this->mySignatory != null && ($this->document->document_type_id != 2 && auth()->user()->position != 'University President'))
             $data = [
                 'title' => 'Are you sure?',
                 'text' => "You won't be able to revert this!",
@@ -253,7 +253,7 @@ class ViewDocument extends Component
             $lastSignatory = $docSignatories->last();
             $lastSignatory->signed_at = now();
             $lastSignatory->save();
-            $attachmentDetails->status = 'Signed IOM';
+            $attachmentDetails->status = 'Approved';
             $attachmentDetails->save();
             $attachmentDetails->logs()->create([
                 'user_id' => Auth::id(),
@@ -404,6 +404,8 @@ class ViewDocument extends Component
                 'action' => 'rejected',
                 'description' => $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks
             ]);
+            $this->document->status ='Rejected';
+            $this->document->save();
             $this->mySignatory->save();
         }
         else if ($this->myReview){

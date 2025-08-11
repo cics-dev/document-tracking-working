@@ -249,7 +249,10 @@ class CreateDocument extends Component
 
             if ($latestDoc) {
                 $parts = explode('-', $latestDoc->document_number);
-                if (isset($parts[2])) {
+                if (isset($parts[4])) {
+                    $lastNumber = (int) $parts[3];
+                }
+                else {
                     $lastNumber = (int) $parts[2];
                 }
             }
@@ -342,6 +345,14 @@ class CreateDocument extends Component
 
             if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
                 $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
+            }
+            if ($this->document_type == 'SO') {
+                $document->routings()->create([
+                    'user_id' => 15,
+                ]);
+                $document->routings()->create([
+                    'user_id' => 5,
+                ]);
             }
 
             if(!empty($this->signatories)) {

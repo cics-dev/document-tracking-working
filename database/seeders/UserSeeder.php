@@ -313,5 +313,49 @@ class UserSeeder extends Seeder
         $igp->office()->update([
             'head_id' => $igp->id
         ]);
+
+        $cao = User::create([
+            'name' => 'Unknown',
+            'email' => 'cao@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Supervising Administrative Officer for Administration',
+            'role_id' => 4,
+            'office_id' => 23, // set if needed
+        ]);
+        $cao->profile()->create([
+            'honorifics' => 'Mr',
+            'given_name' => 'Unknown',
+            'middle_name' => 'H',
+            'middle_initial' => 'H',
+            'family_name' => '',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Male',
+        ]);
+        $cao->office()->update([
+            'head_id' => $cao->id
+        ]);
+
+        $sao_f = User::create([
+            'name' => 'Unknown',
+            'email' => 'sao-f@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Supervising Administrative Officer for Finance',
+            'role_id' => 4,
+            'office_id' => 23, // set if needed
+        ]);
+        $sao_f->profile()->create([
+            'honorifics' => 'Mr',
+            'given_name' => 'Unknown',
+            'middle_name' => 'H',
+            'middle_initial' => 'H',
+            'family_name' => '',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Male',
+        ]);
+        // $sao_f->office()->update([
+        //     'head_id' => $sao_f->id
+        // ]);
     }
 }
