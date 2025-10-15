@@ -1,3 +1,7 @@
+@pure
+
+@php $iconVariant ??= $attributes->pluck('icon:variant'); @endphp
+
 @props([
     'iconVariant' => 'mini',
     'icon' => null,
@@ -9,7 +13,7 @@
         ;
 
     $iconClasses = Flux::classes()
-        ->add('inline-block size-5 text-zinc-500 dark:text-zinc-400')
+        ->add('inline-block size-5 text-[var(--callout-icon)] dark:text-[var(--callout-icon)]')
         ->add($attributes->pluck('class:icon'))
         ;
 @endphp

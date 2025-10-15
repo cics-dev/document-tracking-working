@@ -22,6 +22,7 @@ class FluxServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->bootComponentPath();
+        $this->bootPureDirective();
         $this->bootTagCompiler();
         $this->bootMacros();
 
@@ -41,6 +42,11 @@ class FluxServiceProvider extends ServiceProvider
         }
 
         Blade::anonymousComponentPath(__DIR__.'/../stubs/resources/views/flux', 'flux');
+    }
+
+    public function bootPureDirective()
+    {
+        Blade::directive('pure', fn () => '');
     }
 
     public function bootTagCompiler()
@@ -64,12 +70,12 @@ class FluxServiceProvider extends ServiceProvider
             return $this->currentComponentData;
         });
 
-        ComponentAttributeBag::macro('pluck', function ($key) {
+        ComponentAttributeBag::macro('pluck', function ($key, $default = null) {
             $result = $this->get($key);
 
             unset($this->attributes[$key]);
 
-            return $result;
+            return $result ?? $default;
         });
     }
 

@@ -1,3 +1,5 @@
+@pure
+
 @php
 extract(Flux::forwardedAttributes($attributes, [
     'tooltipPosition',
@@ -5,6 +7,10 @@ extract(Flux::forwardedAttributes($attributes, [
     'tooltip',
 ]));
 @endphp
+
+@php $tooltipPosition = $tooltipPosition ??= $attributes->pluck('tooltip:position'); @endphp
+@php $tooltipKbd = $tooltipKbd ??= $attributes->pluck('tooltip:kbd'); @endphp
+@php $tooltip = $tooltip ??= $attributes->pluck('tooltip'); @endphp
 
 @props([
     'tooltipPosition' => 'top',

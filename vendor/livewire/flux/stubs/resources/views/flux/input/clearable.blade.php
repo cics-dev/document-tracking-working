@@ -1,7 +1,9 @@
+@pure
+
 @php
 $attributes = $attributes->merge([
     'variant' => 'subtle',
-    'class' => '-mr-1 [[data-flux-input]:has(input:placeholder-shown)_&]:hidden [[data-flux-input]:has(input[disabled])_&]:hidden',
+    'class' => '-me-1 [[data-flux-input]:has(input:placeholder-shown)_&]:hidden [[data-flux-input]:has(input[disabled])_&]:hidden',
     'square' => true,
     'size' => null,
 ]);

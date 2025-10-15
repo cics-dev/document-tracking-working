@@ -1,8 +1,10 @@
+@pure
+
 @php
 $classes = Flux::classes([
     'p-2 pb-1 w-full',
     'flex items-center',
-    'text-left text-xs font-medium',
+    'text-start text-xs font-medium',
     'text-zinc-500 font-medium dark:text-zinc-300',
 ]);
 @endphp

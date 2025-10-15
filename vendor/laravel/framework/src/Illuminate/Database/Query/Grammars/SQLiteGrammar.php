@@ -161,8 +161,8 @@ class SQLiteGrammar extends Grammar
     protected function compileIndexHint(Builder $query, $indexHint)
     {
         return $indexHint->type === 'force'
-                ? "indexed by {$indexHint->index}"
-                : '';
+            ? "indexed by {$indexHint->index}"
+            : '';
     }
 
     /**
@@ -289,15 +289,17 @@ class SQLiteGrammar extends Grammar
     {
         $jsonGroups = $this->groupJsonColumnsForUpdate($values);
 
-        return (new Collection($values))->reject(function ($value, $key) {
-            return $this->isJsonSelector($key);
-        })->merge($jsonGroups)->map(function ($value, $key) use ($jsonGroups) {
-            $column = last(explode('.', $key));
+        return (new Collection($values))
+            ->reject(fn ($value, $key) => $this->isJsonSelector($key))
+            ->merge($jsonGroups)
+            ->map(function ($value, $key) use ($jsonGroups) {
+                $column = last(explode('.', $key));
 
-            $value = isset($jsonGroups[$key]) ? $this->compileJsonPatch($column, $value) : $this->parameter($value);
+                $value = isset($jsonGroups[$key]) ? $this->compileJsonPatch($column, $value) : $this->parameter($value);
 
-            return $this->wrap($column).' = '.$value;
-        })->implode(', ');
+                return $this->wrap($column).' = '.$value;
+            })
+            ->implode(', ');
     }
 
     /**

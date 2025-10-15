@@ -1,3 +1,5 @@
+@pure
+
 @props([
     'name' => $attributes->whereStartsWith('wire:model')->first(),
     'placeholder' => null,
@@ -10,15 +12,15 @@ $invalid ??= ($name && $errors->has($name));
 
 $classes = Flux::classes()
     ->add('appearance-none') // Strip the browser's default <select> styles...
-    ->add('w-full pl-3 pr-10 block')
+    ->add('w-full ps-3 pe-10 block')
     ->add(match ($size) {
-        default => 'h-10 py-2 text-base sm:text-sm leading-none rounded-lg',
-        'sm' => 'h-8 py-1.5 text-sm leading-none rounded-md',
-        'xs' => 'h-6 text-xs leading-none rounded-md',
+        default => 'h-10 py-2 text-base sm:text-sm leading-[1.375rem] rounded-lg',
+        'sm' => 'h-8 py-1.5 text-sm leading-[1.125rem] rounded-md',
+        'xs' => 'h-6 text-xs leading-[1.125rem] rounded-md',
     })
     ->add('shadow-xs border')
-    ->add('bg-white dark:bg-white/10 dark:disabled:bg-white/[9%]')
-    ->add('text-zinc-700 dark:text-zinc-300')
+    ->add('bg-white dark:bg-white/10 dark:disabled:bg-white/[7%]')
+    ->add('text-zinc-700 dark:text-zinc-300 disabled:text-zinc-500 dark:disabled:text-zinc-400')
     // Make the placeholder match the text color of standard input placeholders...
     ->add('has-[option.placeholder:checked]:text-zinc-400 dark:has-[option.placeholder:checked]:text-zinc-400')
     // Options on Windows don't inherit dark mode styles, so we need to force them...

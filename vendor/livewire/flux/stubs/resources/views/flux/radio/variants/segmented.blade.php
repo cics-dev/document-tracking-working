@@ -1,3 +1,8 @@
+@pure
+
+@php $iconTrailing ??= $attributes->pluck('icon:trailing'); @endphp
+@php $iconVariant ??= $attributes->pluck('icon:variant'); @endphp
+
 @aware([ 'size' ])
 
 @props([

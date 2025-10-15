@@ -1,5 +1,9 @@
+@pure
+
+@php $iconVariant ??= $attributes->pluck('icon:variant'); @endphp
+
 @props([
-    'separator' => 'chevron-right',
+    'separator' => null,
     'iconVariant' => 'mini',
     'icon' => null,
     'href' => null,
@@ -52,5 +56,14 @@ $iconClasses = Flux::classes()
         </div>
     <?php endif; ?>
 
-    <flux:icon :icon="$separator" variant="mini" class="{{ $separatorClasses }}" />
+    @if ($separator == null)
+        <flux:icon icon="chevron-right" variant="mini" class="{{ $separatorClasses->add('rtl:hidden') }}" />
+        <flux:icon icon="chevron-left" variant="mini" class="{{ $separatorClasses->add('hidden rtl:inline') }}" />
+    @elseif (! is_string($separator))
+        {{ $separator }}
+    @elseif ($separator === 'slash')
+        <flux:icon icon="slash" variant="mini" class="{{ $separatorClasses->add('rtl:-scale-x-100') }}" />
+    @else
+        <flux:icon :icon="$separator" variant="mini" class="{{ $separatorClasses }}" />
+    @endif
 </div>

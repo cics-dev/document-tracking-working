@@ -24,9 +24,12 @@ class PublishCommand extends Command
     protected array $fluxComponents = [
         'free' => [
             'Accent' => ['accent'],
+            'Avatar' => ['avatar'],
             'Badge' => ['badge'],
+            'Brand' => ['brand'],
             'Breadcrumbs' => ['breadcrumbs'],
             'Button' => ['button'],
+            'Callout' => ['callout'],
             'Checkbox' => ['checkbox'],
             'Dropdown' => ['dropdown', 'menu', 'navmenu'],
             'Field' => ['fieldset', 'legend', 'field', 'label', 'description', 'error'],
@@ -55,10 +58,12 @@ class PublishCommand extends Command
             'Context' => ['context'],
             'Date picker' => ['date-picker'],
             'Editor' => ['editor'],
+            'File upload' => ['file-upload', 'file-item'],
+            'Pillbox' => ['pillbox'],
             'Radio' => ['radio'],
             'Select' => ['select'],
             'Tabs' => ['tabs','tab'],
-            'Table' => ['table', 'pagination', 'avatar'],
+            'Table' => ['table', 'pagination'],
             'Toast' => ['toast'],
         ],
     ];
@@ -116,7 +121,7 @@ class PublishCommand extends Command
 
         return $this->fluxComponents()
             ->keys()
-            ->filter(fn (string $component) => str($component)->lower()->startsWith($value))
+            ->filter(fn (string $component) => str($component)->lower()->startsWith(str($value)->lower()))
             ->values()
             ->all();
     }
