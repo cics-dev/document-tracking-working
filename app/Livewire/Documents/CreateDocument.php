@@ -106,8 +106,8 @@ class CreateDocument extends Component
             $this->subject = $data['subject'];
             $this->content = $data['content'];
             $this->thru = $data['thru'];
-            $this->attachment = $data['attachment'];
-            $this->cf_offices = $data['cf'];
+            // $this->attachment = $data['attachment'];
+            $this->cf_offices = $data['cf']??null;
         }
         
         $this->signatories = [];
@@ -189,6 +189,7 @@ class CreateDocument extends Component
             
                 return [
                     'name' => $office['name'] ?? 'Unnamed',
+                    'office' => $office['name'] ?? 'Unnamed',
                 ];
             });
         }
@@ -289,10 +290,22 @@ class CreateDocument extends Component
         ]);
 
         if ($this->document_type === 'IOM') {
+            $originalDocument = Document::find($this->original_document_id);
             $document->attachments()->create([
                     'attachment_document_id' => $this->original_document_id,
+                    'name' => $originalDocument->document_number,
                     'status' => 'approved',
+                    'file_type' => 'pdf',
                     'is_upload' => false
+            ]);
+            $originalDocument->update([
+                'status' => 'Generated IOM'
+            ]);
+
+            $document->signatories()->create([
+                'signatory_label' => 'Approved by',
+                'user_id' => 2,
+                'sequence' => 1,
             ]);
             // DocumentAttachment::where('attachment_document_id', $this->original_document_id)
             //         ->update(['document_id' => $document->id]);
@@ -301,8 +314,10 @@ class CreateDocument extends Component
             foreach ($this->attachments as $file) {
                 $path = $file->store('attachments', 'public');
                 $document->attachments()->create([
+                    'name'=> $file->getClientOriginalName(),
                     'status' => 'sent',
                     'file_url' => $path,
+                    'file_type' => $file->getClientOriginalExtension(),
                     'is_upload' => true
                 ]);
             }

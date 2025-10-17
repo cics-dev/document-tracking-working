@@ -341,8 +341,8 @@ class UserSeeder extends Seeder
             'email' => 'sao-f@example.com',
             'password' => Hash::make('password'),
             'position' => 'Supervising Administrative Officer for Finance',
-            'role_id' => 4,
-            'office_id' => 23, // set if needed
+            'role_id' => 5,
+            'office_id' => 18, // set if needed
         ]);
         $sao_f->profile()->create([
             'honorifics' => 'Mr',

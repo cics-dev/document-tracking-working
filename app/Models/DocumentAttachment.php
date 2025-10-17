@@ -10,10 +10,10 @@ class DocumentAttachment extends Model
     protected $fillable = [
         'document_id',
         'attachment_document_id',
-        'document_number',
+        'name',
         'status',
         'file_url',
-        'is_upload',
+        'is_upload', 'file_type'
     ];
 
     public function attachmentDocument()

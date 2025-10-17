@@ -32,6 +32,7 @@ class DocumentPreviewController extends Controller
             $data['cfs'] = json_decode($data['cfs'], true);
         }
 
+
         $tempGeneratedPdf = tempnam(sys_get_temp_dir(), 'generated_') . '.pdf';
         $tempMergedPdf = null;
 
@@ -42,27 +43,27 @@ class DocumentPreviewController extends Controller
         $filesToMerge = [$tempGeneratedPdf];
 
         
-        if (!empty($data['attachments'])) {
-            // dd('asdjasgd');
-            foreach ($data['attachments'] as $attachment) {
-                // Process the top-level attachment
-                $this->processAttachment($attachment, $filesToMerge);
+        // if (!empty($data['attachments'])) {
+        //     // dd('asdjasgd');
+        //     foreach ($data['attachments'] as $attachment) {
+        //         // Process the top-level attachment
+        //         $this->processAttachment($attachment, $filesToMerge);
 
-                // Check if this attachment has child attachments
-                if (!empty($attachment['attachment_document_id'])) {
-                    $childAttachments = DocumentAttachment::where('document_id', $attachment['attachment_document_id'])
-                        ->get();
+        //         // Check if this attachment has child attachments
+        //         if (!empty($attachment['attachment_document_id'])) {
+        //             $childAttachments = DocumentAttachment::where('document_id', $attachment['attachment_document_id'])
+        //                 ->get();
 
-                    if ($childAttachments->isNotEmpty()) {
-                        foreach ($childAttachments as $childAttachment) {
-                            // Convert child attachment model → array so it's compatible
-                            $childAttachmentData = $childAttachment->toArray();
-                            $this->processAttachment($childAttachmentData, $filesToMerge);
-                        }
-                    }
-                }
-            }
-        }
+        //             if ($childAttachments->isNotEmpty()) {
+        //                 foreach ($childAttachments as $childAttachment) {
+        //                     // Convert child attachment model → array so it's compatible
+        //                     $childAttachmentData = $childAttachment->toArray();
+        //                     $this->processAttachment($childAttachmentData, $filesToMerge);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
 
 

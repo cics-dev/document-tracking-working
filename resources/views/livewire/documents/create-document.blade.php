@@ -26,12 +26,13 @@
                 @if ($document_type === 'RLM')
                     <div class="space-y-2">
                         <label for="To" class="block text-sm font-medium text-gray-900">
-                            {{ __('To') }} <span class="text-red-600">*</span>
+                            {{ __($document_type === 'RLM'?'For':'To') }} <span class="text-red-600">*</span>
                         </label>
                         <flux:select 
                             wire:model="document_to_id" 
                             placeholder="Choose recipient..."
                             class="w-full border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 rounded-md shadow-sm text-gray-900"
+                            disabled
                         >
                             @foreach ($offices as $office)
                                 <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
@@ -88,7 +89,7 @@
         </div>
 
         <!-- CF Office Chips -->
-        @if(count($cf_offices) > 0)
+       @if(is_array($cf_offices) && count($cf_offices) > 0)
         <div class="mt-3 flex flex-wrap gap-2">
             @foreach ($cf_offices as $officeId)
                 @php

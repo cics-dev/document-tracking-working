@@ -84,45 +84,6 @@ class DocumentController extends Controller
                             }
                             return false;
                         });
-                    
-
-
-                    // $routings = $document->routings->sortBy('created_at')->values();
-
-                    // if ($routings->isNotEmpty()) {
-                    //     $pendingRouting = $routings->firstWhere('status', 'pending');
-                    //     dd($pendingRouting);
-                        
-                    //     if ($pendingRouting && $pendingRouting->user_id == $userId) {
-                    //         $isFirstPending = $routings
-                    //             ->takeWhile(fn($r) => $r->id != $pendingRouting->id)
-                    //             ->every(fn($r) => $r->status == 'reviewed');
-                            
-                    //         if ($isFirstPending) {
-                    //             return true;
-                    //         }
-                    //     }
-                        
-                    //     if ($pendingRouting) {
-                    //         return false;
-                    //     }
-                        
-                    //     if ($routings->where('status', 'returned')->isNotEmpty()) {
-                    //         return false;
-                    //     }
-                    // }
-
-                    // $signatories = $document->signatories->sortBy('sequence')->values();
-                    // if ($signatories->isEmpty()) {
-                    //     return true;
-                    // }
-                    // $current = $signatories->firstWhere('user_id', $userId);
-        
-                    // if (!$current) return false;
-        
-                    // return $signatories
-                    //     ->filter(fn($sig) => $sig->sequence < $current->sequence)
-                    //     ->every(fn($sig) => !is_null($sig->signed_at));
                 })->values();
             }
 
@@ -130,7 +91,7 @@ class DocumentController extends Controller
                 ->with(['documentType', 'toOffice'])
                 ->get();
 
-            $directDocs = filterPendingDocuments($directDocs, $userId);
+            // $directDocs = filterPendingDocuments($directDocs, $userId);
 
             $routingDocs = Document::whereHas('routings', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
@@ -163,19 +124,32 @@ class DocumentController extends Controller
 
             // $cfDocs = filterPendingDocuments($cfDocs, $userId);
             $directDocs = $directDocs->merge($cfDocs)->unique('id')->values();
-
+            
             if ($userOffice->name === 'Administration') {
                 $presidentOfficeId = Office::whereRelation('users', 'position', 'University President')->value('id');
                 $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
-            
+                
                 if ($presidentOfficeId) {
-                    $presidentDocs = Document::where('to_id', $presidentOfficeId)
-                        ->with(['documentType', 'fromOffice', 'signatories'])
+                    if(Auth::user()->role_id == 4) {
+                        $presidentDocs = Document::where('to_id', $presidentOfficeId)
+                        ->whereDoesntHave('routings.user', function ($query) {
+                            $query->where('office_id', 19); // ❌ Exclude documents with routings from office_id 19
+                        })
+                        ->with(['documentType', 'fromOffice', 'signatories', 'routings.user'])
                         ->get();
-                }
+                    }
+                    else {
+                        $presidentDocs = Document::where('to_id', $presidentOfficeId)
+                        ->whereHas('routings.user', function ($query) {
+                            $query->where('office_id', 19); // ✅ Only include routings from office_id 19
+                        })
+                        ->with(['documentType', 'fromOffice', 'signatories', 'routings.user'])
+                        ->get();
+                    }
 
-                $presidentDocs = filterPendingDocuments($presidentDocs, $presidentUserId);
-                $directDocs = $directDocs->merge($presidentDocs)->unique('id')->values();
+                    $presidentDocs = filterPendingDocuments($presidentDocs, $presidentUserId);
+                    $directDocs = $directDocs->merge($presidentDocs)->unique('id')->values();
+                }
             }
 
             if(auth()->user()->position == 'University President') {
@@ -216,6 +190,6 @@ class DocumentController extends Controller
     }
 
     public function getDocument($number) {
-        return Document::with(['fromOffice', 'toOffice', 'documentType', 'signatories'])->where('document_number', $number)->first();;
+        return Document::with(['fromOffice', 'toOffice', 'documentType', 'signatories'])->where('document_number', $number)->first();
     }
 }

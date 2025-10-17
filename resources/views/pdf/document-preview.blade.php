@@ -230,7 +230,7 @@
     </div>
 
     
-    @if(!empty($signatories))
+    @if(!empty($signatories) && $documentType != 'Inter-Office Memorandum')
     <div class="signatory">
         @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
                 @if($role != "Approved by" 
@@ -273,11 +273,14 @@
                                         </td>
                                     </tr>
                                     <tr><td style="height: 12px;"></td></tr>
+                                    @php
+                                        $status = is_array($document) ? $document['status'] : ($document->status ?? null);
+                                    @endphp
                                     <tr>
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                                 <input type="checkbox" name="status" value="Approved" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
-                                                    {{ $document['status'] == 'Approved' ? 'checked' : '' }}>
+                                                    {{ $status == 'Approved' ? 'checked' : '' }}>
                                                 APPROVED
                                             </label>
                                         </td>
@@ -287,7 +290,7 @@
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                                 <input type="checkbox" name="checkbox1" value="Rejected" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
-                                                    {{ $document['status'] == 'Rejected' ? 'checked' : '' }}>
+                                                    {{ $status == 'Rejected' ? 'checked' : '' }}>
                                                 DISAPPROVED
                                             </label>
                                         </td>
@@ -337,7 +340,7 @@
             <span class="cf-label">CF:</span>
             <div class="cf-row">
                 @foreach($cfs as $cf)
-                    <span>{{ $cf['name'] }}</span><br>
+                    <span>{{ $cf['office'] }}</span><br>
                 @endforeach
             </div>
         </div>
