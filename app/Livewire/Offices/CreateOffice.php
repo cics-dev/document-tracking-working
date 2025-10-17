@@ -31,7 +31,6 @@ class CreateOffice extends Component
 
     public function saveOffice()
     {
-        dd('asldjkgasjdgsa');
         $imagePath = null;
         if ($this->office_logo) {
             $imagePath = $this->office_logo->store('office_images', 'public');

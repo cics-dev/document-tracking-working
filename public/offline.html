@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Human Runner Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, #800020, #5A0018);
+      color: #FFF8DC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 20px;
+    }
+    
+    .container {
+      text-align: center;
+      z-index: 10;
+      padding: 2rem;
+      background: rgba(90, 0, 24, 0.7);
+      border-radius: 15px;
+      backdrop-filter: blur(5px);
+      border: 2px solid #CFB53B;
+      box-shadow: 0 0 25px rgba(207, 181, 59, 0.3);
+      width: 100%;
+      max-width: 500px;
+    }
+    
+    /* Logo and text positioning */
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .logo {
+      width: 120px;
+      margin-right: 20px;
+    }
+    
+    h1 {
+      font-size: 5.5rem;
+      color: #FFD700;
+      text-shadow: 5px 4px 0 #800020;
+      letter-spacing: 5px;
+      margin: 0;
+      line-height: 1;
+      position: relative;
+      top: -8px;
+    }
+    
+    /* Media query for desktop/laptop screens */
+    @media (min-width: 992px) {
+      .container {
+        max-width: 700px;
+        padding: 2.5rem;
+      }
+      
+      h1 {
+        font-size: 8rem;
+      }
+      
+      p {
+        font-size: 1.3rem;
+      }
+      
+      .game-container {
+        height: 220px;
+      }
+      
+      .btn {
+        padding: 18px 45px;
+        font-size: 1.3rem;
+      }
+    }
+    
+    /* Media query for very large screens */
+    @media (min-width: 1200px) {
+      .container {
+        max-width: 800px;
+      }
+      
+      .game-container {
+        height: 250px;
+      }
+    }
+    
+    /* Media query for mobile screens */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      .logo-container {
+        flex-direction: column;
+      }
+      
+      .logo {
+        margin-right: 0;
+        margin-bottom: 15px;
+        width: 100px;
+      }
+      
+      h1 {
+        font-size: 3.5rem;
+      }
+      
+      p {
+        font-size: 1rem;
+      }
+      
+      .game-container {
+        height: 160px;
+      }
+    }
+    
+    p {
+      font-size: 1.2rem;
+    }
+    
+    .game-container {
+      width: 100%;
+      height: 180px;
+      margin: 1.5rem 0;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid #CFB53B;
+    }
+    
+    .human {
+      width: 30px;
+      height: 50px;
+      position: absolute;
+      bottom: 0;
+      left: 30px;
+      z-index: 2;
+    }
+    
+    .human-head {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 0;
+      left: 5px;
+      background: #FFD700;
+      border-radius: 50%;
+    }
+    
+    .human-body {
+      position: absolute;
+      width: 15px;
+      height: 20px;
+      top: 20px;
+      left: 7.5px;
+      background: #CFB53B;
+    }
+    
+    .human-leg {
+      position: absolute;
+      width: 6px;
+      height: 15px;
+      background: #CFB53B;
+      bottom: 0;
+    }
+    
+    .human-leg-left {
+      left: 8px;
+    }
+    
+    .human-leg-right {
+      right: 8px;
+    }
+    
+    .human-arm {
+      position: absolute;
+      width: 5px;
+      height: 15px;
+      background: #CFB53B;
+      top: 22px;
+    }
+    
+    .human-arm-left {
+      left: 2px;
+      transform: rotate(20deg);
+    }
+    
+    .human-arm-right {
+      right: 2px;
+      transform: rotate(-20deg);
+    }
+    
+    .cactus {
+      position: absolute;
+      width: 20px;
+      height: 45px;
+      bottom: 0;
+      right: -30px;
+      background: #34C759;
+      border-radius: 5px;
+    }
+    
+    .cactus::before {
+      content: '';
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: #34C759;
+      border-radius: 50%;
+      top: -8px;
+      left: 2.5px;
+    }
+    
+    .ground {
+      position: absolute;
+      width: 100%;
+      height: 10px;
+      bottom: 0;
+      background: #CFB53B;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    .cloud {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+    }
+    
+    .btn {
+      background: linear-gradient(to bottom, #FFD700, #CFB53B);
+      color: #800020;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(1px);
+    }
+    
+    .score {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #FFD700;
+    }
+    
+    .instructions {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: #FFD700;
+    }
+    
+    .jump {
+      animation: jump 0.5s linear;
+    }
+    
+    @keyframes jump {
+      0% { bottom: 0; }
+      50% { bottom: 70px; }
+      100% { bottom: 0; }
+    }
+    
+    .move {
+      animation: move 2s infinite linear;
+    }
+    
+    @keyframes move {
+      0% { right: -30px; }
+      100% { right: 100%; }
+    }
+    
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .star {
+      position: absolute;
+      background: #FFD700;
+      border-radius: 50%;
+      animation: twinkle linear infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+  <div class="container">
+    <div class="logo-container">
+      <img src="assets/img/hd-logo.png" alt="Logo" class="logo">
+      <h1>OFFLINE</h1>
+    </div>
+    <p>Oops! It seems you've lost your internet connection.</p>
+    
+    <div class="game-container">
+      <div class="score">Score: <span id="score">0</span></div>
+      <div class="human" id="human">
+        <div class="human-head"></div>
+        <div class="human-body"></div>
+        <div class="human-leg human-leg-left"></div>
+        <div class="human-leg human-leg-right"></div>
+        <div class="human-arm human-arm-left"></div>
+        <div class="human-arm human-arm-right"></div>
+      </div>
+      <div class="ground"></div>
+      <!-- Cacti will be generated by JavaScript -->
+    </div>
+    
+    <p>Press SPACE to jump and avoid obstacles</p>
+    <button class="btn btn-primary error_btn" onclick="checkConnection(); window.location.href='/'">
+  RETRY CONNECTION
+</button>
+
+    <script>
+      function checkConnection() {
+        if (navigator.onLine) {
+          window.location.href = '/';
+        } else {
+          resetGame();
+        }
+      }
+    </script>
+    <div class="instructions">(You can also press UP ARROW to jump)</div>
+  </div>
+
+  <script>
+    // Create stars
+    const stars = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      star.style.width = Math.random() * 3 + 'px';
+      star.style.height = star.style.width;
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDuration = Math.random() * 3 + 2 + 's';
+      stars.appendChild(star);
+    }
+    
+    // Game variables
+    let score = 0;
+    let isJumping = false;
+    let gameActive = true;
+    const human = document.getElementById('human');
+    const scoreDisplay = document.getElementById('score');
+    const gameContainer = document.querySelector('.game-container');
+    
+    // Create initial cactus
+    createCactus();
+    
+    // Handle jump
+    document.addEventListener('keydown', function(e) {
+      if ((e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp') && !isJumping && gameActive) {
+        jump();
+      }
+    });
+    
+    // Touch support for mobile
+    gameContainer.addEventListener('click', function() {
+      if (!isJumping && gameActive) {
+        jump();
+      }
+    });
+    
+    function jump() {
+      isJumping = true;
+      human.classList.add('jump');
+      
+      setTimeout(function() {
+        human.classList.remove('jump');
+        isJumping = false;
+      }, 500);
+    }
+    
+    function createCactus() {
+      if (!gameActive) return;
+      
+      const cactus = document.createElement('div');
+      cactus.classList.add('cactus', 'move');
+      gameContainer.appendChild(cactus);
+      
+      // Random position for next cactus
+      const randomTime = Math.random() * 2000 + 1500;
+      
+      // Check for collision
+      const checkCollision = setInterval(function() {
+        if (!gameActive) {
+          clearInterval(checkCollision);
+          return;
+        }
+        
+        const cactusPos = cactus.getBoundingClientRect();
+        const humanPos = human.getBoundingClientRect();
+        
+        // Improved collision detection - only check if human is on ground
+        if (!isJumping && 
+            cactusPos.left < humanPos.right - 5 &&
+            cactusPos.right > humanPos.left + 5 &&
+            cactusPos.top < humanPos.bottom - 5 &&
+            cactusPos.bottom > humanPos.top + 5) {
+          gameOver();
+          clearInterval(checkCollision);
+        }
+      }, 10);
+      
+      // Remove cactus when it goes off screen and increase score
+      let scored = false;
+      const scoreCheck = setInterval(function() {
+        if (!gameActive) {
+          clearInterval(scoreCheck);
+          return;
+        }
+        
+        const cactusPos = cactus.getBoundingClientRect();
+        const humanPos = human.getBoundingClientRect(); // Get updated position
+        
+        // Award points when cactus passes the human without collision
+        if (!scored && cactusPos.right < humanPos.left) {
+          scored = true;
+          score += 10;
+          scoreDisplay.textContent = score;
+        }
+        
+        // Remove cactus when it goes off screen
+        if (cactusPos.left < -30) {
+          cactus.remove();
+          clearInterval(scoreCheck);
+        }
+      }, 10);
+      
+      // Create next cactus
+      setTimeout(createCactus, randomTime);
+    }
+    
+    function gameOver() {
+      gameActive = false;
+      const cacti = document.querySelectorAll('.cactus');
+      cacti.forEach(cactus => {
+        cactus.style.animationPlayState = 'paused';
+      });
+      
+      // Show game over message
+      const gameOverMsg = document.createElement('div');
+      gameOverMsg.style.position = 'absolute';
+      gameOverMsg.style.top = '50%';
+      gameOverMsg.style.left = '50%';
+      gameOverMsg.style.transform = 'translate(-50%, -50%)';
+      gameOverMsg.style.color = '#FFD700';
+      gameOverMsg.style.fontSize = '2rem';
+      gameOverMsg.style.fontWeight = 'bold';
+      gameOverMsg.style.textShadow = '2px 2px 0 #800020';
+      gameOverMsg.style.backgroundColor = 'rgba(90, 0, 24, 0.8)';
+      gameOverMsg.style.padding = '10px 20px';
+      gameOverMsg.style.borderRadius = '10px';
+      gameOverMsg.textContent = 'Game Over!';
+      gameContainer.appendChild(gameOverMsg);
+    }
+    
+    function resetGame() {
+      // Simulate connection retry
+      alert('Checking connection...\n\nStill offline. Keep playing while we wait!');
+      
+      // Reset game state
+      score = 0;
+      scoreDisplay.textContent = score;
+      gameActive = true;
+      
+      // Remove all cacti
+      const cacti = document.querySelectorAll('.cactus');
+      cacti.forEach(cactus => cactus.remove());
+      
+      // Remove game over message if exists
+      const gameOverMsg = document.querySelector('.game-container > div:last-child');
+      if (gameOverMsg && gameOverMsg.textContent === 'Game Over!') {
+        gameOverMsg.remove();
+      }
+      
+      // Start creating cacti again
+      createCactus();
+    }
+    
+    // Create some clouds
+    for (let i = 0; i < 5; i++) {
+      const cloud = document.createElement('div');
+      cloud.classList.add('cloud');
+      cloud.style.width = Math.random() * 50 + 30 + 'px';
+      cloud.style.height = Math.random() * 20 + 15 + 'px';
+      cloud.style.top = Math.random() * 50 + 10 + 'px';
+      cloud.style.left = Math.random() * 100 + 'px';
+      cloud.style.opacity = Math.random() * 0.5 + 0.2;
+      cloud.style.animationDuration = Math.random() * 30 + 20 + 's';
+      cloud.style.animationName = 'move';
+      gameContainer.appendChild(cloud);
+    }
+  </script>
+</body>
+</html>

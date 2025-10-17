@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit2732a55895d2bf4e05326e2f5900b463
+class ComposerStaticInitb742721b02b83ace590f9900841234e7
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -163,6 +163,7 @@ class ComposerStaticInit2732a55895d2bf4e05326e2f5900b463
             'Laravel\\Sail\\' => 13,
             'Laravel\\Prompts\\' => 16,
             'Laravel\\Pail\\' => 13,
+            'Ladumor\\LaravelPwa\\' => 19,
         ),
         'J' => 
         array (
@@ -551,6 +552,10 @@ class ComposerStaticInit2732a55895d2bf4e05326e2f5900b463
         'Laravel\\Pail\\' => 
         array (
             0 => __DIR__ . '/..' . '/laravel/pail/src',
+        ),
+        'Ladumor\\LaravelPwa\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ladumor/laravel-pwa/src',
         ),
         'Jean85\\' => 
         array (
@@ -3306,6 +3311,9 @@ class ComposerStaticInit2732a55895d2bf4e05326e2f5900b463
         'Jean85\\Exception\\VersionMissingExceptionInterface' => __DIR__ . '/..' . '/jean85/pretty-package-versions/src/Exception/VersionMissingExceptionInterface.php',
         'Jean85\\PrettyVersions' => __DIR__ . '/..' . '/jean85/pretty-package-versions/src/PrettyVersions.php',
         'Jean85\\Version' => __DIR__ . '/..' . '/jean85/pretty-package-versions/src/Version.php',
+        'Ladumor\\LaravelPwa\\LaravelPwa' => __DIR__ . '/..' . '/ladumor/laravel-pwa/src/LaravelPwa.php',
+        'Ladumor\\LaravelPwa\\PWAServiceProvider' => __DIR__ . '/..' . '/ladumor/laravel-pwa/src/PWAServiceProvider.php',
+        'Ladumor\\LaravelPwa\\commands\\PublishPWA' => __DIR__ . '/..' . '/ladumor/laravel-pwa/src/commands/PublishPWA.php',
         'Laravel\\Pail\\Console\\Commands\\PailCommand' => __DIR__ . '/..' . '/laravel/pail/src/Console/Commands/PailCommand.php',
         'Laravel\\Pail\\Contracts\\Printer' => __DIR__ . '/..' . '/laravel/pail/src/Contracts/Printer.php',
         'Laravel\\Pail\\File' => __DIR__ . '/..' . '/laravel/pail/src/File.php',
@@ -8291,9 +8299,9 @@ class ComposerStaticInit2732a55895d2bf4e05326e2f5900b463
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit2732a55895d2bf4e05326e2f5900b463::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit2732a55895d2bf4e05326e2f5900b463::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit2732a55895d2bf4e05326e2f5900b463::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb742721b02b83ace590f9900841234e7::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb742721b02b83ace590f9900841234e7::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitb742721b02b83ace590f9900841234e7::$classMap;
 
         }, null, ClassLoader::class);
     }

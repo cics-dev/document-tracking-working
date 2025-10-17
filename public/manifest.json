@@ -1,0 +1,17 @@
+{
+    "name": "DTS-ZPPSU Document Tracking System",
+    "short_name": "DTS-ZPPSU",
+    "start_url": "/index.php",
+    "background_color": "#800000",
+    "description": "DTS-ZPPSU Document Tracking System",
+    "display": "fullscreen",
+    "theme_color": "#800000",
+    "icons": [
+        {
+            "src": "hd-logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

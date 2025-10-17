@@ -361,7 +361,7 @@ namespace App\Models {
      * @property string|null $file_type
      * @property bool $is_upload
      * @property string|null $status
-     * @property string|null $document_number
+     * @property string $name
      * @property mixed $attachment_document_id
      * @property mixed $document_id
      * @property int $id
@@ -370,7 +370,7 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereDocumentId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereAttachmentDocumentId($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereDocumentNumber($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereStatus($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereIsUpload($value)
      * @method static \Illuminate\Database\Eloquent\Builder<DocumentAttachment>|DocumentAttachment whereFileType($value)

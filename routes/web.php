@@ -15,6 +15,11 @@ use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
 
 
+
+Route::get('/help', function () {
+    return view('help');
+})->name('help');
+
 // Route for the public landing page at "/"
 Route::get('/', function () {
     return view('landing'); // shows landing.blade.php

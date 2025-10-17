@@ -408,7 +408,7 @@
     <!-- Header -->
     <header>
         <button class="home-btn" onclick="window.location.href='/'">
-            <i class="fas fa-home"></i> Home
+            <i class="fas fa-home"></i> 
         </button>
         <h1><i class="fas fa-file-alt"></i> DTS-ZPPSU</h1>
         <p>Zamboanga Peninsula Polytechnic State University</p>

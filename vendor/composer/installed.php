@@ -3,7 +3,7 @@
         'name' => 'laravel/livewire-starter-kit',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '443a72a55ebc0a92427cf99f22e71d744d7c381c',
+        'reference' => 'b671b3e3a16a9af91b112f07ae49e7a6a9cac479',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -463,6 +463,15 @@
                 0 => '*',
             ),
         ),
+        'ladumor/laravel-pwa' => array(
+            'pretty_version' => 'v0.0.5',
+            'version' => '0.0.5.0',
+            'reference' => '50613c526cae7f7637a73afe634a5423d745697c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../ladumor/laravel-pwa',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'laravel/framework' => array(
             'pretty_version' => 'v12.34.0',
             'version' => '12.34.0.0',
@@ -475,7 +484,7 @@
         'laravel/livewire-starter-kit' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '443a72a55ebc0a92427cf99f22e71d744d7c381c',
+            'reference' => 'b671b3e3a16a9af91b112f07ae49e7a6a9cac479',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

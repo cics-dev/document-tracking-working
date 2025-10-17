@@ -308,7 +308,7 @@
                             </svg>
                             <p class="text-xs text-gray-700 mb-1">Click to upload or drag and drop</p>
                             <p class="text-xs text-gray-500">
-                                PDF, DOCX, XLSX, CSV, IMAGES<br>(MAX. 100MB each)
+                                PDF, IMAGES<br>(MAX. 100MB each)
                             </p>
                         </div>
                         <input 
@@ -316,7 +316,7 @@
                             type="file" 
                             wire:model="attachments" 
                             multiple 
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*,.jpg,.jpeg,.png,.gif"
+                            accept=".pdf,image/*,.jpg,.jpeg,.png"
                             class="hidden"
                         />
                     </label>
