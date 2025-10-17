@@ -183,7 +183,11 @@ class ViewDocument extends Component
         ];
 
 
-        $this->previewUrl = '/document/preview?' . http_build_query($this->document_query);
+        // $this->previewUrl = '/document/preview?' . http_build_query($this->document_query);
+
+        $key = uniqid();
+        session([$key => $this->document_query]);
+        $this->previewUrl = '/document/preview?' . $key;
     }
 
     public function sign()

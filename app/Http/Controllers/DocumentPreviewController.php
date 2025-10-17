@@ -14,7 +14,14 @@ class DocumentPreviewController extends Controller
 {    
     public function preview(Request $request)
     {
-        $data = $request->all();
+        $key = array_key_first($request->all());
+        $data = session()->get($key);
+
+        // dd($data);
+
+        if (!$data) {
+            abort(404, 'Preview session expired or not found.');
+        }
 
         $data['date_sent'] = $data['date_sent'] ?? now();
 
@@ -42,31 +49,6 @@ class DocumentPreviewController extends Controller
 
         $filesToMerge = [$tempGeneratedPdf];
 
-        
-        // if (!empty($data['attachments'])) {
-        //     // dd('asdjasgd');
-        //     foreach ($data['attachments'] as $attachment) {
-        //         // Process the top-level attachment
-        //         $this->processAttachment($attachment, $filesToMerge);
-
-        //         // Check if this attachment has child attachments
-        //         if (!empty($attachment['attachment_document_id'])) {
-        //             $childAttachments = DocumentAttachment::where('document_id', $attachment['attachment_document_id'])
-        //                 ->get();
-
-        //             if ($childAttachments->isNotEmpty()) {
-        //                 foreach ($childAttachments as $childAttachment) {
-        //                     // Convert child attachment model → array so it's compatible
-        //                     $childAttachmentData = $childAttachment->toArray();
-        //                     $this->processAttachment($childAttachmentData, $filesToMerge);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-
-
         $pdfToShow = $tempGeneratedPdf;
 
         if (count($filesToMerge) > 1) {
@@ -86,6 +68,8 @@ class DocumentPreviewController extends Controller
                 'Content-Disposition' => 'inline; filename="' . ($data['documentNumber'] ?? 'Document') . '.pdf"',
             ]);
         }
+
+        session()->forget($key);
 
         register_shutdown_function(function () use ($tempGeneratedPdf, $tempMergedPdf) {
             if (file_exists($tempGeneratedPdf)) {
