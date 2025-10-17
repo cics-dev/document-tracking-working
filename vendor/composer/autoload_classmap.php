@@ -6313,6 +6313,7 @@ return array(
     'Spatie\\Browsershot\\Exceptions\\UnsuccessfulResponse' => $vendorDir . '/spatie/browsershot/src/Exceptions/UnsuccessfulResponse.php',
     'Spatie\\Browsershot\\ImageManipulations' => $vendorDir . '/spatie/browsershot/src/ImageManipulations.php',
     'Spatie\\PdfToImage\\Exceptions\\InvalidFormat' => $vendorDir . '/spatie/pdf-to-image/src/Exceptions/InvalidFormat.php',
+    'Spatie\\PdfToImage\\Exceptions\\InvalidLayerMethod' => $vendorDir . '/spatie/pdf-to-image/src/Exceptions/InvalidLayerMethod.php',
     'Spatie\\PdfToImage\\Exceptions\\PageDoesNotExist' => $vendorDir . '/spatie/pdf-to-image/src/Exceptions/PageDoesNotExist.php',
     'Spatie\\PdfToImage\\Exceptions\\PdfDoesNotExist' => $vendorDir . '/spatie/pdf-to-image/src/Exceptions/PdfDoesNotExist.php',
     'Spatie\\PdfToImage\\Pdf' => $vendorDir . '/spatie/pdf-to-image/src/Pdf.php',
