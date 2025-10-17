@@ -11,158 +11,151 @@ class DocumentController extends Controller
 {
     public function index($mode)
     {
-        $officeId = Auth::user()->office->id;
+        $user = Auth::user();
+        $userId = $user->id;
+        $userOffice = $user->office;
+        $officeId = $userOffice->id;
 
         if ($mode === 'all') {
             return Document::with(['documentType', 'fromOffice', 'cfs', 'signatories', 'routings'])->get();
         }
 
         else if ($mode === 'sent') {
-            $userId = Auth::id();
-            $userOffice = Auth::user()->office;
             if ($userOffice->name === 'Administration') {
                 $ownDocs = Document::where('from_id', $userOffice->id)
                     ->with(['documentType', 'fromOffice', 'signatories'])
                     ->get();
 
-                $allDocs = $ownDocs;
                 $presidentOfficeId = Office::whereHas('users', function ($query) {
                     $query->where('position', 'University President');
-                })->pluck('id')->first();
-            
+                })->value('id');
+
                 if ($presidentOfficeId) {
-                    // Fetch documents addressed to the University President's office
                     $presidentDocs = Document::where('from_id', $presidentOfficeId)
                         ->with(['documentType', 'fromOffice', 'signatories'])
                         ->get();
-            
-                    $allDocs = $ownDocs->merge($presidentDocs);
+                    $ownDocs = $ownDocs->merge($presidentDocs);
                 }
-                return $allDocs;
+
+                return $ownDocs;
             }
 
-            return Auth::user()->office->sentDocuments()
+            return $userOffice->sentDocuments()
                 ->with('documentType', 'toOffice')
                 ->get();
         }
 
         else if ($mode === 'received') {
-            $userId = Auth::id();
-            $userOffice = Auth::user()->office;
-
+            // Helper: check sequence completion
             function filterPendingDocuments($documents, $userId) {
                 return $documents->filter(function ($document) use ($userId) {
-                    $sequence = [];
-                    $routings = $document->routings->sortBy('created_at')->values();
-                    $signatories = $document->signatories->sortBy('sequence')->values();
+                    $sequence = collect()
+                        ->merge($document->routings->sortBy('created_at')->values())
+                        ->merge($document->signatories->sortBy('sequence')->values());
 
-                    foreach ($routings as $routing) array_push($sequence, $routing);
-                    foreach ($signatories as $signatory) array_push($sequence, $signatory);
-                    $sequenceCollection = collect($sequence);
-                    
-                    if ($sequenceCollection->isEmpty()) {
-                        return true;
-                    }
-                    $mySequence = $sequenceCollection->firstWhere('user_id', $userId);
-                    
+                    if ($sequence->isEmpty()) return true;
+                    $mySequence = $sequence->firstWhere('user_id', $userId);
                     if (!$mySequence) return false;
 
-                    return $sequenceCollection
-                        ->filter(function($sequence, $index) use ($mySequence, $sequenceCollection) {
-                            $myIndex = $sequenceCollection->search(function ($item) use ($mySequence) {
-                                return $item === $mySequence;
-                            });
-                            
-                            return $index < $myIndex;
-                        })
-                        ->every(function($sequence) {
-                            if (isset($sequence->reviewed_at)) {
-                                return !is_null($sequence->reviewed_at);
-                            }
-                            elseif (isset($sequence->signed_at)) {
-                                return !is_null($sequence->signed_at);
-                            }
-                            return false;
-                        });
+                    $beforeMine = $sequence->takeWhile(fn($seq) => $seq !== $mySequence);
+                    return $beforeMine->every(function ($seq) {
+                        return !empty($seq->reviewed_at) || !empty($seq->signed_at);
+                    });
                 })->values();
             }
 
+            // --- MAIN COLLECTION ---
+            $docs = collect();
+
+            // 1️⃣ Direct recipient
             $directDocs = $userOffice->receivedDocuments()
                 ->with(['documentType', 'toOffice'])
                 ->get();
 
-            // $directDocs = filterPendingDocuments($directDocs, $userId);
-
-            $routingDocs = Document::whereHas('routings', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'routings'])
-            ->get();
+            // 2️⃣ Routing docs
+            $routingDocs = Document::whereHas('routings', fn($q) => $q->where('user_id', $userId))
+                ->where('status', '!=', 'draft')
+                ->with(['documentType', 'fromOffice', 'routings'])
+                ->get();
 
             $routingDocs = filterPendingDocuments($routingDocs, $userId);
-            
-            $directDocs = $directDocs->merge($routingDocs)->unique('id')->values();
 
-            $signatoryDocs = Document::whereHas('signatories', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'signatories'])
-            ->get();
+            // 3️⃣ Signatory docs
+            $signatoryDocs = Document::whereHas('signatories', fn($q) => $q->where('user_id', $userId))
+                ->where('status', '!=', 'draft')
+                ->with(['documentType', 'fromOffice', 'signatories'])
+                ->get();
 
             $signatoryDocs = filterPendingDocuments($signatoryDocs, $userId);
-            
-            $directDocs = $directDocs->merge($signatoryDocs)->unique('id')->values();
 
-            $cfDocs = Document::whereHas('cfs', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'cfs'])
-            ->get();
+            // 4️⃣ CF docs
+            $cfDocs = Document::whereHas('cfs', fn($q) => $q->where('user_id', $userId))
+                ->where('status', '!=', 'draft')
+                ->with(['documentType', 'fromOffice', 'cfs'])
+                ->get();
 
-            // $cfDocs = filterPendingDocuments($cfDocs, $userId);
-            $directDocs = $directDocs->merge($cfDocs)->unique('id')->values();
-            
+            // Merge all
+            $docs = $docs
+                ->merge($directDocs)
+                ->merge($routingDocs)
+                ->merge($signatoryDocs)
+                ->merge($cfDocs)
+                ->unique('id')
+                ->values();
+
+            // 5️⃣ President logic
             if ($userOffice->name === 'Administration') {
                 $presidentOfficeId = Office::whereRelation('users', 'position', 'University President')->value('id');
                 $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
                 
                 if ($presidentOfficeId) {
-                    if(Auth::user()->role_id == 4) {
-                        $presidentDocs = Document::where('to_id', $presidentOfficeId)
-                        ->whereDoesntHave('routings.user', function ($query) {
-                            $query->where('office_id', 19); // ❌ Exclude documents with routings from office_id 19
+                    $presidentDocs = Document::where('to_id', $presidentOfficeId)
+                        ->when($user->role_id == 4, function ($query) {
+                            $query->whereDoesntHave('routings.user', fn($q) => $q->where('office_id', 19));
+                        }, function ($query) {
+                            $query->whereHas('routings.user', fn($q) => $q->where('office_id', 19));
                         })
                         ->with(['documentType', 'fromOffice', 'signatories', 'routings.user'])
                         ->get();
-                    }
-                    else {
-                        $presidentDocs = Document::where('to_id', $presidentOfficeId)
-                        ->whereHas('routings.user', function ($query) {
-                            $query->where('office_id', 19); // ✅ Only include routings from office_id 19
-                        })
-                        ->with(['documentType', 'fromOffice', 'signatories', 'routings.user'])
-                        ->get();
-                    }
 
                     $presidentDocs = filterPendingDocuments($presidentDocs, $presidentUserId);
-                    $directDocs = $directDocs->merge($presidentDocs)->unique('id')->values();
+                    $docs = $docs->merge($presidentDocs)->unique('id')->values();
                 }
             }
 
-            if(auth()->user()->position == 'University President') {
-                $directDocs = $directDocs->reject(function ($doc) {
-                    return $doc->document_type_id == 1;
-                });
+            // 6️⃣ Filter out certain doc types for President
+            if ($user->position == 'University President') {
+                $docs = $docs->reject(fn($doc) => $doc->document_type_id == 1);
             }
-    
-    
-            return $directDocs;
-            // return $signatoryDocs;
+
+            // 7️⃣ Tag each doc with relationship flags (like your first code)
+            $docs->transform(function ($doc) use ($userId) {
+                $doc->isSignatory = $doc->signatories->contains('user_id', $userId);
+                $doc->isRouting = $doc->routings->contains('user_id', $userId);
+                $doc->isCf = $doc->cfs->contains('user_id', $userId) || $doc->isRouting;
+                $doc->isRecipient = optional($doc->toOffice)->head_id == $userId;
+                return $doc;
+            });
+
+            $docs = $docs->filter(function ($doc) {
+                // If user is both (signatory/routing) and (cf/recipient) → allow all
+                if (($doc->isSignatory || $doc->isRouting) && ($doc->isCf || $doc->isRecipient)) {
+                    return true;
+                }
+
+                // If user is only CF or Recipient → allow only Approved/Distributed
+                if ($doc->isCf || $doc->isRecipient) {
+                    return in_array($doc->status, ['Approved', 'Distributed']);
+                }
+
+                // Otherwise, allow (signatory/routing/other)
+                return true;
+            })->values();
+
+            return $docs;
         }
     }
+
 
     public function store(Request $request)
     {

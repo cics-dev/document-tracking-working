@@ -489,7 +489,10 @@ class ViewDocument extends Component
         if (!$this->selectedAttachment->is_upload) {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
-            $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);
+            // $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);
+            $key = uniqid();
+            session([$key => $attachment_query]);
+            $this->attachmentPreviewUrl = '/document/preview?' . $key;
         }
         else {
             $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);

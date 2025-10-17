@@ -88,9 +88,16 @@
     @endif --}}
     
     @if(
-        $document->document_level != 'Intra' &&
-        ($document['from_id'] != auth()->user()->office->id || auth()->user()->id == 2) &&
-        ($isSignatory || $isRouting)
+        (
+            $document->document_level != 'Intra' &&
+            ($document['from_id'] != auth()->user()->office->id || auth()->user()->id == 2) &&
+            ($isSignatory || $isRouting)
+        )
+        ||
+        (
+            auth()->user()->office->name == 'Administration' &&
+            $document->document_type_id == 1
+        )
     )
         @if($office_name != 'Administration' && $office_name != 'Records Section')
             @if(is_null($signed) && is_null($rejected))
