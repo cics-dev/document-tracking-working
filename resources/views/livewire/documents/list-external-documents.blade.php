@@ -1,6 +1,6 @@
 <section class="w-full">
     <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">'External Documents'</h2>
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">External Documents</h2>
         @if(Auth::user()->position == 'Staff')
             <a
                 href="{{ route('documents.receive-external-document') }}"
