@@ -51,6 +51,7 @@
                         <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">To</th>
                     @endif
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Document Type</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Status</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Date Sent</th>
                     <th class="px-4 py-2 text-center">Actions</th>
                 </tr>
@@ -73,7 +74,8 @@
                         @if($mode == 'all' && $documentTypeTab != 'intra')
                             <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->toOffice->name ?? 'N/A' }}</td>
                         @endif
-                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->documentType->name ?? 'N/A' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->documentType->abbreviation ?? 'N/A' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 uppercase">{{ $document->status ?? 'N/A' }}</td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->date_sent }}</td>
                         <td class="px-4 py-2">
                             <div class="flex justify-center space-x-2">
@@ -84,13 +86,32 @@
                                     >
                                         View
                                     </button>
-                                @elseif($mode == 'sent')
+                                @elseif($mode == 'sent' && $document->status != 'draft'&& $document->status != 'Rejected')
                                     <button 
                                         wire:click="trackDocument('{{ $document['document_number'] }}')" 
                                         class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
                                     >
                                         Track
                                     </button>
+                                    <button 
+                                        wire:click="viewDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                    >
+                                        View
+                                    </button>
+                                @elseif($mode == 'sent' && $document->status == 'Rejected')
+                                    <button 
+                                        wire:click="trackDocument('{{ $document['document_number'] }}')" 
+                                        class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
+                                    >
+                                        Track
+                                    </button>
+                                    <a 
+                                        href="{{ route('documents.create-revision', $document->document_number) }}"
+                                        class="px-3 py-1 text-sm rounded-md bg-gray-500 hover:bg-gray-600 text-white transition-colors"
+                                    >
+                                        Revise
+                                    </a>
                                     <button 
                                         wire:click="viewDocument('{{ $document['document_number'] }}')" 
                                         class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
@@ -98,18 +119,20 @@
                                         View
                                     </button>
                                 @else
-                                    <button 
-                                        wire:click="viewDocument('{{ $document['document_number'] }}')" 
-                                        class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
-                                    >
-                                        View
-                                    </button>
-                                    <button 
-                                        wire:click="trackDocument('{{ $document['document_number'] }}')" 
-                                        class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
-                                    >
-                                        Track
-                                    </button>
+                                    @if($document->status != 'draft')
+                                        <button 
+                                            wire:click="viewDocument('{{ $document['document_number'] }}')" 
+                                            class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors"
+                                        >
+                                            View
+                                        </button>
+                                        <button 
+                                            wire:click="trackDocument('{{ $document['document_number'] }}')" 
+                                            class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors"
+                                        >
+                                            Track
+                                        </button>
+                                    @endif
                                 @endif
                                 @if($document->status == 'draft')
                                     <button 

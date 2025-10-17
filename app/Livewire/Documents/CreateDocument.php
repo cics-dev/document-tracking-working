@@ -21,6 +21,7 @@ class CreateDocument extends Component
     #[Validate('max:5120')] // Max 5MB total
     public $attachments = [];
     
+    // public $revised_document_number = '';
     public $original_document_id = '';
     public $office_type = '';
     public $document_type = '';
@@ -93,9 +94,8 @@ class CreateDocument extends Component
         if ($this->document_type_id != '') $this->document_type = $this->types->firstWhere('id',$this->document_type_id)->abbreviation;
     }
 
-    public function mount()
+    public function mount($number = null)
     {
-        // Pre-fill properties with session data
         $data = session('redirect_data');
 
         if ($data) {
@@ -109,6 +109,10 @@ class CreateDocument extends Component
             // $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf']??null;
         }
+
+        // if ($number) {
+
+        // }
         
         $this->signatories = [];
         $this->office_type = Auth::user()->office->office_type;

@@ -465,6 +465,8 @@ class ViewDocument extends Component
                 'action' => 'returned',
                 'description' => $this->myReview->user->office->name . ' returned the document with remarks: '. $remarks
             ]);
+            $this->document->status ='Rejected';
+            $this->document->save();
             $this->myReview->save();
         }
 
