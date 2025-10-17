@@ -67,6 +67,10 @@ class RoleSeeder extends Seeder
             [
                 'role' => 'proponent',
                 'description' => 'Event Proponent',
+            ],
+            [
+                'role' => 'staff',
+                'description' => 'Staff',
             ]
         ];
 

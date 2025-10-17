@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\DocumentPreviewController;
+use App\Livewire\Documents\ReceiveExternalDocument;
+use App\Livewire\Documents\ViewExternalDocument;
+use App\Livewire\Documents\ListExternalDocuments;
 use App\Livewire\Documents\CreateDocument;
 use App\Livewire\Documents\ListDocuments;
 use App\Livewire\Documents\TrackDocument;
@@ -54,6 +57,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('documents')->name('documents.')->group(function () {
         // Route::get('/received', ListDocuments::class)->name('recieved-documents');
         // Route::get('/sent', ListDocuments::class)->name('sent-documents');
+        Route::get('/view-external-document/{id}', ViewExternalDocument::class)->name('view-external-document');
+        Route::get('/receive-external-document', ReceiveExternalDocument::class)->name('receive-external-document');
+        Route::get('/list-external-documents', ListExternalDocuments::class)->name('list-external-documents');
         Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['sent', 'received', 'all'])->name('list-documents');
         Route::get('/track/{number}', TrackDocument::class)->name('track-document');
         Route::get('/create', CreateDocument::class)->name('create-document');

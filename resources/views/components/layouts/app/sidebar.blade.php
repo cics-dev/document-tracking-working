@@ -33,6 +33,9 @@
                                 {{ __('Sent Documents') }}
                             </flux:navlist.item>
                         @endif
+                        <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-external-documents')" :current="request()->is('documents/list-external-documents')" wire:navigate>
+                            {{ __('External Documents') }}
+                        </flux:navlist.item>
                     @endif
                 </flux:navlist.group>
             </flux:navlist>

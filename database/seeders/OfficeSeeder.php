@@ -166,5 +166,10 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'CAO',
             'office_type' => ''
         ]);
+        Office::create([
+            'name' => 'Office of the President',
+            'abbreviation' => 'OP',
+            'office_type' => ''
+        ]);
     }
 }

@@ -354,8 +354,24 @@ class UserSeeder extends Seeder
             'titles' => '',
             'gender' => 'Male',
         ]);
-        // $sao_f->office()->update([
-        //     'head_id' => $sao_f->id
-        // ]);
+
+        $op_staff = User::create([
+            'name' => 'Unknown',
+            'email' => 'op_staff@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Staff',
+            'role_id' => 14,
+            'office_id' => 24, // set if needed
+        ]);
+        $op_staff->profile()->create([
+            'honorifics' => 'Mr',
+            'given_name' => 'Unknown',
+            'middle_name' => 'H',
+            'middle_initial' => 'H',
+            'family_name' => '',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Male',
+        ]);
     }
 }
