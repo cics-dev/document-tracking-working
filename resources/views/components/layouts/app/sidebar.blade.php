@@ -24,7 +24,7 @@
                             <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'all')" :current="request()->is('documents/all')" wire:navigate>
                                 {{ __('All Documents') }}
                             </flux:navlist.item>
-                        @else
+                        @elseif (auth()->user()?->position === 'Staff')
                             <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate>
                                 {{ __('Received Documents') }}
                             </flux:navlist.item>
