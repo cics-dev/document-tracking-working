@@ -2231,7 +2231,7 @@
                 bubbleDiv.className = 'message-bubble';
                 bubbleDiv.textContent = text;
                 
-                const timeSpan = document.createElement('span');
+                const timeSpan = document.createElement('div');
                 timeSpan.className = 'message-time';
                 timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 

@@ -8,7 +8,6 @@ use App\Models\DocumentAttachment;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Fpdi;
-use Spatie\Browsershot\Browsershot;
 
 class DocumentPreviewController extends Controller
 {    

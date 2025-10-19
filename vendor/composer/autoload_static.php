@@ -106,9 +106,6 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
             'Symfony\\Component\\Console\\' => 26,
             'Symfony\\Component\\Clock\\' => 24,
             'Svg\\' => 4,
-            'Spatie\\TemporaryDirectory\\' => 26,
-            'Spatie\\PdfToImage\\' => 18,
-            'Spatie\\Browsershot\\' => 19,
             'Sabberworm\\CSS\\' => 15,
         ),
         'R' => 
@@ -235,9 +232,9 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         ),
         'phpDocumentor\\Reflection\\' => 
         array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
+            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
-            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
         ),
         'Whoops\\' => 
         array (
@@ -383,18 +380,6 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg',
         ),
-        'Spatie\\TemporaryDirectory\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/spatie/temporary-directory/src',
-        ),
-        'Spatie\\PdfToImage\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/spatie/pdf-to-image/src',
-        ),
-        'Spatie\\Browsershot\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/spatie/browsershot/src',
-        ),
         'Sabberworm\\CSS\\' => 
         array (
             0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/src',
@@ -421,8 +406,8 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -510,8 +495,8 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         ),
         'League\\Uri\\' => 
         array (
-            0 => __DIR__ . '/..' . '/league/uri-interfaces',
-            1 => __DIR__ . '/..' . '/league/uri',
+            0 => __DIR__ . '/..' . '/league/uri',
+            1 => __DIR__ . '/..' . '/league/uri-interfaces',
         ),
         'League\\MimeTypeDetection\\' => 
         array (
@@ -701,8 +686,11 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         'App\\Livewire\\Auth\\VerifyEmail' => __DIR__ . '/../..' . '/app/Livewire/Auth/VerifyEmail.php',
         'App\\Livewire\\Documents\\CreateDocument' => __DIR__ . '/../..' . '/app/Livewire/Documents/CreateDocument.php',
         'App\\Livewire\\Documents\\ListDocuments' => __DIR__ . '/../..' . '/app/Livewire/Documents/ListDocuments.php',
+        'App\\Livewire\\Documents\\ListExternalDocuments' => __DIR__ . '/../..' . '/app/Livewire/Documents/ListExternalDocuments.php',
+        'App\\Livewire\\Documents\\ReceiveExternalDocument' => __DIR__ . '/../..' . '/app/Livewire/Documents/ReceiveExternalDocument.php',
         'App\\Livewire\\Documents\\TrackDocument' => __DIR__ . '/../..' . '/app/Livewire/Documents/TrackDocument.php',
         'App\\Livewire\\Documents\\ViewDocument' => __DIR__ . '/../..' . '/app/Livewire/Documents/ViewDocument.php',
+        'App\\Livewire\\Documents\\ViewExternalDocument' => __DIR__ . '/../..' . '/app/Livewire/Documents/ViewExternalDocument.php',
         'App\\Livewire\\Offices\\CreateOffice' => __DIR__ . '/../..' . '/app/Livewire/Offices/CreateOffice.php',
         'App\\Livewire\\Offices\\ListOffices' => __DIR__ . '/../..' . '/app/Livewire/Offices/ListOffices.php',
         'App\\Livewire\\Settings\\Appearance' => __DIR__ . '/../..' . '/app/Livewire/Settings/Appearance.php',
@@ -718,6 +706,7 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         'App\\Models\\DocumentRouting' => __DIR__ . '/../..' . '/app/Models/DocumentRouting.php',
         'App\\Models\\DocumentSignatory' => __DIR__ . '/../..' . '/app/Models/DocumentSignatory.php',
         'App\\Models\\DocumentType' => __DIR__ . '/../..' . '/app/Models/DocumentType.php',
+        'App\\Models\\ExternalDocument' => __DIR__ . '/../..' . '/app/Models/ExternalDocument.php',
         'App\\Models\\Office' => __DIR__ . '/../..' . '/app/Models/Office.php',
         'App\\Models\\Role' => __DIR__ . '/../..' . '/app/Models/Role.php',
         'App\\Models\\RoleDocumentType' => __DIR__ . '/../..' . '/app/Models/RoleDocumentType.php',
@@ -6981,24 +6970,6 @@ class ComposerStaticInitb742721b02b83ace590f9900841234e7
         'SebastianBergmann\\Type\\UnknownType' => __DIR__ . '/..' . '/sebastian/type/src/type/UnknownType.php',
         'SebastianBergmann\\Type\\VoidType' => __DIR__ . '/..' . '/sebastian/type/src/type/VoidType.php',
         'SebastianBergmann\\Version' => __DIR__ . '/..' . '/sebastian/version/src/Version.php',
-        'Spatie\\Browsershot\\Browsershot' => __DIR__ . '/..' . '/spatie/browsershot/src/Browsershot.php',
-        'Spatie\\Browsershot\\ChromiumResult' => __DIR__ . '/..' . '/spatie/browsershot/src/ChromiumResult.php',
-        'Spatie\\Browsershot\\Enums\\Polling' => __DIR__ . '/..' . '/spatie/browsershot/src/Enums/Polling.php',
-        'Spatie\\Browsershot\\Exceptions\\CouldNotTakeBrowsershot' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/CouldNotTakeBrowsershot.php',
-        'Spatie\\Browsershot\\Exceptions\\ElementNotFound' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/ElementNotFound.php',
-        'Spatie\\Browsershot\\Exceptions\\FileDoesNotExistException' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/FileDoesNotExistException.php',
-        'Spatie\\Browsershot\\Exceptions\\FileUrlNotAllowed' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/FileUrlNotAllowed.php',
-        'Spatie\\Browsershot\\Exceptions\\HtmlIsNotAllowedToContainFile' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/HtmlIsNotAllowedToContainFile.php',
-        'Spatie\\Browsershot\\Exceptions\\UnsuccessfulResponse' => __DIR__ . '/..' . '/spatie/browsershot/src/Exceptions/UnsuccessfulResponse.php',
-        'Spatie\\Browsershot\\ImageManipulations' => __DIR__ . '/..' . '/spatie/browsershot/src/ImageManipulations.php',
-        'Spatie\\PdfToImage\\Exceptions\\InvalidFormat' => __DIR__ . '/..' . '/spatie/pdf-to-image/src/Exceptions/InvalidFormat.php',
-        'Spatie\\PdfToImage\\Exceptions\\InvalidLayerMethod' => __DIR__ . '/..' . '/spatie/pdf-to-image/src/Exceptions/InvalidLayerMethod.php',
-        'Spatie\\PdfToImage\\Exceptions\\PageDoesNotExist' => __DIR__ . '/..' . '/spatie/pdf-to-image/src/Exceptions/PageDoesNotExist.php',
-        'Spatie\\PdfToImage\\Exceptions\\PdfDoesNotExist' => __DIR__ . '/..' . '/spatie/pdf-to-image/src/Exceptions/PdfDoesNotExist.php',
-        'Spatie\\PdfToImage\\Pdf' => __DIR__ . '/..' . '/spatie/pdf-to-image/src/Pdf.php',
-        'Spatie\\TemporaryDirectory\\Exceptions\\InvalidDirectoryName' => __DIR__ . '/..' . '/spatie/temporary-directory/src/Exceptions/InvalidDirectoryName.php',
-        'Spatie\\TemporaryDirectory\\Exceptions\\PathAlreadyExists' => __DIR__ . '/..' . '/spatie/temporary-directory/src/Exceptions/PathAlreadyExists.php',
-        'Spatie\\TemporaryDirectory\\TemporaryDirectory' => __DIR__ . '/..' . '/spatie/temporary-directory/src/TemporaryDirectory.php',
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'Svg\\CssLength' => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg/CssLength.php',
         'Svg\\DefaultStyle' => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg/DefaultStyle.php',
