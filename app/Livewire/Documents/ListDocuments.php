@@ -26,21 +26,7 @@ class ListDocuments extends Component
             $this->documents = $this->documents->where('document_level', 'Intra');
         } else {
             $this->documents = $this->documents->where('document_level', '!=', 'Intra');
-        }
-
-        // foreach ($this->documents as $document) {
-        //     $mySignatory = $document->signatories->firstWhere('user_id', Auth::id());
-        
-        //     if ($mySignatory?->signed_at) {
-        //         $document->status = 'Signed';
-        //     } elseif ($mySignatory?->rejected_at) {
-        //         $document->status = 'Rejected';
-        //     } else {
-        //         $document->status = 'Waiting for Signatures';
-        //     }
-
-        //     // if ($mySignatory?->viewed_at) $document->viewed_at = $mySignatory?->viewed_at;
-        // }     
+        }  
     }
 
     public function editDocument($id)

@@ -284,56 +284,21 @@ class CreateDocument extends Component
         $office = Auth::user()->office;
         $documentType = collect($this->types)->firstWhere('id', $this->document_type_id);
         $docNumber = null;
+        $originalDocumentForDraft = Document::where('id',  $this->original_document_id)->get()->last();
         
-        if ($status === 'draft' && $this->original_document_id) {
-            Document::where('id',  $this->original_document_id)->update([
-                'from_id' => $from_user->office->id,
-                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
-                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
-                'document_type_id' => $this->document_type_id,
-                'document_number' => $this->revision_document_number??$docNumber,
-                'subject' => $this->subject,
-                'thru' => $this->thru,
-                'content' => $this->content,
-                'created_by' => Auth::id(),
-                'status' => $status,
-                'date_sent' => now(),
-                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
-                'is_revision'=>$this->revision_document_number?true:false,
-                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
-            ]);
-        }
-        elseif ($status === 'draft') {
-            Document::create([
-                'from_id' => $from_user->office->id,
-                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
-                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
-                'document_type_id' => $this->document_type_id,
-                'document_number' => $this->revision_document_number??$docNumber,
-                'subject' => $this->subject,
-                'thru' => $this->thru,
-                'content' => $this->content,
-                'created_by' => Auth::id(),
-                'status' => $status,
-                'date_sent' => now(),
-                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
-                'is_revision'=>$this->revision_document_number?true:false,
-                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
-            ]);
-        }
-        elseif ($status != 'draft') {
+        if ($status != 'draft') {
             $latestDoc = $office->sentDocuments()
                 ->where('document_type_id', $this->document_type_id)
                 ->where('status', '!=', 'draft')
                 ->whereYear('created_at', date('Y'))
-                ->latest('created_at')
+                ->orderByDesc('document_number')
                 ->first();
 
             if ($this->document_type_id) {
                 $latestDoc = Document::where('document_type_id', $this->document_type_id)
                 ->where('status', '!=', 'draft')
                 ->whereYear('created_at', date('Y'))
-                ->latest('created_at')
+                ->orderByDesc('document_number')
                 ->first();
             }
 
@@ -364,7 +329,28 @@ class CreateDocument extends Component
             if ($this->document_type_id == 5) {
                 $docNumber = 'ZPPSU-'.$docNumber;
             }
-
+        }
+        if ($originalDocumentForDraft && $originalDocumentForDraft->status === 'draft' && $this->original_document_id) {
+            $document = $originalDocumentForDraft->update([
+                'from_id' => $from_user->office->id,
+                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
+                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
+                'document_type_id' => $this->document_type_id,
+                'document_number' => $this->revision_document_number??$docNumber,
+                'subject' => $this->subject,
+                'thru' => $this->thru,
+                'content' => $this->content,
+                'created_by' => Auth::id(),
+                'status' => $status,
+                'date_sent' => now(),
+                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
+                'is_revision'=>$this->revision_document_number?true:false,
+                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null,
+                'created_at'=>now()
+            ]);
+            $document = $originalDocumentForDraft->refresh();
+        }
+        else {
             $document = Document::create([
                 'from_id' => $from_user->office->id,
                 'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
@@ -381,7 +367,9 @@ class CreateDocument extends Component
                 'is_revision'=>$this->revision_document_number?true:false,
                 'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
             ]);
+        }
 
+        if ($status != 'draft') {
             if ($this->document_type === 'IOM') {
                 $originalDocument = Document::find($this->original_document_id);
                 $document->attachments()->create([

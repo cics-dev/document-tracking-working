@@ -57,7 +57,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($documents->sortByDesc('created_at') as $index => $document)
+                @forelse ($documents->sortByDesc('updated_at') as $index => $document)
                     <tr class="border-b dark:border-gray-600 {{ $document->viewed_at || $mode == 'sent' || $office_name == 'Administration' || $office_name == 'Records Section' ? 'font-normal' : 'font-bold' }}">
                         <td class="px-4 py-2 items-center gap-2 border-r border-gray-300 dark:border-gray-600">
                             @if(is_null($document->viewed_at) && $mode != 'sent' && $office_name != 'Administration' && $office_name != 'Records Section')
