@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DocumentPreviewController;
+use App\Http\Controllers\ChatBotController;
 use App\Livewire\Documents\ReceiveExternalDocument;
 use App\Livewire\Documents\ViewExternalDocument;
 use App\Livewire\Documents\ListExternalDocuments;
@@ -42,6 +43,7 @@ Route::view('dashboard', 'dashboard')
 ->name('dashboard');
 
 Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
+Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('offices')->name('offices.')->group(function () {

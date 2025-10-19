@@ -7,6 +7,7 @@
 
     <!-- PWA  -->
     <meta name="theme-color" content="#6777ef"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="apple-touch-icon" href="{{ asset('/assets/img/hd-logo.png') }}">
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
 
@@ -2186,21 +2187,39 @@
             startTooltipInterval();
             
             // Handle form submission - FIXED
-            chatForm.addEventListener('submit', function(e) {
+            chatForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const message = chatInput.value.trim();
                 if (message) {
                     addMessage('user', message);
                     chatInput.value = '';
-                    
-                    // Simulate bot response after a short delay
-                    setTimeout(() => {
-                        const response = getBotResponse(message);
-                        addMessage('bot', response);
-                    }, 500);
+
+                    // Show typing placeholder
+                    addMessage('bot', 'Typing...');
+
+                    // Wait for the actual bot response
+                    const reply = await getBotResponse(message);
+
+                    // Replace the "Typing..." text with the real reply
+                    updateLastMessage('bot', reply);
                 }
             });
-            
+
+            function updateLastMessage(sender, newText) {
+                const messages = chatMessages.getElementsByClassName(sender === 'user' ? 'user' : 'bot');
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage) {
+                    const bubble = lastMessage.querySelector('.message-bubble');
+                    if (bubble) bubble.textContent = newText;
+
+                    // Add timestamp again
+                    const timeSpan = document.createElement('div');
+                    timeSpan.className = 'message-time';
+                    timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    bubble.appendChild(timeSpan);
+                }
+            }
+
             // Add a new message to the chat
             function addMessage(sender, text) {
                 const messageDiv = document.createElement('div');
@@ -2260,24 +2279,41 @@
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-            
+
             // Generate bot response based on user input
-            function getBotResponse(text) {
-                const lowerText = text.toLowerCase();
+            async function getBotResponse(text) {
+                // const lowerText = text.toLowerCase();
                 
-                if (lowerText.includes('track') || lowerText.includes('document')) {
-                    return 'To track a document, go to the tracking section on our website or click the "Track" button in the mobile navigation. You\'ll need to enter your document ID.';
-                } else if (lowerText.includes('login') || lowerText.includes('account')) {
-                    return 'You can login to your DTS-ZPPSU account by clicking the "Login" button in the top right corner of the page.';
-                } else if (lowerText.includes('help') || lowerText.includes('support')) {
-                    return 'For immediate assistance, please contact our support team at support@zppsu.edu.ph or call +63 912 345 6789.';
-                } else if (lowerText.includes('feature') || lowerText.includes('what can')) {
-                    return 'DTS-ZPPSU offers real-time tracking, automated notifications, advanced analytics, secure access, mobile compatibility, and version control. Check our Features section for details.';
-                } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
-                    return 'Hello! How can I help you with the DTS-ZPPSU system today?';
-                } else {
-                    return 'I\'m sorry, I didn\'t understand that. Could you rephrase your question? For common topics, try asking about document tracking, login help, or system features.';
-                }
+                // if (lowerText.includes('track') || lowerText.includes('document')) {
+                //     return 'To track a document, go to the tracking section on our website or click the "Track" button in the mobile navigation. You\'ll need to enter your document ID.';
+                // } else if (lowerText.includes('login') || lowerText.includes('account')) {
+                //     return 'You can login to your DTS-ZPPSU account by clicking the "Login" button in the top right corner of the page.';
+                // } else if (lowerText.includes('help') || lowerText.includes('support')) {
+                //     return 'For immediate assistance, please contact our support team at support@zppsu.edu.ph or call +63 912 345 6789.';
+                // } else if (lowerText.includes('feature') || lowerText.includes('what can')) {
+                //     return 'DTS-ZPPSU offers real-time tracking, automated notifications, advanced analytics, secure access, mobile compatibility, and version control. Check our Features section for details.';
+                // } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
+                //     return 'Hello! How can I help you with the DTS-ZPPSU system today?';
+                // } else {
+                    // If no keyword matches, call Laravel backend (OpenAI)
+                    try {
+                        const response = await fetch('/chat/send', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({ message: text })
+                        });
+                        console.log(response);
+                        
+                        const data = await response.json();
+                        return data.response || 'Sorry, I wasn’t able to get a response from the server.';
+                    } catch (error) {
+                        console.error('Chat error:', error);
+                        return 'There was an issue connecting to the AI server.';
+                    }
+                // }
             }
             
             // Sample initial messages
