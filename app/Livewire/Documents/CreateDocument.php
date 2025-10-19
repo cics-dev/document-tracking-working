@@ -249,7 +249,7 @@ class CreateDocument extends Component
             $documentNumber = 'CM-'.Auth::user()->office->abbreviation . '-_____-' . date('Y');
         }
 
-        $query = http_build_query([
+        $query = [
             'action' => 'preview',
             'subject' => $this->subject,
             'content' => $this->content,
@@ -264,10 +264,13 @@ class CreateDocument extends Component
             'signatories' => $signatories?->toJson() ?? null,
             'cfs' => $cfs?->toJson() ?? null,
             'attachment' => $this->attachment
-        ]);
+        ];
+
+        $key = uniqid();
+        session([$key => $query]);
 
         $this->dispatch('open-preview-tab', [
-            'url' => '/document/preview?' . $query
+            'url' => '/document/preview?' . $key
         ]);
     }
 
