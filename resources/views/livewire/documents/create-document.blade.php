@@ -1,7 +1,7 @@
 <form wire:submit.prevent="submitDocument" class="max-w-7xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6">
     <!-- Document Type Section -->
     <div class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">Document Details</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{{ $revision_document_number?$revision_document_number:'Document Details' }}</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Document Type -->
@@ -9,11 +9,13 @@
                 <label for="type-of-document" class="block text-sm font-medium text-gray-900">
                     {{ __('Type of Document') }} <span class="text-red-600">*</span>
                 </label>
+                @php $isDisabled = $original_document_number?true:false @endphp
                 <flux:select 
                     wire:model="document_type_id" 
                     placeholder="Choose document type..." 
                     wire:change="handleUpdateDocumentType"
                     class="w-full border-gray-300 focus:border-indigo-600 focus:ring-indigo-600 rounded-md shadow-sm text-gray-900"
+                    :disabled="$isDisabled"
                 >
                     @foreach ($types as $type)
                         <flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>

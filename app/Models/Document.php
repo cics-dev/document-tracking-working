@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class Document extends Model
 {
-    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'thru', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url', 'document_level', 'to_text'];
+    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'thru', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url', 'document_level', 'to_text',
+        'is_revision',
+        'original_document_id'
+    ];
 
     protected function viewedAt(): Attribute
     {
@@ -94,6 +97,16 @@ class Document extends Model
     //         });
     //     });
     // }
+
+    public function revisions()
+    {
+        return $this->hasMany(Document::class, 'original_document_id');
+    }
+
+    public function originalRevisedDocument()
+    {
+        return $this->belongsTo(Document::class, 'original_document_id');
+    }
 
     public function fromOffice()
     {

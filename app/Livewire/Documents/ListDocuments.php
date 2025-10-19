@@ -43,6 +43,15 @@ class ListDocuments extends Component
         // }     
     }
 
+    public function editDocument($id)
+    {
+        $document = Document::find($id);
+        $document['redirect_mode']='edit';
+        session()->flash('document_query', $document);
+
+        return redirect()->route('documents.create-document', ['id' => $id]);
+    }
+
     public function switchDocumentTypeTab($tab)
     {
         $this->documentTypeTab = $tab;

@@ -59,11 +59,11 @@
             <tbody>
                 @forelse ($documents->sortByDesc('created_at') as $index => $document)
                     <tr class="border-b dark:border-gray-600 {{ $document->viewed_at || $mode == 'sent' || $office_name == 'Administration' || $office_name == 'Records Section' ? 'font-normal' : 'font-bold' }}">
-                        <td class="px-4 py-2 flex items-center gap-2 border-r border-gray-300 dark:border-gray-600">
+                        <td class="px-4 py-2 items-center gap-2 border-r border-gray-300 dark:border-gray-600">
                             @if(is_null($document->viewed_at) && $mode != 'sent' && $office_name != 'Administration' && $office_name != 'Records Section')
                                 <span class="h-2 w-2 rounded-full bg-blue-600"></span>
                             @endif
-                            {{ $document->document_number }}
+                            {{ $document->document_number??'N/A' }}
                         </td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->subject }}</td>
                         @if($documentTypeTab != 'intra')
@@ -141,12 +141,12 @@
                                     >
                                         Edit
                                     </button>
-                                    <button 
+                                    {{-- <button 
                                         wire:click="deleteDocument('{{ $document['id'] }}')" 
                                         class="px-3 py-1 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors"
                                     >
                                         Delete
-                                    </button>
+                                    </button> --}}
                                 @endif
                             </div>
                         </td>

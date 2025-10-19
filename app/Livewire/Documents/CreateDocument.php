@@ -22,6 +22,8 @@ class CreateDocument extends Component
     public $attachments = [];
     
     // public $revised_document_number = '';
+    public $original_document_number;
+    public $revision_document_number;
     public $original_document_id = '';
     public $office_type = '';
     public $document_type = '';
@@ -96,11 +98,16 @@ class CreateDocument extends Component
 
     public function mount($number = null)
     {
-        $data = session('redirect_data');
+        $data = session()->pull('redirect_data');
+
+        if (!$data) {
+            $data = session()->pull('document_query');
+        }
 
         if ($data) {
-            $this->original_document_id = $data['original_document_id'];
-            $this->document_to_id = $data['to'];
+            $this->original_document_id = $data['original_document_id']??$data['id']??null;
+            $this->redirect_mode = $data['redirect_mode']??null;
+            $this->document_to_id = $data['to']??$data['to_id'];
             $this->document_from_id = $data['from'];
             $this->document_type_id = $data['document_type_id'];
             $this->subject = $data['subject'];
@@ -108,6 +115,45 @@ class CreateDocument extends Component
             $this->thru = $data['thru'];
             // $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf']??null;
+        }
+        else if($number) {
+            $this->redirect_mode = 'revision';
+            $this->original_document_number = $number;
+            // dd(is_numeric(explode('-', $number)[2]));
+            $document = Document::where('document_number', $number)->get()->first();
+            $this->original_document_id = $document->id;
+
+            if (!$document) {
+                return;
+            }
+
+            $parts = explode('-', $document->document_number);
+
+            if (count($parts) < 4) {
+                return;
+            }
+
+            $baseNumber = $parts[2]; // e.g. "3" or "3a"
+            $prefix = $parts[0] . '-' . $parts[1];
+            $suffix = $parts[3];
+
+            $original = $document->originalRevisedDocument ?? $document;
+            $revisions = $original->revisions;
+            if ($revisions->isNotEmpty()) {
+                $lastRevision = $revisions->last();
+                $lastBase = explode('-', $lastRevision->document_number)[2]; // e.g. "3a"
+                $lastLetter = substr($lastBase, -1);
+                $nextLetter = chr(ord($lastLetter) + 1);
+                $this->revision_document_number = "{$prefix}-" . intval($baseNumber) . "{$nextLetter}-{$suffix}";
+            } else {
+                $this->revision_document_number = "{$prefix}-" . intval($baseNumber) . "a-{$suffix}";
+            }
+
+            $this->document_to_id = $document->to_id;
+            $this->document_type_id = $document->document_type_id;
+            $this->subject = $document->subject;
+            $this->content = $document->content;
+            $this->thru = $document->thru;
         }
 
         // if ($number) {
@@ -122,6 +168,8 @@ class CreateDocument extends Component
         $this->fetchOffices();
         $this->types = [];
         $this->fetchDocumentTypes();
+        session()->forget('redirect_data');
+        session()->forget('document_query');
     }
 
     public function addCfOffice()
@@ -234,7 +282,43 @@ class CreateDocument extends Component
         $documentType = collect($this->types)->firstWhere('id', $this->document_type_id);
         $docNumber = null;
         
-        if ($status != 'draft') {
+        if ($status === 'draft' && $this->original_document_id) {
+            Document::where('id',  $this->original_document_id)->update([
+                'from_id' => $from_user->office->id,
+                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
+                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
+                'document_type_id' => $this->document_type_id,
+                'document_number' => $this->revision_document_number??$docNumber,
+                'subject' => $this->subject,
+                'thru' => $this->thru,
+                'content' => $this->content,
+                'created_by' => Auth::id(),
+                'status' => $status,
+                'date_sent' => now(),
+                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
+                'is_revision'=>$this->revision_document_number?true:false,
+                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
+            ]);
+        }
+        elseif ($status === 'draft') {
+            Document::create([
+                'from_id' => $from_user->office->id,
+                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
+                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
+                'document_type_id' => $this->document_type_id,
+                'document_number' => $this->revision_document_number??$docNumber,
+                'subject' => $this->subject,
+                'thru' => $this->thru,
+                'content' => $this->content,
+                'created_by' => Auth::id(),
+                'status' => $status,
+                'date_sent' => now(),
+                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
+                'is_revision'=>$this->revision_document_number?true:false,
+                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
+            ]);
+        }
+        elseif ($status != 'draft') {
             $latestDoc = $office->sentDocuments()
                 ->where('document_type_id', $this->document_type_id)
                 ->where('status', '!=', 'draft')
@@ -269,129 +353,131 @@ class CreateDocument extends Component
             else
             $docNumber = 'CM-'.Auth::user()->office->abbreviation . 
                 (Auth::user()->office->office_type != ''?('(' . Auth::user()->office->office_type . ')'):'').'-' .($lastNumber + 1). '-' . date('Y');
-        }
+
         
-        if ($this->document_type_id == 2) {
-            $status = 'Waiting for approval';
-        }
-        if ($this->document_type_id == 5) {
-            $docNumber = 'ZPPSU-'.$docNumber;
-        }
-            
-        $document = Document::create([
-            'from_id' => $from_user->office->id,
-            'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
-            'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
-            'document_type_id' => $this->document_type_id,
-            'document_number' => $docNumber,
-            'subject' => $this->subject,
-            'thru' => $this->thru,
-            'content' => $this->content,
-            'created_by' => Auth::id(),
-            'status' => $status,
-            'date_sent' => now(),
-            'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
-        ]);
+            if ($this->document_type_id == 2) {
+                $status = 'Waiting for approval';
+            }
+            if ($this->document_type_id == 5) {
+                $docNumber = 'ZPPSU-'.$docNumber;
+            }
 
-        if ($this->document_type === 'IOM') {
-            $originalDocument = Document::find($this->original_document_id);
-            $document->attachments()->create([
-                    'attachment_document_id' => $this->original_document_id,
-                    'name' => $originalDocument->document_number,
-                    'status' => 'approved',
-                    'file_type' => 'pdf',
-                    'is_upload' => false
-            ]);
-            $originalDocument->update([
-                'status' => 'Generated IOM'
+            $document = Document::create([
+                'from_id' => $from_user->office->id,
+                'to_id' => $this->document_type == 'Intra' || $this->document_type_id == 5?null:$this->document_to_id,
+                'to_text' => $this->document_type == 'Intra' || $this->document_type_id == 5?$this->document_to_text:null,
+                'document_type_id' => $this->document_type_id,
+                'document_number' => $this->revision_document_number??$docNumber,
+                'subject' => $this->subject,
+                'thru' => $this->thru,
+                'content' => $this->content,
+                'created_by' => Auth::id(),
+                'status' => $status,
+                'date_sent' => now(),
+                'document_level' => $this->document_type == 'Intra'?'Intra':'Inter',
+                'is_revision'=>$this->revision_document_number?true:false,
+                'original_document_id'=>$this->revision_document_number?$this->original_document_id:null
             ]);
 
-            $document->signatories()->create([
-                'signatory_label' => 'Approved by',
-                'user_id' => 2,
-                'sequence' => 1,
-            ]);
-            // DocumentAttachment::where('attachment_document_id', $this->original_document_id)
-            //         ->update(['document_id' => $document->id]);
-        }
-        else {
-            foreach ($this->attachments as $file) {
-                $path = $file->store('attachments', 'public');
+            if ($this->document_type === 'IOM') {
+                $originalDocument = Document::find($this->original_document_id);
                 $document->attachments()->create([
-                    'name'=> $file->getClientOriginalName(),
-                    'status' => 'sent',
-                    'file_url' => $path,
-                    'file_type' => $file->getClientOriginalExtension(),
-                    'is_upload' => true
+                        'attachment_document_id' => $this->original_document_id,
+                        'name' => $originalDocument->document_number,
+                        'status' => 'approved',
+                        'file_type' => 'pdf',
+                        'is_upload' => false
+                ]);
+                $originalDocument->update([
+                    'status' => 'Generated IOM'
+                ]);
+
+                $document->signatories()->create([
+                    'signatory_label' => 'Approved by',
+                    'user_id' => 2,
+                    'sequence' => 1,
                 ]);
             }
-        }
+            else {
+                foreach ($this->attachments as $file) {
+                    $path = $file->store('attachments', 'public');
+                    $document->attachments()->create([
+                        'name'=> $file->getClientOriginalName(),
+                        'status' => 'sent',
+                        'file_url' => $path,
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'is_upload' => true
+                    ]);
+                }
+            }
 
-        $document->logs()->create([
-            'user_id' => Auth::id(),
-            'action' => 'sent',
-            'description' => 'Document Sent'
-        ]);
+            $document->logs()->create([
+                'user_id' => Auth::id(),
+                'action' => 'sent',
+                'description' => 'Document Sent'
+            ]);
 
-        if($this->document_type != 'Intra') {
-            if ($this->document_type == 'RLM') {
-                $selectedRoutes = collect($this->routingRequirements)
-                    ->filter(fn ($value) => $value === true)
-                    ->keys()
-                    ->all();
-                $routeIds = [
-                    'budget_office' => 19,
-                    'motor_pool' => 20,
-                    'legal_review' => 21,
-                    'igp_review' => 22,
-                ];
 
-                $selectedRouteIds = [];
-                foreach ($selectedRoutes as $routeKey) {
-                    if (isset($routeIds[$routeKey])) {
-                        $selectedRouteIds[] = $routeIds[$routeKey];
+            if($this->document_type != 'Intra') {
+                if ($this->document_type == 'RLM') {
+                    $selectedRoutes = collect($this->routingRequirements)
+                        ->filter(fn ($value) => $value === true)
+                        ->keys()
+                        ->all();
+                    $routeIds = [
+                        'budget_office' => 19,
+                        'motor_pool' => 20,
+                        'legal_review' => 21,
+                        'igp_review' => 22,
+                    ];
+
+                    $selectedRouteIds = [];
+                    foreach ($selectedRoutes as $routeKey) {
+                        if (isset($routeIds[$routeKey])) {
+                            $selectedRouteIds[] = $routeIds[$routeKey];
+                        }
+                    }
+
+                    if(!empty($selectedRouteIds)) {
+                        foreach ($selectedRouteIds as $route) {
+                            $document->routings()->create([
+                                'user_id' => Office::find($route)['head']['id'] ?? null,
+                            ]);
+                        }
                     }
                 }
 
-                if(!empty($selectedRouteIds)) {
-                    foreach ($selectedRouteIds as $route) {
-                        $document->routings()->create([
-                            'user_id' => Office::find($route)['head']['id'] ?? null,
+                if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
+                    $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
+                }
+                if ($this->document_type == 'SO') {
+                    $document->routings()->create([
+                        'user_id' => 15,
+                    ]);
+                    $document->routings()->create([
+                        'user_id' => 5,
+                    ]);
+                }
+
+                if(!empty($this->signatories)) {
+                    foreach ($this->signatories as $index => $signatory) {
+                        $document->signatories()->create([
+                            'signatory_label' => $signatory['role'],
+                            'user_id' => collect($this->offices)->firstWhere('id', $signatory['office_id'])['head']['id'] ?? null,
+                            'sequence' => $index + 1,
                         ]);
                     }
                 }
-            }
 
-            if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
-                $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
-            }
-            if ($this->document_type == 'SO') {
-                $document->routings()->create([
-                    'user_id' => 15,
-                ]);
-                $document->routings()->create([
-                    'user_id' => 5,
-                ]);
-            }
-
-            if(!empty($this->signatories)) {
-                foreach ($this->signatories as $index => $signatory) {
-                    $document->signatories()->create([
-                        'signatory_label' => $signatory['role'],
-                        'user_id' => collect($this->offices)->firstWhere('id', $signatory['office_id'])['head']['id'] ?? null,
-                        'sequence' => $index + 1,
-                    ]);
-                }
-            }
-
-            if (!empty($this->cf_offices)) {
-                foreach ($this->cf_offices as $index => $cf) {
-                    $document->cfs()->create([
-                        'user_id'=>Office::find($cf)->head->id
-                    //     'signatory_label' => $cf['role'],
-                    //     'user_id' => collect($this->offices)->firstWhere('id', $signatory['office_id'])['head']['id'] ?? null,
-                    //     'sequence' => $index + 1,
-                    ]);
+                if (!empty($this->cf_offices)) {
+                    foreach ($this->cf_offices as $index => $cf) {
+                        $document->cfs()->create([
+                            'user_id'=>Office::find($cf)->head->id
+                        //     'signatory_label' => $cf['role'],
+                        //     'user_id' => collect($this->offices)->firstWhere('id', $signatory['office_id'])['head']['id'] ?? null,
+                        //     'sequence' => $index + 1,
+                        ]);
+                    }
                 }
             }
         }
