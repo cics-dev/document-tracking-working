@@ -440,4 +440,12 @@
             </button>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('livewire:navigated', initQuillEditor);
+        document.addEventListener('livewire:load', initQuillEditor);
+        Livewire.hook('morph.updated', (component) => {
+            initQuillEditor();
+        });
+    </script>
 </form>
