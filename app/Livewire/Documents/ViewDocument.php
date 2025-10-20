@@ -279,8 +279,9 @@ class ViewDocument extends Component
 
     public function lastSignatory()
     {
-        $this->document->status = 'Approved';
-        $this->document->save();
+        $this->document->update([
+            'status' => 'Approved'
+        ]);
 
         $this->document->signatories[0]->signed_at = now();
         $this->document->signatories[0]->save();
@@ -291,64 +292,14 @@ class ViewDocument extends Component
             $lastSignatory = $docSignatories->last();
             $lastSignatory->signed_at = now();
             $lastSignatory->save();
-            $attachmentDetails->status = 'Approved';
-            $attachmentDetails->save();
+            $attachmentDetails->update([
+                'status' => 'Approved'
+            ]);
             $attachmentDetails->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
                 'description' => $lastSignatory->user->office->name . ' signed the document'
             ]);
-
-            // $fromPosition =  $attachmentDetails->fromOffice->head->position ?? 'N/A';
-            // $fromLogo =  $attachmentDetails->fromOffice->office_logo;
-            // if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
-            //     $fromPosition .= ', ' . $attachmentDetails->fromOffice->name;
-            // }
-            // $toPosition =  $attachmentDetails->toOffice->head->position ?? 'N/A';
-            // if ($toPosition !== 'University President' && $toPosition != 'N/A') {
-            //     $toPosition .= ', ' . $attachmentDetails->toOffice->name;
-            // }
-
-            // $this->document_query = [
-            //     'document' => $attachmentDetails->toJson(),
-            //     'action' => 'sent',
-            //     'date_sent' => $attachmentDetails->date_sent,
-            //     'subject' => $attachmentDetails->subject,
-            //     'content' => $attachmentDetails->content,
-            //     'thru' => $attachmentDetails->thru,
-            //     'toName' => $attachmentDetails->toOffice->head->name ?? 'N/A',
-            //     'toPosition' => $toPosition,
-            //     'fromName' => $attachmentDetails->fromOffice->head->name ?? 'N/A',
-            //     'fromPosition' => $fromPosition,
-            //     'office_logo' => $fromLogo,
-            //     'documentType' => $attachmentDetails->documentType->name ?? 'N/A',
-            //     'documentNumber' => $attachmentDetails->document_number,
-            //     'signatories' => $attachmentDetails->signatories->map(function ($signatory) {
-            //         return [
-            //             'role' => $signatory->signatory_label,
-            //             'user_name' => $signatory->user->office->head->name ?? '',
-            //             'position' => $signatory->user->office->head->position ?? '',
-            //             'signature' => $signatory->user->signature ?? '',
-            //             'signed' => $signatory->signed_at,
-            //         ];
-            //     })->toJson(),
-            //     // 'attachment' => $attachmentDetails->attachments()->latest()->first()?->file_url
-            // ];
-        
-            // $this->document_query['date_sent'] = $this->document_query['date_sent'] ?? now();
-            // // $this->document_query['attachment'] = $this->document_query['attachment'] ?? null;
-
-            // if (isset($this->document_query['signatories']) && is_string($this->document_query['signatories'])) {
-            //     $this->document_query['signatories'] = json_decode($this->document_query['signatories'], true);
-            // }
-            // if (isset($this->document_query['cfs']) && is_string($this->document_query['cfs'])) {
-            //     $this->document_query['cfs'] = json_decode($this->document_query['cfs'], true);
-            // }
-
-            // $pdf = Pdf::loadView('pdf.document-preview', $this->document_query)->setPaper([0, 0, 612.00, 936.00]);
-
-            // $filename = 'document_' . $attachmentDetails->document_number . '.pdf';
-            // Storage::disk('public')->put('assets/files/' . $filename, $pdf->output());
         }
         
         return redirect()->route('documents.list-documents', ['mode' => 'received']);
