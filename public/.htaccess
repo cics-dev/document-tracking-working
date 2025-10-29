@@ -1,3 +1,16 @@
+# Redirect root URL (/) to /landing
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If the request is for the root
+    RewriteCond %{REQUEST_URI} ^/$
+    RewriteRule ^$ /landing [L,R=302]
+
+    # Laravel default rules
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

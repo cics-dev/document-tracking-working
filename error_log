@@ -2,3 +2,40 @@
 [17-Oct-2025 08:47:18 UTC] PHP Fatal error:  Trait "Illuminate\Support\Traits\TransformsToResourceCollection" not found in /home/zppsgzec/public_html/document-tracking.zppsu-cics.com/vendor/laravel/framework/src/Illuminate/Collections/Collection.php on line 23
 [17-Oct-2025 08:47:28 UTC] PHP Fatal error:  Trait "Illuminate\Support\Traits\TransformsToResourceCollection" not found in /home/zppsgzec/public_html/document-tracking.zppsu-cics.com/vendor/laravel/framework/src/Illuminate/Collections/Collection.php on line 23
 [17-Oct-2025 08:47:38 UTC] PHP Fatal error:  Trait "Illuminate\Support\Traits\TransformsToResourceCollection" not found in /home/zppsgzec/public_html/document-tracking.zppsu-cics.com/vendor/laravel/framework/src/Illuminate/Collections/Collection.php on line 23
+[28-Oct-2025 02:34:34 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:34:34 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:34:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/autoload.php(25): ComposerAutoloaderInitb742721b02b83ace590f9900841234e7::getLoader()
+#2 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/artisan(10): require('/home/kvdf1eyoy...')
+#3 {main}
+  thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:34:48 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:34:48 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:34:48 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/autoload.php(25): ComposerAutoloaderInitb742721b02b83ace590f9900841234e7::getLoader()
+#2 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/artisan(10): require('/home/kvdf1eyoy...')
+#3 {main}
+  thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:36:20 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:36:20 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:36:20 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/autoload.php(25): ComposerAutoloaderInitb742721b02b83ace590f9900841234e7::getLoader()
+#2 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/artisan(10): require('/home/kvdf1eyoy...')
+#3 {main}
+  thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:37:37 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:37:37 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:37:37 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/../myclabs/deep-copy/src/DeepCopy/deep_copy.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/autoload.php(25): ComposerAutoloaderInitb742721b02b83ace590f9900841234e7::getLoader()
+#2 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/artisan(10): require('/home/kvdf1eyoy...')
+#3 {main}
+  thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[28-Oct-2025 02:39:35 UTC] PHP Fatal error:  Trait "Illuminate\Support\Traits\TransformsToResourceCollection" not found in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/laravel/framework/src/Illuminate/Collections/Collection.php on line 23

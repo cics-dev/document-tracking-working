@@ -25,7 +25,7 @@ Route::get('/help', function () {
 })->name('help');
 
 // Route for the public landing page at "/"
-Route::get('/', function () {
+Route::get('/landing', function () {
     return view('landing'); // shows landing.blade.php
 })->name('landing');
 
