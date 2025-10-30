@@ -87,13 +87,13 @@
 
         @if (Route::has('register'))
           <div class="text-center text-sm text-gray-600 dark:text-gray-400 pt-2">
-            {{ __('Don\'t have an account?') }}
+          <!--  {{ __('Don\'t have an account?') }} -->
             <flux:link 
               :href="route('register')" 
               wire:navigate
               class="text-blue-600 dark:text-blue-400 hover:text-black dark:hover:text-black hover:underline ml-1"
             >
-              {{ __('Sign up') }}
+          <!--    {{ __('Sign up') }} -->
             </flux:link>
           </div>
         @endif

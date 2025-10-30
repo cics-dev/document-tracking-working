@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#6777ef"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="apple-touch-icon" href="{{ asset('/assets/img/hd-logo.png') }}">
+    <link rel="icon" href="{{ asset('/assets/img/hd-logo.png') }}" type="image/x-icon">
     <link rel="manifest" href="{{ asset('/manifest.json') }}">
 
     <!-- Fonts and Icons -->
@@ -400,7 +401,6 @@
     .hero-image {
         flex: 1;
         min-width: 300px;
-        animation: bounce 4s ease-in-out infinite;
     }
 
     .hero-image img {
@@ -1441,7 +1441,7 @@
     <header>
         <nav>
             <div class="nav-left">
-                <img src="https://zppsu.edu.ph/wp-content/uploads/2023/09/1111.png" alt="Logo" class="nav-logo">
+                <img src="{{ asset('/assets/img/hd-logo.png') }}" alt="Logo" class="nav-logo">
                 <div class="nav-title">
                     <span>DTS-ZPPSU</span>
                     <span>Document Tracking System</span>
@@ -1449,7 +1449,7 @@
             </div>
             
             <button class="mobile-menu-btn" onclick="window.location.href='{{ route('help') }}'">
-                <img src="https://cdn-icons-gif.flaticon.com/15578/15578675.gif" alt="Menu" style="height: 30px;">
+                <img src="{{ asset('/assets/img/bulb.gif') }}" alt="Menu" style="height: 30px;">
             </button>
             
             <ul class="nav-links">
@@ -1463,7 +1463,7 @@
                             </button>
                         </form>
                         <a href="{{ route('help') }}">
-                            <img src="https://cdn-icons-gif.flaticon.com/15578/15578675.gif" alt="Login animation" style="height: 40px; margin-left: 10px;">
+                            <img src="{{ asset('/assets/img/bulb.gif') }}" alt="Login animation" style="height: 40px; margin-left: 10px;">
                         </a>
                     </div>
                 </li>
@@ -1485,7 +1485,7 @@
                     </form>
                 </li>
                 <a href="{{ route('help') }}">
-                    <img src="https://cdn-icons-gif.flaticon.com/15578/15578675.gif" alt="Login animation" style="height: 40px; margin-left: 10px;">
+                    <img src="{{ asset('/assets/img/bulb.gif') }}" alt="Login animation" style="height: 40px; margin-left: 10px;">
                 </a>
                 @endguest
             </ul>
@@ -1527,42 +1527,42 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/9080/9080367.png" alt="Real-time Tracking" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/realtime.png') }}" alt="Real-time Tracking" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Real-time Tracking</h3>
                     <p>Monitor document status in real-time with our intuitive dashboard. Know exactly where your documents are at any moment.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/9821/9821144.png" alt="Automated Notifications" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/bel.png') }}" alt="Automated Notifications" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Automated Notifications</h3>
                     <p>Receive instant alerts for document actions, approvals, and deadlines. Never miss an important update again.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2041/2041643.png" alt="Advanced Analytics" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/graph.png') }}" alt="Advanced Analytics" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Advanced Analytics</h3>
                     <p>Gain valuable insights with comprehensive reporting tools. Identify bottlenecks and optimize your workflow.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2592/2592258.png" alt="Secure Access" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/shield.png') }}" alt="Secure Access" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Secure Access</h3>
                     <p>Role-based permissions ensure sensitive documents are only accessible to authorized personnel.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2920/2920329.png" alt="Mobile Friendly" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/phone.png') }}" alt="Mobile Friendly" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Mobile Friendly</h3>
                     <p>Access the system from any device, anywhere. Our responsive design works perfectly on all screen sizes.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <img src="https://cdn-icons-png.flaticon.com/128/10435/10435204.png" alt="Version Control" style="width: 50px; height: 50px;">
+                        <img src="{{ asset('/assets/img/relation.png') }}" alt="Version Control" style="width: 50px; height: 50px;">
                     </div>
                     <h3>Version Control</h3>
                     <p>Maintain complete document history with our robust version control system. Track changes and revert when needed.</p>
@@ -1619,7 +1619,7 @@
             <div class="footer-top">
                 <div class="footer-col">
                     <div class="footer-logo-title">
-                        <img src="https://zppsu.edu.ph/wp-content/uploads/2023/09/1111.png" alt="Zamboanga Peninsula Polytechnic State University official seal in red and gold with detailed emblematic design" />
+                        <img src="{{ asset('assets/img/hd-logo.png') }}" alt="Zamboanga Peninsula Polytechnic State University official seal in red and gold with detailed emblematic design" />
                         <div>
                             <h4>DTS-ZPPSU</h4>
                             <div class="footer-logo-subtitle">Document Tracking System</div>
@@ -1689,7 +1689,7 @@
         </a>
 
         <a href="{{ route('dashboard') }}" class="mobile-dashboard-item">
-            <img src="https://cdn-icons-png.flaticon.com/512/10165/10165606.png" alt="Dashboard Icon">
+            <img src="{{ asset('assets/img/gear.png') }}" alt="Dashboard Icon">
         </a>
 
         <a href="{{ route('learn') }}" class="mobile-nav-item" data-pos="2">
@@ -1719,7 +1719,7 @@
 
         <!-- Chat Button with GIF -->
         <button class="chat-launcher" id="chatLauncher" aria-controls="chatWindow" aria-expanded="false" aria-label="Open chat">
-            <img src="https://cdn-icons-gif.flaticon.com/12134/12134116.gif" alt="Chat Icon" class="chat-icon" />
+            <img src="{{ asset('/assets/img/smile.gif') }}" alt="Chat Icon" class="chat-icon" />
             <span class="chat-badge" id="chatBadge" style="display: none;">1</span>
         </button>
 

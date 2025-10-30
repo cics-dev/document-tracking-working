@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DTS-ZPPSU | Document Tracking System</title>
+    <link rel="icon" href="{{ asset('/assets/img/hd-logo.png') }}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -761,8 +762,8 @@
                     <h3>
                         <img src="{{ asset('/assets/img/security.png') }}" alt="Fast Processing">
                     </h3>
-                    <p>Login / Signup</p>
-                    <h5>Login / Signup</h5>
+                    <p>Login </p>
+                    <h5>Login Page</h5>
                     <h5 style="color: maroon;"><i>Step 2</i></h5>
 
                 </div>
@@ -824,27 +825,27 @@
     <div class="modal-overlay" id="step2-modal">
         <div class="modal-container">
             <div class="modal-header">
-                <h2>Login / Signup Page</h2>
+                <h2>Login Your Account</h2>
                 <button class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="modal-image">
-                    <img src="{{ asset('/assets/img/1.2.png') }}" alt="Fast Processing">
+                    <img src="{{ asset('/assets/img/log.png') }}" alt="Fast Processing">
                      <div class="modal-text">
-                        <p style="color: green; font-weight: bold;"><br>
-                            Input your Email and Password don't have an account
-                              <span style="color: blue; font-size: smaller;"><i>Click Signup</i></span>
-                </div>
-                    <img src="{{ asset('/assets/img/1.3.png') }}" alt="Fast Processing">
+                       <center> <p style="color: green; font-weight: bold;"><br>
+                            Input your Email and Password 
+                        <!--      <span style="color: blue; font-size: smaller;"><i>Click Signup</i></span> -->
+                </div> </center>
+                 <!--   <img src="{{ asset('/assets/img/1.3.png') }}" alt="Fast Processing">
                 </div>
                 <div class="modal-text">
                     <p style="color: green; font-weight: bold;">
                             Signup the Form then
                               <span style="color: blue; "><i>Click Signup</i></span>
                               <span style="color: green; ">and Proceed</span>
-                              <span style="color: blue; "><i>Login</i></span>
+                              <span style="color: blue; "><i>Login</i></span> -->
                 </div>
             </div>
         </div>

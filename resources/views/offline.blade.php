@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline</title>
+  <title>Server Offline</title>
   <style>
     /* Your existing CSS remains the same */
     * {
@@ -577,15 +577,6 @@
     .game-started .game-header {
       display: none;
     }
-
-    /* Fix for game header positioning */
-    .container .game-container .game-header {
-      position: absolute !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      width: 100% !important;
-    }
   </style>
 </head>
 <body>
@@ -610,10 +601,10 @@
       <!-- Game header inside the game container - centered -->
       <div class="game-header">
         <div class="game-logo-container">
-          <img src="assets/img/hd-logo.png" alt="Logo" class="game-logo">
+          <img src="{{ asset('/assets/img/hd-logo.png') }}" alt="Logo" class="game-logo">
           <h1 class="game-title">OFFLINE</h1>
         </div>
-        <p>Oops! It seems you've lost your internet connection.</p>
+        <p>🔌 Oops! It seems you've lost your internet connection.</p>
       </div>
       
       <div class="score">Score: <span id="score">0</span></div>

@@ -170,7 +170,7 @@
             <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
           </div>
           <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
-            <img src="https://cdn-icons-gif.flaticon.com/13099/13099823.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+            <img src="{{ asset('assets/img/doc.gif') }}" alt="Traffic Icon" style="width: 32px; height: 32px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
@@ -187,7 +187,7 @@
             <p style="font-size: 19px; color: #000; margin-bottom: 8px;">266</p>
           </div>
           <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
-            <img src="https://cdn-icons-gif.flaticon.com/7211/7211817.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+            <img src="{{ asset('assets/img/team.gif') }}" alt="Traffic Icon" style="width: 32px; height: 32px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
@@ -204,7 +204,7 @@
             <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
           </div>
           <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
-            <img src="https://cdn-icons-gif.flaticon.com/15309/15309697.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+            <img src="{{ asset('assets/img/box.gif') }}" alt="Traffic Icon" style="width: 32px; height: 32px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
@@ -221,7 +221,7 @@
             <p style="font-size: 19px; color: #000; margin-bottom: 8px;">281</p>
           </div>
           <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
-            <img src="https://cdn-icons-gif.flaticon.com/8722/8722580.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+            <img src="{{ asset('assets/img/building.gif') }}" alt="Traffic Icon" style="width: 32px; height: 32px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
@@ -238,7 +238,7 @@
             <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
           </div>
           <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
-            <img src="https://cdn-icons-gif.flaticon.com/7211/7211797.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+            <img src="{{ asset('assets/img/graph.gif') }}" alt="Traffic Icon" style="width: 32px; height: 32px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
@@ -258,7 +258,7 @@
   <div class="history-container">
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/4138/4138774.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u1.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">New Document Created</div>
@@ -268,7 +268,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/3006/3006899.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u2.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Uploaded</div>
@@ -278,7 +278,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/16683/16683419.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u3.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Edited</div>
@@ -288,7 +288,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-         <img src="https://cdn-icons-png.flaticon.com/128/16683/16683439.png" alt="Document Icon" style="width: 24px; height: 24px;">
+         <img src="{{ asset('assets/img/u4.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Shared</div>
@@ -298,7 +298,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/14178/14178961.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u5.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Approved</div>
@@ -308,7 +308,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/4138/4138853.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u6.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Downloaded</div>
@@ -318,7 +318,7 @@
     </div>
     <div class="history-item">
       <div class="history-icon">
-        <img src="https://cdn-icons-png.flaticon.com/128/11107/11107601.png" alt="Document Icon" style="width: 24px; height: 24px;">
+        <img src="{{ asset('assets/img/u7.png') }}" alt="Document Icon" style="width: 24px; height: 24px;">
       </div>
       <div class="history-content">
         <div class="history-title">Document Archived</div>

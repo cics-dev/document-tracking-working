@@ -19,6 +19,9 @@ use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
 
 
+ Route::get('/offline', function () {
+   return view('offline');
+  })->name('offline');
 
 Route::get('/help', function () {
     return view('help');
