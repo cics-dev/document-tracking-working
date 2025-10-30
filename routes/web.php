@@ -32,6 +32,10 @@ Route::get('/landing', function () {
     return view('landing'); // shows landing.blade.php
 })->name('landing');
 
+Route::get('/', function () {
+    return view('landing'); // shows landing.blade.php
+})->name('landing');
+
 Route::get('/learn', function () {
     return view('learn'); // shows landing.blade.php
 })->name('learn');
