@@ -199,13 +199,21 @@
             @endif
             @if ($documentType != 'Special Order')
                 <tr>
-                    <td class="label" style="padding-top:25px;">FROM</td>
+                    <td class="label" style="{{ 
+                        ($fromPosition == 'University President' && $document['status'] == 'Approved') || 
+                        ($fromPosition != 'University President') 
+                        ? 'padding-top:35px;' : '' }}">FROM</td>
                     <td>
-                        <img 
-                            src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
-                            alt="Signature" 
-                            style="height: 30px; padding-left: 20px"
-                        ><br>
+                        @if(
+                            ($fromPosition == 'University President' && $document['status'] == 'Approved') ||
+                            ($fromPosition != 'University President')
+                        )
+                            <img 
+                                src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
+                                alt="Signature" 
+                                style="height: 30px; padding-left: 20px"
+                            ><br>
+                        @endif
                         : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
                     </td>
@@ -234,8 +242,8 @@
     <div class="signatory">
         @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
                 @if($role != "Approved by" 
-    || 
-    ($role == "Approved by" && $documentType != 'Request Letter Memorandum' && $documentType != 'Indorsement Letter'))
+                    || 
+                    ($role == "Approved by" && $documentType != 'Request Letter Memorandum' && $documentType != 'Indorsement Letter'))
                     <div class="signatory-group">
                         @if (!empty($role) && $documentType == 'Request Letter Memorandum')
                             <p class="signatory-label">{{ $role }}:</p>

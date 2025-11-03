@@ -39,8 +39,11 @@
         
         <div class="mb-3">
             <p class="font-bold text-sm mb-1">Remarks:</p>
-            <div class="border-b border-black h-8"><p class="text-sm mb-2">{{ $remarks }}</p></div>
+            <div class="border-b border-black min-h-8">
+                <p class="text-sm mb-2 break-words whitespace-normal">{{ $remarks }}</p>
+            </div>
         </div>
+
         
         {{-- <div class="mb-4">
             <p class="font-bold text-sm mb-1">Others:</p>
@@ -57,10 +60,4 @@
             <p class="font-bold text-sm">{{ $head }}</p>
         </div>
     </div>
-
-    {{-- <!-- Action Buttons -->
-    <div class="mt-6 flex justify-end space-x-2">
-        <button @click="open = false" class="px-3 py-1 text-xs border border-gray-400 hover:bg-gray-100">Close</button>
-        <button class="px-3 py-1 bg-blue-600 text-white text-xs hover:bg-blue-700">Submit</button>
-    </div> --}}
 </div>

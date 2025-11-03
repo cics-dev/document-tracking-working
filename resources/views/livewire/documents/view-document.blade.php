@@ -2,7 +2,9 @@
     <h2 class="text-lg font-bold mb-4">Document Preview</h2>
 
     @php
-        $slips = $document->routings->whereNotNull('reviewed_at')->sortByDesc('reviewed_at');
+        $slips = $document->routings
+            ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+            ->sortByDesc('updated_at');
     @endphp
 
     <div class="flex flex-wrap gap-4">
@@ -10,8 +12,11 @@
         <div x-data="{ open: false }">
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[100px] relative">
                 <strong>Routing Slip from: {{ $slip->user->office->name }}</strong><br>
+                <strong>Status: {{ $slip->returned_at?'Returned with remarks':'Reviewed' }}</strong><br>
                 <strong>Remarks:</strong>
-                {{ $slip->comments }}
+                <p class="truncate w-[260px] inline-block align-top">
+                    {{ $slip->comments }}
+                </p>
 
                 <button @click="open = true" class="absolute top-2 right-2 text-yellow-700 hover:text-yellow-900">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

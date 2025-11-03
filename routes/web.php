@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
         Route::get('/create', CreateOffice::class)->name('create-office');
+        // Route::get('/edit', CreateOffice::class)->name('edit-office');
     });
 
     Route::prefix('users')->name('users.')->group(function () {

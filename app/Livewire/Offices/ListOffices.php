@@ -45,7 +45,8 @@ class ListOffices extends Component
 
     public function editOffice($id)
     {
-        $office = collect($this->offices)->firstWhere('id', $id);
+        $offices = app(OfficeController::class)->index('ADMIN', false);
+        $office = collect($offices)->firstWhere('id', $id);
         $this->officeId = $id;
         $this->name = $office['name'];
         $this->abbreviation = $office['abbreviation'];

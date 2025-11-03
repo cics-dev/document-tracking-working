@@ -107,14 +107,20 @@ class CreateDocument extends Component
         if ($data) {
             $this->original_document_id = $data['original_document_id']??$data['id']??null;
             $this->redirect_mode = $data['redirect_mode']??null;
-            $this->document_to_id = $data['to']??$data['to_id'];
-            $this->document_from_id = $data['from'];
+            $this->document_to_id = $data['to']??$data['to_id']??null;
+            $this->document_to_text = $data['to']??null;
+            $this->document_from_id = $data['from']??null;
             $this->document_type_id = $data['document_type_id'];
             $this->subject = $data['subject'];
-            $this->content = $data['content'];
-            $this->thru = $data['thru'];
+            $this->content = $data['content']??null;
+            $this->thru = $data['thru']??null;
             // $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf']??null;
+
+            if ($this->document_type_id == 5) {
+                dd($this->document_type);
+                $this->updateContentWithSubject();
+            }
         }
         else if($number) {
             $this->redirect_mode = 'revision';
