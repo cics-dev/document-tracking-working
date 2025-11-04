@@ -75,7 +75,13 @@
                             <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->toOffice->name ?? 'N/A' }}</td>
                         @endif
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->documentType->abbreviation ?? 'N/A' }}</td>
-                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 uppercase">{{ $document->status ?? 'N/A' }}</td>
+                        <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center align-middle uppercase 
+                            @if(strtolower($document->status) == 'approved') text-green-600 dark:text-green-400
+                            @elseif(strtolower($document->status) == 'rejected') text-red-600 dark:text-red-400
+                            @elseif(strtolower($document->status) == 'sent') text-blue-600 dark:text-blue-400
+                            @else text-gray-800 dark:text-gray-200 @endif">
+                            {{ $document->status ?? 'N/A' }}
+                        </td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->date_sent }}</td>
                         <td class="px-4 py-2">
                             <div class="flex justify-center space-x-2">
@@ -108,7 +114,7 @@
                                     </button>
                                     <a 
                                         href="{{ route('documents.create-revision', $document->document_number) }}"
-                                        class="px-3 py-1 text-sm rounded-md bg-gray-500 hover:bg-gray-600 text-white transition-colors"
+                                        class="px-3 py-1 text-sm rounded-md bg-blue-500 hover:bg-gray-600 text-white transition-colors"
                                     >
                                         Revise
                                     </a>

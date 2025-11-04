@@ -21,6 +21,7 @@ class CreateDocument extends Component
     #[Validate('array')]
     #[Validate('max:5120')] // Max 5MB total
     public $attachments = [];
+    public $uploadedFiles = [];
     
     // public $revised_document_number = '';
     public $original_document_number;

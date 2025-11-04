@@ -23,13 +23,6 @@
 
     <!-- Hidden templates for upload progress -->
     <div class="hidden" id="progress-template">
-        <div wire:init="loadInitialContent">
-            <div wire:ignore>
-                </div>
-
-            <input type="hidden" id="quill-content" wire:model.live="content"> 
-            
-        </div>
         <div class="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded-md mb-2 animate-glow">
             <div class="flex items-center min-w-0 flex-1">
                 <div class="mr-3 flex-shrink-0">
@@ -232,9 +225,13 @@
             <label class="block text-sm font-medium text-gray-900">
                 {{ __('Content') }} <span class="text-red-600">*</span>
             </label>
-            <div wire:ignore class="border border-gray-300 rounded-md overflow-hidden">
-                <div id="quill-editor" style="min-height: 200px;" class="text-gray-900"></div>
-                <input type="hidden" wire:model="content" id="quill-content" />
+            <div wire:init="loadInitialContent">
+                <div wire:init="loadInitialContent">
+                    <div wire:ignore class="border border-gray-300 rounded-md overflow-hidden">
+                        <div id="quill-editor" style="min-height: 200px;" class="text-gray-900"></div>
+                        <input type="hidden" wire:model="content" id="quill-content" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -377,114 +374,114 @@
         </div>
         @endif
 
-    <!-- Attachments Section -->
-    <div class="mb-8">
-        <label for="attachments" class="block text-sm font-medium text-gray-900 mb-2">
-            {{ __('Attachments') }} <span class="text-gray-500 text-xs">(Max 100MB per file)</span>
-        </label>
+        <!-- Attachments Section -->
+        <div class="mb-8">
+            <label for="attachments" class="block text-sm font-medium text-gray-900 mb-2">
+                {{ __('Attachments') }} <span class="text-gray-500 text-xs">(Max 100MB per file)</span>
+            </label>
 
-        <div class="flex flex-col md:flex-row gap-4">
-            <!-- Left Side - Upload Area -->
-            <div class="w-full md:w-1/3">
-                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-                    <div class="flex flex-col items-center justify-center p-4 text-center">
-                        <svg class="w-6 h-6 mb-2 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                        </svg>
-                        <p class="text-xs text-gray-700 mb-1">Click to upload or drag and drop</p>
-                        <p class="text-xs text-gray-500">
-                            PDF, IMAGES<br>(MAX. 100MB each)
-                        </p>
-                    </div>
-                    <input 
-                        id="dropzone-file" 
-                        type="file" 
-                        wire:model="attachments" 
-                        multiple 
-                        accept=".pdf,image/*,.jpg,.jpeg,.png"
-                        class="hidden"
-                    />
-                </label>
-            </div>
+            <div class="flex flex-col md:flex-row gap-4">
+                <!-- Left Side - Upload Area -->
+                <div class="w-full md:w-1/3">
+                    <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex flex-col items-center justify-center p-4 text-center">
+                            <svg class="w-6 h-6 mb-2 text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                            </svg>
+                            <p class="text-xs text-gray-700 mb-1">Click to upload or drag and drop</p>
+                            <p class="text-xs text-gray-500">
+                                PDF, DOCX, XLSX, CSV, IMAGES<br>(MAX. 100MB each)
+                            </p>
+                        </div>
+                        <input 
+                            id="dropzone-file" 
+                            type="file" 
+                            wire:model="attachments" 
+                            multiple 
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*,.jpg,.jpeg,.png,.gif"
+                            class="hidden"
+                        />
+                    </label>
+                </div>
 
-            <!-- Right Side - File List -->
-            <div class="w-full md:w-2/3">
-                @error('attachments.*') 
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
-                @enderror
+                <!-- Right Side - File List -->
+                <div class="w-full md:w-2/3">
+                    @error('attachments.*') 
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
+                    @enderror
 
-                <!-- File list container for JavaScript upload simulation -->
-                <div id="file-list" class="space-y-2">
-                    @if ($attachments)
-                        @foreach ($attachments as $attachment)
-                            <div class="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md">
-                                <div class="flex items-center min-w-0">
-                                    @php
-                                        $icon = match(true) {
-                                            str_contains($attachment->getClientMimeType(), 'pdf') => 'pdf',
-                                            str_contains($attachment->getClientMimeType(), 'word') => 'word',
-                                            str_contains($attachment->getClientMimeType(), 'excel') => 'excel',
-                                            str_contains($attachment->getClientMimeType(), 'csv') => 'csv',
-                                            str_contains($attachment->getClientMimeType(), 'image') => 'image',
-                                            default => 'file'
-                                        };
-                                    @endphp
-                                    
-                                    <div class="mr-2 flex-shrink-0">
-                                        @if($icon === 'pdf')
-                                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        @elseif($icon === 'word')
-                                        <svg class="w-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        @elseif($icon === 'excel')
-                                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        @elseif($icon === 'csv')
-                                        <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        @elseif($icon === 'image')
-                                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        @else
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                        </svg>
-                                        @endif
+                    <!-- File list container for JavaScript upload simulation -->
+                    <div id="file-list" class="space-y-2">
+                        @if ($attachments)
+                            @foreach ($attachments as $attachment)
+                                <div class="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md">
+                                    <div class="flex items-center min-w-0">
+                                        @php
+                                            $icon = match(true) {
+                                                str_contains($attachment->getClientMimeType(), 'pdf') => 'pdf',
+                                                str_contains($attachment->getClientMimeType(), 'word') => 'word',
+                                                str_contains($attachment->getClientMimeType(), 'excel') => 'excel',
+                                                str_contains($attachment->getClientMimeType(), 'csv') => 'csv',
+                                                str_contains($attachment->getClientMimeType(), 'image') => 'image',
+                                                default => 'file'
+                                            };
+                                        @endphp
+                                        
+                                        <div class="mr-2 flex-shrink-0">
+                                            @if($icon === 'pdf')
+                                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            @elseif($icon === 'word')
+                                            <svg class="w-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            @elseif($icon === 'excel')
+                                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            @elseif($icon === 'csv')
+                                            <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            @elseif($icon === 'image')
+                                            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            @else
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                            </svg>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-medium text-gray-900 truncate">
+                                                {{ $attachment->getClientOriginalName() }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                {{ round($attachment->getSize() / 1024 / 1024, 2) }} MB • 
+                                                {{ strtoupper($attachment->getClientOriginalExtension()) }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-medium text-gray-900 truncate">
-                                            {{ $attachment->getClientOriginalName() }}
-                                        </p>
-                                        <p class="text-xs text-gray-500">
-                                            {{ round($attachment->getSize() / 1024 / 1024, 2) }} MB • 
-                                            {{ strtoupper($attachment->getClientOriginalExtension()) }}
-                                        </p>
-                                    </div>
+                                    <button 
+                                        type="button" 
+                                        wire:click="removeAttachment('{{ $attachment->getClientOriginalName() }}')" 
+                                        class="text-red-600 hover:text-red-800 p-1"
+                                        title="Remove"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <button 
-                                    type="button" 
-                                    wire:click="removeAttachment('{{ $attachment->getClientOriginalName() }}')" 
-                                    class="text-red-600 hover:text-red-800 p-1"
-                                    title="Remove"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-                        @endforeach
-                    @endif
+                            @endforeach
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     @endif
 
     <!-- Form Actions -->
@@ -531,9 +528,6 @@
             const fileList = document.getElementById('file-list');
             const progressTemplate = document.getElementById('progress-template');
             const completeTemplate = document.getElementById('complete-template');
-
-            if (!fileInput || !fileList || !progressTemplate || !completeTemplate) return; // Avoid re-initializing if elements not found
-
             const uploadSimulations = {};
 
             function formatFileSize(bytes) {
@@ -542,23 +536,74 @@
             }
 
             function calculateUploadTime(fileSize) {
-                const baseTime = 1500;
+                // More realistic upload time calculation
+                // Base time + time based on file size with realistic speeds
+                const baseTime = 1500; // 1.5 seconds base preparation
                 const fileSizeMB = fileSize / (1024 * 1024);
+                
+                // Simulate different speeds based on file size
                 let uploadSpeed;
-                if (fileSizeMB < 1) uploadSpeed = 5;
-                else if (fileSizeMB < 10) uploadSpeed = 3;
-                else uploadSpeed = 1.5;
-                return baseTime + (fileSizeMB / uploadSpeed) * 1000;
+                if (fileSizeMB < 1) {
+                    uploadSpeed = 5; // 5 MB/s for small files
+                } else if (fileSizeMB < 10) {
+                    uploadSpeed = 3; // 3 MB/s for medium files
+                } else {
+                    uploadSpeed = 1.5; // 1.5 MB/s for large files
+                }
+                
+                const uploadTime = (fileSizeMB / uploadSpeed) * 1000;
+                return baseTime + uploadTime;
             }
+
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+
+            // Add drag and drop support
+            const dropzone = fileInput.parentElement;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropzone.classList.add('border-green-500', 'bg-green-50');
+            }
+
+            function unhighlight() {
+                dropzone.classList.remove('border-green-500', 'bg-green-50');
+            }
+
+            dropzone.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            });
 
             function handleFiles(files) {
                 if (!files || files.length === 0) return;
+                
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
+                    // Check file size (max 100MB)
                     if (file.size > 100 * 1024 * 1024) {
                         alert(`File "${file.name}" is too large. Maximum size is 100MB.`);
                         continue;
                     }
+                    
                     const progressElement = createUploadProgress(file);
                     simulateUpload(file, progressElement);
                 }
@@ -577,7 +622,9 @@
                 });
 
                 fileList.appendChild(progressElement);
+                // Scroll to show the new upload
                 progressElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
                 return progressElement;
             }
 
@@ -587,49 +634,64 @@
                 const statusText = progressElement.querySelector('.upload-status');
                 const speedText = progressElement.querySelector('.upload-speed');
                 const uploadId = progressElement.id;
+
                 const fileSize = file.size;
                 const fileSizeMB = formatFileSize(fileSize);
-
                 let uploadedBytes = 0;
+                
+                // Calculate realistic upload time
                 const totalTime = calculateUploadTime(fileSize);
-                const intervalTime = 100;
+                const intervalTime = 100; // Update every 100ms
                 const steps = totalTime / intervalTime;
                 const bytesPerStep = fileSize / steps;
+                
                 const startTime = Date.now();
                 let lastUpdateTime = startTime;
 
                 uploadSimulations[uploadId] = setInterval(() => {
                     const currentTime = Date.now();
                     const elapsed = currentTime - startTime;
+                    
+                    // Calculate progress based on time elapsed
                     let progress = Math.min(elapsed / totalTime, 1);
-                    const randomness = 0.9 + (Math.random() * 0.2);
+                    
+                    // Add some randomness to make it more realistic
+                    const randomness = 0.9 + (Math.random() * 0.2); // 0.9 to 1.1
                     progress = Math.min(progress * randomness, 1);
+                    
                     uploadedBytes = progress * fileSize;
-
+                    
                     if (progress >= 1) {
                         uploadedBytes = fileSize;
                         clearInterval(uploadSimulations[uploadId]);
                         completeUpload(file, progressElement);
                         return;
                     }
-
+                    
                     const progressPercent = progress * 100;
                     progressBar.style.width = `${progressPercent}%`;
-                    mbText.textContent = `${formatFileSize(uploadedBytes)} MB / ${fileSizeMB} MB`;
-
+                    
+                    const uploadedMB = formatFileSize(uploadedBytes);
+                    mbText.textContent = `${uploadedMB} MB / ${fileSizeMB} MB`;
+                    
+                    // Calculate current upload speed
                     const timeSinceLastUpdate = (currentTime - lastUpdateTime) / 1000;
                     if (timeSinceLastUpdate > 0) {
-                        const currentSpeed = (bytesPerStep / timeSinceLastUpdate) / (1024 * 1024);
+                        const bytesSinceLastUpdate = uploadedBytes - (progressPercent - 1) * fileSize / 100;
+                        const currentSpeed = (bytesSinceLastUpdate / timeSinceLastUpdate) / (1024 * 1024);
                         speedText.textContent = `${Math.max(0.1, currentSpeed).toFixed(2)} MB/s`;
                     }
                     lastUpdateTime = currentTime;
 
+                    // Update status based on progress
                     if (progress < 0.1) statusText.textContent = 'Preparing...';
                     else if (progress < 0.3) statusText.textContent = 'Uploading...';
                     else if (progress < 0.7) statusText.textContent = 'Processing...';
                     else if (progress < 0.9) statusText.textContent = 'Finalizing...';
                     else statusText.textContent = 'Almost done...';
                 }, intervalTime);
+
+                progressElement.dataset.uploadId = uploadId;
             }
 
             function cancelUpload(progressElement) {
@@ -646,35 +708,18 @@
                 completeElement.classList.remove('hidden');
                 completeElement.querySelector('.file-name').textContent = file.name;
                 completeElement.querySelector('.file-size').textContent = `${formatFileSize(file.size)} MB`;
+
                 completeElement.querySelector('.remove-file').addEventListener('click', function() {
                     completeElement.remove();
                 });
+
                 progressElement.replaceWith(completeElement);
+                
+                // Add a small celebration effect
                 completeElement.classList.add('animate-pulse');
-                setTimeout(() => completeElement.classList.remove('animate-pulse'), 2000);
-            }
-
-            // Drag & Drop
-            const dropzone = fileInput.parentElement;
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropzone.addEventListener(e, preventDefaults, false));
-            ['dragenter', 'dragover'].forEach(e => dropzone.addEventListener(e, () => highlight(dropzone), false));
-            ['dragleave', 'drop'].forEach(e => dropzone.addEventListener(e, () => unhighlight(dropzone), false));
-            dropzone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
-
-            fileInput.addEventListener('change', e => {
-                handleFiles(e.target.files);
-                e.target.value = '';
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            function highlight(el) {
-                el.classList.add('border-green-500', 'bg-green-50');
-            }
-            function unhighlight(el) {
-                el.classList.remove('border-green-500', 'bg-green-50');
+                setTimeout(() => {
+                    completeElement.classList.remove('animate-pulse');
+                }, 2000);
             }
         }
 

@@ -722,6 +722,52 @@
         z-index: 0;
     }
 
+    /* Fix for mobile navbar login button */
+    .mobile-navbar a[href="{{ route('login') }}"] {
+        position: relative;
+        z-index: 1001;
+    }
+
+    /* Ensure mobile navbar items are properly clickable */
+    .mobile-nav-item {
+        position: relative;
+        z-index: 1001;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improve touch targets for mobile */
+    @media (max-width: 768px) {
+        .mobile-nav-item {
+            padding: 12px 4px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        
+        .mobile-nav-item span {
+            font-size: 0.7rem;
+        }
+        
+        /* Ensure login button is properly styled in mobile navbar */
+        .mobile-navbar a[href="{{ route('login') }}"] {
+            background: transparent !important;
+            border: none !important;
+            color: var(--univ-cream) !important;
+        }
+    }
+
+    /* Prevent any potential overlay issues */
+    .mobile-navbar::before {
+        pointer-events: none;
+    }
+
     /* Responsive Styles */
     @media (max-width: 768px) {
         h1 {
@@ -1916,7 +1962,7 @@
             }, 1500);
         });
 
-        // Mobile navbar functionality
+        // Enhanced mobile navbar functionality with login fix
         document.addEventListener('DOMContentLoaded', function() {
             const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
             const mobileHighlight = document.querySelector('.mobile-highlight');
@@ -1924,7 +1970,13 @@
             updateMobileHighlight();
 
             mobileNavItems.forEach(item => {
-                item.addEventListener('click', e => {
+                item.addEventListener('click', function(e) {
+                    // For login item, allow default behavior immediately
+                    if (this.getAttribute('href') === '{{ route('login') }}' || 
+                        this.getAttribute('href') === '{{ route('logout') }}') {
+                        return; // Let the link work normally
+                    }
+                    
                     e.preventDefault();
                     mobileNavItems.forEach(i => i.classList.remove('active'));
                     item.classList.add('active');
@@ -1953,6 +2005,24 @@
                 const width = 100 / mobileNavItems.length;
                 mobileHighlight.style.width = `${width}%`;
                 mobileHighlight.style.left = `${activeTab * width}%`;
+            }
+
+            // Ensure mobile navbar login links work properly
+            const mobileLoginLink = document.querySelector('.mobile-navbar a[href="{{ route('login') }}"]');
+            const mobileLogoutLink = document.querySelector('.mobile-navbar a[href="{{ route('logout') }}"]');
+            
+            if (mobileLoginLink) {
+                mobileLoginLink.addEventListener('click', function(e) {
+                    // Allow default navigation to login page
+                    return true;
+                });
+            }
+            
+            if (mobileLogoutLink) {
+                mobileLogoutLink.addEventListener('click', function(e) {
+                    // The logout is already handled by the form submission
+                    return true;
+                });
             }
         });
 
@@ -2282,38 +2352,22 @@
 
             // Generate bot response based on user input
             async function getBotResponse(text) {
-                // const lowerText = text.toLowerCase();
-                
-                // if (lowerText.includes('track') || lowerText.includes('document')) {
-                //     return 'To track a document, go to the tracking section on our website or click the "Track" button in the mobile navigation. You\'ll need to enter your document ID.';
-                // } else if (lowerText.includes('login') || lowerText.includes('account')) {
-                //     return 'You can login to your DTS-ZPPSU account by clicking the "Login" button in the top right corner of the page.';
-                // } else if (lowerText.includes('help') || lowerText.includes('support')) {
-                //     return 'For immediate assistance, please contact our support team at support@zppsu.edu.ph or call +63 912 345 6789.';
-                // } else if (lowerText.includes('feature') || lowerText.includes('what can')) {
-                //     return 'DTS-ZPPSU offers real-time tracking, automated notifications, advanced analytics, secure access, mobile compatibility, and version control. Check our Features section for details.';
-                // } else if (lowerText.includes('hello') || lowerText.includes('hi')) {
-                //     return 'Hello! How can I help you with the DTS-ZPPSU system today?';
-                // } else {
-                    // If no keyword matches, call Laravel backend (OpenAI)
-                    try {
-                        const response = await fetch('/chat/send', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({ message: text })
-                        });
-                        console.log(response);
-                        
-                        const data = await response.json();
-                        return data.response || 'Sorry, I wasn’t able to get a response from the server.';
-                    } catch (error) {
-                        console.error('Chat error:', error);
-                        return 'There was an issue connecting to the AI server.';
-                    }
-                // }
+                try {
+                    const response = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+                    
+                    const data = await response.json();
+                    return data.response || 'Sorry, I wasn’t able to get a response from the server.';
+                } catch (error) {
+                    console.error('Chat error:', error);
+                    return 'There was an issue connecting to the AI server.';
+                }
             }
             
             // Sample initial messages
