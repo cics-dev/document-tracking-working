@@ -1,9 +1,11 @@
 <div class="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md transition-shadow duration-300">
     @php
-        // Get routing slips from the related document of the attachment
-        $attachmentSlips = $attachment->attachmentDocument->routings
-            ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
-            ->sortByDesc('updated_at');
+        $attachmentSlips = collect();
+        if ($attachment->attachmentDocument && $attachment->attachmentDocument->routings) {
+            $attachmentSlips = $attachment->attachmentDocument->routings
+                ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+                ->sortByDesc('updated_at');
+        }
     @endphp
 
     {{-- Attachment Header --}}
@@ -32,7 +34,7 @@
     @if ($attachmentSlips->count() > 0)
         <div class="mt-4 border-t pt-3">
             <h4 class="font-semibold text-gray-700 text-sm mb-2">
-                Routing Slips for {{ $attachment->name ?? 'Attachment' }}
+                Routing Slips
             </h4>
 
             <div class="flex flex-wrap gap-4">
@@ -43,7 +45,7 @@
                             <strong>From:</strong> {{ $slip->user->office->name }}<br>
                             <strong>Status:</strong> {{ $slip->returned_at ? 'Returned with remarks' : 'Reviewed' }}<br>
                             <strong>Remarks:</strong> 
-                            <p class="truncate w-[260px] inline-block align-top">
+                            <p class="truncate w-[260px]">
                                 {{ $slip->comments }}
                             </p>
 
@@ -79,8 +81,8 @@
     @endif
 </div>
 
-@if ($attachment->attachmentDocument && $attachment->attachmentDocument->attachments->count() > 0)
-        @foreach ($attachment->attachmentDocument->attachments as $subAttachment)
+@if ($attachment->attachmentDocument && $attachment->attachmentDocument->all_attachments->count() > 0)
+        @foreach ($attachment->attachmentDocument->all_attachments as $subAttachment)
             @include('partials.attachment-item', ['attachment' => $subAttachment, 'level' => $level + 1])
         @endforeach
 @endif

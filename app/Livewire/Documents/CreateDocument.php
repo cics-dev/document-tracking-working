@@ -185,6 +185,7 @@ class CreateDocument extends Component
         $this->fetchOffices();
         $this->types = [];
         $this->fetchDocumentTypes();
+        $this->handleUpdateDocumentType();
         session()->forget('redirect_data');
         session()->forget('document_query');
     }
@@ -453,6 +454,9 @@ class CreateDocument extends Component
                             ]);
                         }
                     }
+
+                    if ($this->external_document_id)
+                        ExternalDocument::find($this->external_document_id)->update(['document_id'=>$document->id]);
                 }
 
                 if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
@@ -460,7 +464,8 @@ class CreateDocument extends Component
                 }
 
                 if($this->document_type == 'ECLR') {
-                    ExternalDocument::find($this->external_document_id)->update(['document_id'=>$document->id]);
+                    if ($this->external_document_id)
+                        ExternalDocument::find($this->external_document_id)->update(['document_id'=>$document->id]);
                 }
 
                 if ($this->document_type == 'SO') {

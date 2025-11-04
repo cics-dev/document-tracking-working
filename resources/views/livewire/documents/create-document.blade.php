@@ -523,7 +523,7 @@
     </div>
 
     <script>
-        function initFileUploadSimulation() {
+        document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('dropzone-file');
             const fileList = document.getElementById('file-list');
             const progressTemplate = document.getElementById('progress-template');
@@ -721,11 +721,6 @@
                     completeElement.classList.remove('animate-pulse');
                 }, 2000);
             }
-        }
-
-        // Run on page load and every Livewire DOM change
-        document.addEventListener('DOMContentLoaded', initFileUploadSimulation);
-        document.addEventListener('livewire:load', initFileUploadSimulation);
-        document.addEventListener('livewire:navigated', initFileUploadSimulation);
+        });
     </script>
 </form>

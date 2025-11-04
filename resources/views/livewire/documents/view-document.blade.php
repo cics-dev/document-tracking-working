@@ -2,9 +2,12 @@
     <h2 class="text-lg font-bold mb-4">Document Preview</h2>
 
     @php
-        $slips = $document->routings
-            ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
-            ->sortByDesc('updated_at');
+        $slips = collect();
+        if ($document && $document->routings) {
+            $slips = $document->routings
+                ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+                ->sortByDesc('updated_at');
+        }
     @endphp
 
     <div class="flex flex-wrap gap-4">
@@ -14,7 +17,7 @@
                 <strong>Routing Slip from: {{ $slip->user->office->name }}</strong><br>
                 <strong>Status: {{ $slip->returned_at?'Returned with remarks':'Reviewed' }}</strong><br>
                 <strong>Remarks:</strong>
-                <p class="truncate w-[260px] inline-block align-top">
+                <p class="truncate w-[260px]">
                     {{ $slip->comments }}
                 </p>
 
@@ -45,12 +48,12 @@
     @else
         <p>Loading preview...</p>
     @endif
-    @if ($document->attachments && $document->attachments->count() > 0)
+    @if ($document->all_attachments && $document->all_attachments->count() > 0)
         <div class="mt-6">
             <h3 class="text-lg font-semibold mb-3">Attachments</h3>
             <div class="space-y-4">
-                <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach ($document->attachments as $attachment)
+                <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+                    @foreach ($document->all_attachments as $attachment)
                         @include('partials.attachment-item', ['attachment' => $attachment, 'level' => 0])
                     @endforeach
                 </div>
@@ -58,7 +61,7 @@
         </div>
     @endif
 
-    {{-- @if ($document->attachments && $document->attachments->count() > 0)
+    @if ($document->attachments && $document->attachments->count() > 0)
         <div class="mt-6">
             <h3 class="text-lg font-semibold mb-3">Attachments</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -90,7 +93,7 @@
                 @endforeach
             </div>
         </div>
-    @endif --}}
+    @endif
     
     @if(
         (

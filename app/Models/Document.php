@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Collection;
 
 class Document extends Model
 {
@@ -131,6 +132,21 @@ class Document extends Model
     public function attachments()
     {
         return $this->hasMany(DocumentAttachment::class);
+    }
+
+    public function externalDocuments()
+    {
+        return $this->hasMany(ExternalDocument::class);
+    }
+
+    // 👇 Custom accessor that merges both
+    public function getAllAttachmentsAttribute(): Collection
+    {
+        $externalDocs = $this->externalDocuments->values()->map(function ($doc, $index) {
+            $doc->name = 'External Communication Letter ' . ($index + 1);
+            return $doc;
+        });
+        return $this->externalDocuments->merge($this->attachments);
     }
 
     public function signatories()
