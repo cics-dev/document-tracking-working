@@ -112,6 +112,15 @@ class CreateDocument extends Component
 
     public function mount($number = null)
     {
+        $this->signatories = [];
+        $this->office_type = Auth::user()->office->office_type;
+        $this->users = [];
+        $this->fetchUsers();
+        $this->offices = [];
+        $this->fetchOffices();
+        $this->types = [];
+        $this->fetchDocumentTypes();
+        
         $data = session()->pull('redirect_data');
 
         if (!$data) {
@@ -131,7 +140,8 @@ class CreateDocument extends Component
             $this->content = $data['content']??null;
             $this->thru = $data['thru']??null;
             // $this->attachment = $data['attachment'];
-            $this->cf_offices = $data['cf']??null;
+            $this->cf_offices = $data['cf']??[];
+            $this->handleUpdateDocumentType();
         }
         else if($number) {
             $this->redirect_mode = 'revision';
@@ -173,19 +183,6 @@ class CreateDocument extends Component
             $this->thru = $document->thru;
         }
 
-        // if ($number) {
-
-        // }
-        
-        $this->signatories = [];
-        $this->office_type = Auth::user()->office->office_type;
-        $this->users = [];
-        $this->fetchUsers();
-        $this->offices = [];
-        $this->fetchOffices();
-        $this->types = [];
-        $this->fetchDocumentTypes();
-        $this->handleUpdateDocumentType();
         session()->forget('redirect_data');
         session()->forget('document_query');
     }
@@ -279,6 +276,7 @@ class CreateDocument extends Component
             'fromPosition' => $fromPosition,
             'documentType' => $this->document_type === 'Intra'?'Intra':$documentType,
             'documentNumber' => $documentNumber,
+            'unit' => Auth::user()->office->abbreviation,
             'signatories' => $signatories?->toJson() ?? null,
             'cfs' => $cfs?->toJson() ?? null,
             'attachment' => $this->attachment
@@ -348,6 +346,7 @@ class CreateDocument extends Component
                 $docNumber = 'ZPPSU-'.$docNumber;
             }
         }
+
         if ($originalDocumentForDraft && $originalDocumentForDraft->status === 'draft' && $this->original_document_id) {
             $document = $originalDocumentForDraft->update([
                 'from_id' => $from_user->office->id,
@@ -388,7 +387,7 @@ class CreateDocument extends Component
         }
 
         if ($status != 'draft') {
-            if ($this->document_type === 'IOM') {
+            if (($this->document_type === 'IOM' || $this->document_type === 'SO') && $this->original_document_id) {
                 $originalDocument = Document::find($this->original_document_id);
                 $document->attachments()->create([
                         'attachment_document_id' => $this->original_document_id,
@@ -398,14 +397,16 @@ class CreateDocument extends Component
                         'is_upload' => false
                 ]);
                 $originalDocument->update([
-                    'status' => 'Generated IOM'
+                    'status' => 'Generated '.$this->document_type
                 ]);
 
-                $document->signatories()->create([
-                    'signatory_label' => 'Approved by',
-                    'user_id' => 2,
-                    'sequence' => 1,
-                ]);
+                if($this->document_type === 'IOM') {
+                    $document->signatories()->create([
+                        'signatory_label' => 'Approved by',
+                        'user_id' => 2,
+                        'sequence' => 1,
+                    ]);
+                }
             }
             else {
                 foreach ($this->attachments as $file) {
@@ -459,7 +460,7 @@ class CreateDocument extends Component
                         ExternalDocument::find($this->external_document_id)->update(['document_id'=>$document->id]);
                 }
 
-                if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
+                if($this->document_type == 'ECLR' || $this->document_type == 'SO' || $this->document_type == 'IL') {
                     $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
                 }
 

@@ -109,7 +109,10 @@ class DocumentController extends Controller
                 $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
                 
                 if ($presidentOfficeId) {
-                    $presidentDocs = Document::where('to_id', $presidentOfficeId)
+                    $presidentDocs = Document::where(function ($q) {
+                            $q->where('document_type_id', 3)
+                            ->orWhere('document_type_id', 1);
+                        })
                         ->when($user->role_id == 4, function ($query) {
                             $query->whereDoesntHave('routings.user', fn($q) => $q->where('office_id', 19));
                         }, function ($query) {
@@ -125,7 +128,7 @@ class DocumentController extends Controller
 
             // 6️⃣ Filter out certain doc types for President
             if ($user->position == 'University President') {
-                $docs = $docs->reject(fn($doc) => $doc->document_type_id == 1);
+                $docs = $docs->reject(fn($doc) => in_array($doc->document_type_id, [1, 3]));
             }
 
             // 7️⃣ Tag each doc with relationship flags (like your first code)

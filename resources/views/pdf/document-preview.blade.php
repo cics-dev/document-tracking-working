@@ -133,104 +133,255 @@
         .signatory {
             margin-top: 40px;
         }
+
+        /* Reset and general document styles */
+        .document-container {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            width: 100%;
+            max-width: 800px; /* Adjust as needed for A4/Letter size */
+            margin: 0 auto;
+            line-height: 1.1;
+        }
+
+        /* --- Document Header Table --- */
+        .document-header {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* Crucial for fixed PDF layout */
+            line-height: 1.1;
+        }
+
+        /* All cells get a border */
+        .document-header td {
+            border: 1px solid black;
+            padding: 0 5px;
+            vertical-align: top;
+        }
+
+        /* Left Column Styling (Logo/Title Area) */
+        .logo-area {
+            vertical-align: middle !important;
+            text-align: center;
+        }
+
+        .university-logo {
+            max-width: 1.15in; /* Adjust size as necessary */
+            height: auto;
+            display: block;
+            margin: 0 auto 2px; /* Center the logo */
+        }
+
+        .university-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: center;
+            padding: 0 5px;
+            margin: 0;
+        }
+
+        /* Office Title Area */
+        .office-title-area {
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle !important;
+            margin: 0;
+        }
+
+        /* Right Info Box Cells */
+        .info-cell {
+            font-weight: normal;
+            text-align: left;
+            padding-left: 10px !important;
+            width: 100px; /* Fixed width for labels */
+        }
+
+        .data-cell {
+            font-weight: bold;
+            text-align: left;
+        }
+        
+        /* Ensure borders are single lines */
+        .info-cell, .data-cell {
+            border-left: none; /* No vertical border between info and data columns */
+        }
+        
+        /* --- Document Footer Section (Indorsement/Subject) --- */
+        .header-footer-section {
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            padding: 10px 5px;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .indorsement-text {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        
+        .subject-text {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <?php $image_path = '/assets/img/zppsu-logo.png'; ?>
-        <img src="{{ public_path() . $image_path }}" alt="University Logo">
-        <strong>Republic of the Philippines<br>
-        ZAMBOANGA PENINSULA POLYTECHNIC STATE UNIVERSITY</strong><br>
-        Region IX, Western Mindanao<br>
-        R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
-        Telephone No.: 955-4024 / 991-4012
-        @if(isset($office_logo) && $office_logo && $documentType=='Intra')
-            <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
-        @endif
-    </div>
-
-    <hr style="margin: 10px 0;">
-    
-    @if ($documentType == 'External Communication Response Letter')
-    <br>{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}<br><br><br>
-    @endif
-    @if ($documentType != 'External Communication Response Letter')
-    <div class="memo-info">
-        @if($documentType == 'Intra')
-            <p><strong>College Memorandum</strong><br>
-        @else
-            <p><strong>{{ strtoupper($documentType) }}</strong><br>
-        @endif
-        @if($documentType != 'Special Order')
-            {{ $documentNumber }}</p>
-        @else
-            <?php
-                $code = 'SAO(ADMIN)-SO-4-2025';
-
-                $parts = explode('-', $code); // ['SAO(ADMIN)', 'SO', '4', '2025']
-
-                if (count($parts) === 4) {
-                    $number = $parts[2];
-                    $year = $parts[3];
-                    $formatted = 'No. ' . $number . ', s. ' . $year;
-
-                    echo $formatted; // Output: No. 4, s. 2025
-                }
-            ?>
-        @endif
-        <table>
-            @if(!empty($toName) && $documentType != 'Special Order')
+    @if ($documentType == 'Indorsement Letter')
+        <div class="document-container">
+            <table class="document-header" cellspacing="0" cellpadding="0">
                 <tr>
-                    <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
-                    <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
-                        @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
-                        @endif
+                    <td class="logo-area" rowspan="6" style="width: 26%;">
+                        <div class="logo-wrapper">
+                            <?php $image_path = '/assets/img/zppsu-logo.png'; ?>
+                            <img src="{{ public_path() . $image_path }}" alt="University Logo" class="university-logo">
+                        </div>
                     </td>
+                    <td class="info-cell" rowspan="3" style="width: 50%;">
+                        <div class="university-title">
+                            Zamboanga Peninsula Polytechnic State University
+                        </div>
+                    </td>
+                    <td class="info-cell" style="width: 12%;">Unit</td>
+                    <td class="data-cell" style="width: 12%;">{{ $unit }}</td>
                 </tr>
-            @endif
-            @if(!empty($thru) && $documentType != 'Special Order')
                 <tr>
-                    <td class="label">THRU</td>
-                    <td>
-                        : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($thru) }}</strong><br>
-                    </td>
+                    <td class="info-cell">Document Code</td>
+                    <td class="data-cell">{{ $action == 'preview'?'':$documentNumber}}</td>
                 </tr>
-            @endif
-            @if ($documentType != 'Special Order')
                 <tr>
-                    <td class="label" style="{{ 
-                        ($fromPosition == 'University President' && $document['status'] == 'Approved') || 
-                        ($fromPosition != 'University President') 
-                        ? 'padding-top:35px;' : '' }}">FROM</td>
-                    <td>
-                        @if(
-                            ($fromPosition == 'University President' && $document['status'] == 'Approved') ||
-                            ($fromPosition != 'University President')
-                        )
-                            <img 
-                                src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
-                                alt="Signature" 
-                                style="height: 30px; padding-left: 20px"
-                            ><br>
-                        @endif
-                        : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
-                    </td>
+                    <td class="info-cell">Date of Effectivity</td>
+                    <td class="data-cell"></td>
                 </tr>
-            @endif
-            <tr>
-                <td class="label">SUBJECT</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ strtoupper($subject) }}</u></strong></td>
-            </tr>
+                <tr>
+                    <td class="office-title-area" rowspan="3" style="width: 50%;">
+                        Office of the Vice President for Administration and Finance
+                    </td>
+
+                    <td class="info-cell">Revision Code</td>
+                    <td class="data-cell"></td>
+                </tr>
+                <tr>
+                    <td class="info-cell">Rev. Effectivity Date</td>
+                    <td class="data-cell"></td>
+                </tr>
+                <tr>
+                    <td class="info-cell">Page</td>
+                    <td class="data-cell">1 of 2</td>
+                </tr>
+            </table>
+        </div>
+        <div class="header-footer-section">
+            <div class="indorsement-text">
+                INDORSEMENT<br>
+                {{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}
+            </div>
             <br>
-            <tr>
-                <td class="label">DATE</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}</td>
-            </tr>
-        </table>
-    </div>
-    <hr>
+            <div class="subject-text">
+                SUBJECT: {{ strtoupper($subject) }}
+            </div>
+        </div>
+    @else
+        <div class="header">
+            <?php $image_path = '/assets/img/zppsu-logo.png'; ?>
+            <img src="{{ public_path() . $image_path }}" alt="University Logo">
+            <strong>Republic of the Philippines<br>
+            ZAMBOANGA PENINSULA POLYTECHNIC STATE UNIVERSITY</strong><br>
+            Region IX, Western Mindanao<br>
+            R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
+            Telephone No.: 955-4024 / 991-4012
+            @if(isset($office_logo) && $office_logo && $documentType=='Intra')
+                <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
+            @endif
+        </div>
+
+        <hr style="margin: 10px 0;">
+        
+        @if ($documentType == 'External Communication Response Letter')
+        <br>{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}<br><br><br>
+        @endif
+        @if ($documentType != 'External Communication Response Letter')
+        <div class="memo-info">
+            @if($documentType == 'Intra')
+                <p><strong>College Memorandum</strong><br>
+            @else
+                <p><strong>{{ strtoupper($documentType) }}</strong><br>
+            @endif
+            @if($documentType != 'Special Order')
+                {{ $documentNumber }}</p>
+            @else
+                <?php
+                    $code = 'SAO(ADMIN)-SO-4-2025';
+
+                    $parts = explode('-', $code); // ['SAO(ADMIN)', 'SO', '4', '2025']
+
+                    if (count($parts) === 4) {
+                        $number = $parts[2];
+                        $year = $parts[3];
+                        $formatted = 'No. ' . $number . ', s. ' . $year;
+
+                        echo $formatted; // Output: No. 4, s. 2025
+                    }
+                ?>
+            @endif
+            <table>
+                @if(!empty($toName) && $documentType != 'Special Order')
+                    <tr>
+                        <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
+                        <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
+                            @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
+                            @endif
+                        </td>
+                    </tr>
+                @endif
+                @if(!empty($thru) && $documentType != 'Special Order')
+                    <tr>
+                        <td class="label">THRU</td>
+                        <td>
+                            : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($thru) }}</strong><br>
+                        </td>
+                    </tr>
+                @endif
+                @if ($documentType != 'Special Order')
+                    <tr>
+                        <td class="label" style="{{ 
+                            ($fromPosition == 'University President' && $document['status'] == 'Approved') || 
+                            ($fromPosition != 'University President') 
+                            ? 'padding-top:35px;' : '' }}">FROM</td>
+                        <td>
+                            @if(
+                                ($fromPosition == 'University President' && $document['status'] == 'Approved') ||
+                                ($fromPosition != 'University President')
+                            )
+                                <img 
+                                    src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
+                                    alt="Signature" 
+                                    style="height: 30px; padding-left: 20px"
+                                ><br>
+                            @endif
+                            : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
+                        </td>
+                    </tr>
+                @endif
+                <tr>
+                    <td class="label">SUBJECT</td>
+                    <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ strtoupper($subject) }}</u></strong></td>
+                </tr>
+                <br>
+                <tr>
+                    <td class="label">DATE</td>
+                    <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}</td>
+                </tr>
+            </table>
+        </div>
+        <hr>
+        @endif
     @endif
 
     <div class="content" style="line-height: {{ $documentType == 'External Communication Response Letter' ? '0.25' : '1.5' }};">

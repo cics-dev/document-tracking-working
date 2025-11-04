@@ -42,16 +42,16 @@
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Document Number</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Subject</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center" style="width:20%">Document Number</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center" style="width:28%">Subject</th>
                     @if($documentTypeTab != 'intra')
                         <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">{{ $mode == 'sent' ? 'To' : 'From' }}</th>
                     @endif
                     @if($mode == 'all' && $documentTypeTab != 'intra')
                         <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">To</th>
                     @endif
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Document Type</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Status</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Doc Type</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center" style="width:10%">Status</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center">Date Sent</th>
                     <th class="px-4 py-2 text-center">Actions</th>
                 </tr>
@@ -68,11 +68,11 @@
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->subject }}</td>
                         @if($documentTypeTab != 'intra')
                             <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">
-                                {{ $mode == 'sent' ? ($document->toOffice->name ?? 'N/A') : ($document->fromOffice->name ?? 'N/A') }}
+                                {{ $mode == 'sent' ? ($document->toOffice->name ?? $document->to_text ?? 'N/A') : ($document->fromOffice->name ?? 'N/A') }}
                             </td>
                         @endif
                         @if($mode == 'all' && $documentTypeTab != 'intra')
-                            <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->toOffice->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->toOffice->name ?? $document->to_text ?? 'N/A' }}</td>
                         @endif
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">{{ $document->documentType->abbreviation ?? 'N/A' }}</td>
                         <td class="px-4 py-2 border-r border-gray-300 dark:border-gray-600 text-center align-middle uppercase 

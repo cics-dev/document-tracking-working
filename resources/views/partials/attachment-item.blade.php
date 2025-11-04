@@ -41,8 +41,8 @@
                 @foreach ($attachmentSlips as $slip)
                     <div x-data="{ open: false }" class="relative">
                         <div
-                            class="bg-blue-100 border-l-4 border-blue-500 text-blue-900 p-4 rounded shadow text-sm w-[280px] h-[100px] relative">
-                            <strong>From:</strong> {{ $slip->user->office->name }}<br>
+                            class="bg-blue-100 border-l-4 border-blue-500 text-blue-900 p-4 rounded shadow text-sm w-[280px] h-[120px] relative">
+                            <strong>From:</strong> {{ $slip->user->office->abbreviation }}<br>
                             <strong>Status:</strong> {{ $slip->returned_at ? 'Returned with remarks' : 'Reviewed' }}<br>
                             <strong>Remarks:</strong> 
                             <p class="truncate w-[260px]">

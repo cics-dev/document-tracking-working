@@ -13,8 +13,8 @@
     <div class="flex flex-wrap gap-4">
         @foreach($slips as $slip)
         <div x-data="{ open: false }">
-            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[100px] relative">
-                <strong>Routing Slip from: {{ $slip->user->office->name }}</strong><br>
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[120px] relative">
+                <strong>Routing Slip from: {{ $slip->user->office->abbreviation }}</strong><br>
                 <strong>Status: {{ $slip->returned_at?'Returned with remarks':'Reviewed' }}</strong><br>
                 <strong>Remarks:</strong>
                 <p class="truncate w-[260px]">
@@ -48,6 +48,7 @@
     @else
         <p>Loading preview...</p>
     @endif
+
     @if ($document->all_attachments && $document->all_attachments->count() > 0)
         <div class="mt-6">
             <h3 class="text-lg font-semibold mb-3">Attachments</h3>
@@ -57,40 +58,6 @@
                         @include('partials.attachment-item', ['attachment' => $attachment, 'level' => 0])
                     @endforeach
                 </div>
-            </div>
-        </div>
-    @endif
-
-    @if ($document->attachments && $document->attachments->count() > 0)
-        <div class="mt-6">
-            <h3 class="text-lg font-semibold mb-3">Attachments</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach ($document->attachments as $attachment)
-                    <div class="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md transition-shadow duration-300">
-                        <div class="flex items-center gap-3">
-                            <div class="p-3 rounded-lg bg-blue-50">
-                                @if ($attachment->file_type == 'pdf')
-                                    <flux:icon.document class="w-6 h-6 text-blue-600"/>
-                                @else
-                                    <flux:icon.photo class="w-6 h-6 text-emerald-600"/>
-                                @endif
-                            </div>
-                            
-                            <div class="flex items-center justify-between flex-1 min-w-0">
-                                <p class="font-semibold text-sm text-gray-800 truncate">
-                                    {{ $attachment->name }}
-                                </p>
-                                <button type="button"
-                                        class="ml-3 text-gray-500 hover:text-red-600 transition-colors duration-200 shrink-0"
-                                        wire:click="viewAttachment('{{ $attachment->id }}')">
-                                    <flux:icon.eye class="w-5 h-5"/>
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-
-                @endforeach
             </div>
         </div>
     @endif
@@ -104,10 +71,11 @@
         ||
         (
             auth()->user()->office->name == 'Administration' &&
-            $document->document_type_id == 1
+            ($document->document_type_id == 1 || $document->document_type_id == 3)
         )
     )
-        @if($office_name != 'Administration' && $office_name != 'Records Section')
+        {{-- @if($office_name != 'Administration' && $office_name != 'Records Section') --}}
+        @if($office_name != 'Administration')
             @if(is_null($signed) && is_null($rejected))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Sign' : 'Set as reviewed' }}</button>
@@ -122,18 +90,26 @@
             @if ($document->status == 'pending' || $document->status == 'sent')
                 <div class="mt-4 flex gap-4">
                     <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
+                    @if ($document->document_type_id == 3)
+                        <button wire:click="generateSO" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate SO</button>
+                    @endif
                     {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
                 </div>
             @else
-                <div class="mt-4 text-lg font-semibold">
-                    You've already generated IOM
-                </div>
+                @if ($document->document_type_id == 3)
+                    <div class="mt-4 text-lg font-semibold">
+                        You've already generated document
+                    </div>
+                @else
+                    <div class="mt-4 text-lg font-semibold">
+                        You've already generated IOM
+                    </div>
+                @endif
             @endif
-        @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
+        {{-- @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
             <div class="mt-4 flex gap-4">
                 <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send out IOM</button>
-                {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
-            </div>
+            </div> --}}
         @endif
     @endif
 
