@@ -17,6 +17,11 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DocumentTrackingController;
+
+
+Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
+    ->name('documents.tracking-status');
 
 
  Route::get('/offline', function () {
@@ -83,5 +88,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
+
+Route::get('/documents/{document}/tracking-status', function(Document $document) {
+    return response()->json([
+        'status' => $document->status,
+        'assignedTo' => $document->currentOffice->name ?? $document->office->name ?? 'Unknown',
+        'statusDates' => [
+            'filed' => $document->getStatusDate('filed'),
+            'sent' => $document->getStatusDate('sent'),
+            'processing' => $document->getStatusDate('processing'),
+            'completed' => $document->getStatusDate('completed'),
+        ],
+        'timeline' => $document->buildTimelineData(),
+        'activityLogs' => $document->getRecentLogs()
+    ]);
+})->name('documents.tracking-status');
 
 require __DIR__.'/auth.php';
