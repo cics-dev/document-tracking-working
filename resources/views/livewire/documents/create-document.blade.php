@@ -23,6 +23,13 @@
 
     <!-- Hidden templates for upload progress -->
     <div class="hidden" id="progress-template">
+        <div wire:init="loadInitialContent">
+            <div wire:ignore>
+                </div>
+
+            <input type="hidden" id="quill-content" wire:model.live="content"> 
+            
+        </div>
         <div class="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded-md mb-2 animate-glow">
             <div class="flex items-center min-w-0 flex-1">
                 <div class="mr-3 flex-shrink-0">

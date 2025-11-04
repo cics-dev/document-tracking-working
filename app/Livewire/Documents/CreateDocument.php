@@ -9,6 +9,7 @@ use App\Models\DocumentAttachment;
 use App\Models\Document;
 use App\Models\Office;
 use App\Models\User;
+use App\Models\ExternalDocument;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -25,6 +26,7 @@ class CreateDocument extends Component
     public $original_document_number;
     public $revision_document_number;
     public $original_document_id = '';
+    public $external_document_id = '';
     public $office_type = '';
     public $document_type = '';
     public $attachment = '';
@@ -47,6 +49,17 @@ class CreateDocument extends Component
         'legal_review' => false,
         'igp_review' => false,
     ];
+
+    public $readyToLoad = false;
+
+    public function loadInitialContent()
+    {
+        // This method is called once the component is fully rendered on the page.
+        $this->readyToLoad = true;
+        if ($this->document_type_id == 5) {
+            $this->updateContentWithSubject(); 
+        }
+    }
 
     public function removeAttachment($filename)
     {
@@ -106,21 +119,18 @@ class CreateDocument extends Component
 
         if ($data) {
             $this->original_document_id = $data['original_document_id']??$data['id']??null;
+            $this->external_document_id = $data['external_document_id']??$data['id']??null;
             $this->redirect_mode = $data['redirect_mode']??null;
             $this->document_to_id = $data['to']??$data['to_id']??null;
             $this->document_to_text = $data['to']??null;
             $this->document_from_id = $data['from']??null;
             $this->document_type_id = $data['document_type_id'];
+            $this->document_type = $data['document_type']??null;
             $this->subject = $data['subject'];
             $this->content = $data['content']??null;
             $this->thru = $data['thru']??null;
             // $this->attachment = $data['attachment'];
             $this->cf_offices = $data['cf']??null;
-
-            if ($this->document_type_id == 5) {
-                dd($this->document_type);
-                $this->updateContentWithSubject();
-            }
         }
         else if($number) {
             $this->redirect_mode = 'revision';
@@ -447,6 +457,11 @@ class CreateDocument extends Component
                 if($this->document_type == 'ECLR' || $this->document_type == 'SO') {
                     $this->signatories[] = ['role' => 'Approved by', 'office_id' => 1];
                 }
+
+                if($this->document_type == 'ECLR') {
+                    ExternalDocument::find($this->external_document_id)->update(['document_id'=>$document->id]);
+                }
+
                 if ($this->document_type == 'SO') {
                     $document->routings()->create([
                         'user_id' => 15,

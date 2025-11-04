@@ -12,6 +12,7 @@ class ExternalDocument extends Model
         'subject',
         'received_date',
         'file_url',
-        'file_type'
+        'file_type',
+        'document_id',
     ];
 }

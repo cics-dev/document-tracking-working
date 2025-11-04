@@ -23,6 +23,7 @@ class ViewExternalDocument extends Component
             'subject' => 'RE: ' . $this->document->subject,
             'external_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'RLM')->value('id'),
+            'document_type' => 'RLM',
         ];
 
         session()->flash('redirect_data', $redirectData);
@@ -37,6 +38,7 @@ class ViewExternalDocument extends Component
             'subject' => 'RE: ' . $this->document->subject,
             'external_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'ECLR')->value('id'),
+            'document_type' => 'ECLR',
         ];
 
         session()->flash('redirect_data', $redirectData);

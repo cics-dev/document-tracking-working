@@ -347,6 +347,7 @@ class ViewDocument extends Component
             'subject' => 'RE: ' . $this->document->subject,
             'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
+            'document_type' => 'IOM',
             'content' => '<p>Pursuant to the approved-request letter memorandum (<b>' . $this->document->document_number . '</b>)',
             'thru' => null,
         ];
