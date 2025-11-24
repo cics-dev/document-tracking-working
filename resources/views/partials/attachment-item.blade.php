@@ -1,10 +1,12 @@
 <div class="border rounded-xl p-4 shadow-sm bg-white hover:shadow-md transition-shadow duration-300">
     @php
         $attachmentSlips = collect();
-        if ($attachment->attachmentDocument && $attachment->attachmentDocument->routings) {
-            $attachmentSlips = $attachment->attachmentDocument->routings
-                ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
-                ->sortByDesc('updated_at');
+        if ($attachment->type =='internal') {
+            if ($attachment->attachmentDocument && $attachment->attachmentDocument->routings) {
+                $attachmentSlips = $attachment->attachmentDocument->routings
+                    ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+                    ->sortByDesc('updated_at');
+            }
         }
     @endphp
 
@@ -24,7 +26,7 @@
             </p>
             <button type="button"
                 class="ml-3 text-gray-500 hover:text-red-600 transition-colors duration-200 shrink-0"
-                wire:click="viewAttachment('{{ $attachment->id }}')">
+                wire:click="viewAttachment('{{ $attachment->id }}', '{{ $attachment->type }}')">
                 <flux:icon.eye class="w-5 h-5" />
             </button>
         </div>
@@ -81,7 +83,7 @@
     @endif
 </div>
 
-@if ($attachment->attachmentDocument && $attachment->attachmentDocument->all_attachments->count() > 0)
+@if ($attachment->type =='internal' && $attachment->attachmentDocument && $attachment->attachmentDocument->all_attachments->count() > 0)
         @foreach ($attachment->attachmentDocument->all_attachments as $subAttachment)
             @include('partials.attachment-item', ['attachment' => $subAttachment, 'level' => $level + 1])
         @endforeach

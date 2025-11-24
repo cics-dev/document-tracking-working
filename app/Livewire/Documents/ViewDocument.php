@@ -6,6 +6,7 @@ use App\Http\Controllers\DocumentController;
 use App\Models\DocumentType;
 use App\Models\DocumentAttachment;
 use App\Models\Document;
+use App\Models\ExternalDocument;
 use App\Models\Office;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -192,7 +193,7 @@ class ViewDocument extends Component
 
     public function sign()
     {        
-        if ($this->mySignatory != null && ($this->document->document_type_id != 2 && auth()->user()->position != 'University President'))
+        if ($this->mySignatory != null)
             $data = [
                 'title' => 'Are you sure?',
                 'text' => "You won't be able to revert this!",
@@ -355,16 +356,20 @@ class ViewDocument extends Component
 
         // ✅ Add 'cf' only if there are signatories
         if ($this->document->signatories->isNotEmpty()) {
-            $redirectData['cf'] = $this->document->signatories
-                ->map(fn($s) => optional(optional($s->user)->office)->id)
-                ->filter() // remove nulls
-                ->unique()
-                ->values()
-                ->merge([
-                    Office::where('name', 'Records Section')->value('id'),
-                    Auth::user()->office->id,
-                ])
-                ->toArray();
+            if ($this->document->signatories?->isNotEmpty()) {
+                $recordsSectionId = Office::where('name', 'Records Section')->value('id');
+                
+                $redirectData['cf'] = $this->document->signatories
+                    ->pluck('user.office.id')
+                    ->push($this->document->from_id)
+                    ->push($recordsSectionId)
+                    ->push(Auth::user()->office?->id)
+                    ->flatten()
+                    ->filter() 
+                    ->unique() 
+                    ->values() 
+                    ->toArray();
+            }
         }
 
         session()->flash('redirect_data', $redirectData);
@@ -453,9 +458,15 @@ class ViewDocument extends Component
         $this->dispatch('fireSwal', $data);
     }
 
-    public function viewAttachment($id) {
-        $this->selectedAttachment = DocumentAttachment::find($id);
-        if (!$this->selectedAttachment->is_upload) {
+    public function viewAttachment($id, $type) {
+        if ($type == 'internal') {
+            $this->selectedAttachment = DocumentAttachment::find($id);
+        }
+        else if ($type == 'external') {
+            $this->selectedAttachment = ExternalDocument::find($id);
+        }
+        // dd($type);
+        if (!$this->selectedAttachment->is_upload && $type =='internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
             // $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);

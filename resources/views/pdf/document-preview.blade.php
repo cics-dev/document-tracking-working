@@ -329,13 +329,11 @@
                 ?>
             @endif
             <table>
-                @if(!empty($toName) && $documentType != 'Special Order')
+                @if(!empty($toName) && $documentType != 'Special Order' && $toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
                     <tr>
                         <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
                         <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
-                            @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
-                            @endif
                         </td>
                     </tr>
                 @endif
@@ -347,15 +345,21 @@
                         </td>
                     </tr>
                 @endif
+                @php
+                    if (isset($document)) 
+                        $status = is_array($document) ? $document['status'] : ($document->status ?? null);
+                    else 
+                        $status = null;
+                @endphp
                 @if ($documentType != 'Special Order')
                     <tr>
                         <td class="label" style="{{ 
-                            ($fromPosition == 'University President' && $document['status'] == 'Approved') || 
+                            ($fromPosition == 'University President' && $status == 'Approved') || 
                             ($fromPosition != 'University President') 
                             ? 'padding-top:35px;' : '' }}">FROM</td>
                         <td>
                             @if(
-                                ($fromPosition == 'University President' && $document['status'] == 'Approved') ||
+                                ($fromPosition == 'University President' && $status == 'Approved') ||
                                 ($fromPosition != 'University President')
                             )
                                 <img 
@@ -432,9 +436,6 @@
                                         </td>
                                     </tr>
                                     <tr><td style="height: 12px;"></td></tr>
-                                    @php
-                                        $status = is_array($document) ? $document['status'] : ($document->status ?? null);
-                                    @endphp
                                     <tr>
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">

@@ -66,7 +66,7 @@ class ReceiveExternalDocument extends Component
 
         session()->flash('success', 'External Document saved successfully.');
 
-        $this->reset(['document_from', 'document_to_id', 'subject', 'received_date', 'attachment']);
+        return redirect()->route('documents.list-external-documents');
     }
 
     public function render()
