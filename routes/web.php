@@ -54,8 +54,6 @@ Route::view('dashboard', 'dashboard')
 ->middleware(['auth', 'verified'])
 ->name('dashboard');
 
-Route::get('documents/track/{number}', TrackDocument::class)->name('track-document');
-
 Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
@@ -81,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', CreateDocument::class)->name('create-document');
         Route::get('/create-revision/{number}', CreateDocument::class)->name('create-revision');
         Route::get('/view/{number}', ViewDocument::class)->name('view-document');
+        Route::get('/track/{number}', TrackDocument::class)->name('track-document');
     });
 
     Route::redirect('settings', 'settings/profile');
