@@ -47,6 +47,11 @@ class ViewDocument extends Component
         $response = app(DocumentController::class)->getDocument($number);
         $this->document = $response;
 
+        $this->document->accessLogs()->firstOrCreate([
+            'user_id' => Auth::id(),
+            'action' => 'viewed',
+        ]);
+
         if ($this->document->document_type_id == 2 && $this->document->attachments[0]->attachment_document_id) {
             $origDoc = Document::find($this->document->attachments[0]->attachment_document_id);
             $origDoc->signatories()

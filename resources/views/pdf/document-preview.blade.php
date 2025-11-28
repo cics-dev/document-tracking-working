@@ -362,11 +362,13 @@
                                 ($fromPosition == 'University President' && $status == 'Approved') ||
                                 ($fromPosition != 'University President')
                             )
-                                <img 
-                                    src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
-                                    alt="Signature" 
-                                    style="height: 30px; padding-left: 20px"
-                                ><br>
+                                @if(isset($document))
+                                    <img 
+                                        src="{{ public_path('storage/'.($document['from_office']['head']['signature']?:'assets/img/fakesig1.png')) }}" 
+                                        alt="Signature" 
+                                        style="height: 30px; padding-left: 20px"
+                                    ><br>
+                                @endif
                             @endif
                             : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
@@ -409,7 +411,7 @@
                                 <div class="signatory-box">
                                     @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
                                         <img 
-                                            src="{{ public_path('storage/' . $signatory['signature']) }}" 
+                                            src="{{ public_path('storage/' . ($signatory['signature']?:'assets/img/fakesig1.png')) }}"
                                             alt="Signature" 
                                             style="height: 50px; margin-bottom: 10px;"
                                         ><br>
@@ -421,6 +423,7 @@
                         </div>
                     </div>
                 @elseif($documentType === 'Request Letter Memorandum' || $documentType === 'Indorsement Letter')
+                @php if (!isset($status))$status = null; @endphp
                     <br><br>   
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>

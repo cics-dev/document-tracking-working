@@ -4,7 +4,7 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky stashable class="border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
+        <flux:sidebar sticky stashable class="no-print border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
 
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
@@ -21,11 +21,25 @@
                         {{-- <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Documents') }}</flux:navlist.item> --}}
                     @else
                         @if (auth()->user()?->position === 'Records Officer')
-                            <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'all')" :current="request()->is('documents/all')" wire:navigate>
+                            <flux:navlist.item 
+                                icon="inbox-arrow-down" 
+                                :href="route('documents.list-documents', 'all')" 
+                                :current="request()->is('documents/all')" 
+                                wire:navigate
+                                :badge="$unreadAllCount > 0 ? $unreadAllCount : null"
+                                :badge-color="$unreadAllCount > 0 ? 'red' : null" 
+                            >
                                 {{ __('All Documents') }}
                             </flux:navlist.item>
                         @elseif (auth()->user()?->position != 'Staff')
-                            <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate>
+                            <flux:navlist.item 
+                                icon="inbox-arrow-down" 
+                                :href="route('documents.list-documents', 'received')" 
+                                :current="request()->is('documents/received')" 
+                                wire:navigate
+                                :badge="$unreadReceivedCount > 0 ? $unreadReceivedCount : null"
+                                :badge-color="$unreadReceivedCount > 0 ? 'red' : null" 
+                            >
                                 {{ __('Received Documents') }}
                             </flux:navlist.item>
 
@@ -33,7 +47,15 @@
                                 {{ __('Sent Documents') }}
                             </flux:navlist.item>
                         @endif
-                        <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-external-documents')" :current="request()->is('documents/list-external-documents')" wire:navigate>
+                        <flux:navlist.item 
+                            icon="inbox-arrow-down" 
+                            :href="route('documents.list-external-documents')" 
+                            :current="request()->is('documents/list-external-documents')" 
+                            wire:navigate
+                            {{-- Only show badge if count > 0 --}}
+                            :badge="$unreadExternalCount > 0 ? $unreadExternalCount : null"
+                            :badge-color="$unreadExternalCount > 0 ? 'red' : null" 
+                        >
                             {{ __('External Documents') }}
                         </flux:navlist.item>
                     @endif
@@ -41,16 +63,6 @@
             </flux:navlist>
 
             <flux:spacer />
-
-        <!--    <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist> -->
 
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
@@ -99,7 +111,7 @@
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
+        <flux:header class="no-print lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />

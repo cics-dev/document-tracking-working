@@ -63,42 +63,6 @@ class Document extends Model
         });
     }
 
-    // public function scopeReadyForUser($query, $userId)
-    // {
-    //     return $query->where(function($q) use ($userId) {
-    //         // Documents where user is in routings and it's their turn
-    //         $q->whereHas('routings', function($routingQuery) use ($userId) {
-    //             $routingQuery->where('user_id', $userId)
-    //                 ->where('status', 'pending')
-    //                 ->whereDoesntHave('document.routings', function($subQuery) {
-    //                     $subQuery->where('status', 'pending')
-    //                         ->whereColumn('document_routings.created_at', '<', 'document_routings.created_at');
-    //                 });
-    //         })
-    //         ->orWhere(function($q) use ($userId) {
-    //             // OR documents where user is a signatory and it's their turn
-    //             $q->whereHas('signatories', function($signatoryQuery) use ($userId) {
-    //                 $signatoryQuery->where('user_id', $userId)
-    //                     ->where('status', 'pending')
-    //                     // Check that all previous signatories have approved
-    //                     ->where(function($sq) {
-    //                         $sq->where('sequence', 1)
-    //                             ->orWhereHas('document', function($docQuery) {
-    //                                 $docQuery->whereDoesntHave('signatories', function($prevQuery) {
-    //                                     $prevQuery->whereColumn('sequence', '<', 'document_signatories.sequence')
-    //                                         ->where('status', '!=', 'approved');
-    //                                 });
-    //                             });
-    //                     })
-    //                     // Check that all routings are reviewed (if any exist)
-    //                     ->whereDoesntHave('document.routings', function($routingQuery) {
-    //                         $routingQuery->where('status', '!=', 'reviewed');
-    //                     });
-    //             });
-    //         });
-    //     });
-    // }
-
     public function revisions()
     {
         return $this->hasMany(Document::class, 'original_document_id');
@@ -145,7 +109,7 @@ class Document extends Model
         $externalDocs = collect($this->externalDocuments)
             ->values()
             ->map(function ($doc, $index) {
-                $doc->name = 'External Communication Letter ' . ($index + 1);
+                $doc->name = $doc->document_number;
                 $doc->type = 'external';
                 return $doc;
             });
@@ -180,5 +144,34 @@ class Document extends Model
     public function logs()
     {
         return $this->hasMany(DocumentLog::class);
+    }
+
+
+    public function accessLogs()
+    {
+        return $this->morphMany(DocumentAccessLog::class, 'documentable');
+    }
+
+    protected function isViewedByMe(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                // Case 1: You used query->withExists(...) (Scenario 1)
+                // The value is already sitting in the raw attributes array.
+                if (isset($attributes['is_viewed_by_me'])) {
+                    return (bool) $attributes['is_viewed_by_me'];
+                }
+
+                // Case 2: You used collection->load(...) (Scenario 2 - Current)
+                // The accessLogs relationship is loaded in memory.
+                if ($this->relationLoaded('accessLogs')) {
+                    return $this->accessLogs->isNotEmpty();
+                }
+
+                // Case 3: Fallback (Safety net)
+                // If we forgot to load anything, assume unread to prevent N+1 queries
+                return false; 
+            }
+        );
     }
 }

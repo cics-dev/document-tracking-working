@@ -5,6 +5,7 @@ namespace App\Livewire\Documents;
 use Livewire\Component;
 use App\Models\ExternalDocument;
 use App\Models\DocumentType;
+use Illuminate\Support\Facades\Auth;
 
 class ViewExternalDocument extends Component
 {
@@ -14,6 +15,11 @@ class ViewExternalDocument extends Component
     public function mount($id)
     {
         $this->document = ExternalDocument::find($id);
+
+        $this->document->accessLogs()->firstOrCreate([
+            'user_id' => Auth::id(),
+            'action' => 'viewed',
+        ]);
         $this->previewUrl = asset('storage/' . $this->document->file_url);
     }
 

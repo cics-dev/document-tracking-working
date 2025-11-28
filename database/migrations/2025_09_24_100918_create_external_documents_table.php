@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('external_documents', function (Blueprint $table) {
             $table->id();
+            $table->string('document_number');
             $table->string('from');
             $table->foreignId('to_id')->constrained('offices')->onDelete('cascade');
             $table->string('subject');

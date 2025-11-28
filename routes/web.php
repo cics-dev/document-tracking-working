@@ -54,6 +54,8 @@ Route::view('dashboard', 'dashboard')
 ->middleware(['auth', 'verified'])
 ->name('dashboard');
 
+Route::get('documents/track/{number}', TrackDocument::class)->name('track-document');
+
 Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
@@ -76,7 +78,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/receive-external-document', ReceiveExternalDocument::class)->name('receive-external-document');
         Route::get('/list-external-documents', ListExternalDocuments::class)->name('list-external-documents');
         Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['sent', 'received', 'all'])->name('list-documents');
-        Route::get('/track/{number}', TrackDocument::class)->name('track-document');
         Route::get('/create', CreateDocument::class)->name('create-document');
         Route::get('/create-revision/{number}', CreateDocument::class)->name('create-revision');
         Route::get('/view/{number}', ViewDocument::class)->name('view-document');

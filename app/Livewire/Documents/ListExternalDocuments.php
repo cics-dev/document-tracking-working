@@ -3,21 +3,20 @@
 namespace App\Livewire\Documents;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\ExternalDocument;
 use Illuminate\Support\Facades\Auth;
 
 class ListExternalDocuments extends Component
 {
-    public $documents;
+    use WithPagination;
 
-    public function mount()
-    {
-        if (Auth::user()->position == 'Staff' || Auth::user()->position == 'University President' || Auth::user()->office->name == 'Records Section') {
-            $this->documents = ExternalDocument::all();
-        }
-        else {
-            $this->documents = ExternalDocument::where('to_id', Auth::user()->office_id)->get();
-        }
+    public $search = '';
+
+    // Reset pagination when searching to avoid empty pages
+    public function updatedSearch() 
+    { 
+        $this->resetPage(); 
     }
 
     public function viewDocument($id)
@@ -27,6 +26,33 @@ class ListExternalDocuments extends Component
 
     public function render()
     {
-        return view('livewire.documents.list-external-documents');
+        $user = Auth::user();
+        $query = ExternalDocument::query();
+
+        $isPrivileged = $user->position == 'Staff' 
+                     || $user->position == 'University President' 
+                     || optional($user->office)->name == 'Records Section';
+
+        if (!$isPrivileged) {
+            $query->where('to_id', $user->office_id);
+        }
+
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('subject', 'like', '%' . $this->search . '%')
+                  ->orWhere('from', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        $query->withExists(['accessLogs as is_viewed_by_me' => function ($q) use ($user) {
+            $q->where('user_id', $user->id)
+            ->where('action', 'viewed');
+        }]);
+
+        $documents = $query->orderByDesc('created_at')->paginate(10);
+
+        return view('livewire.documents.list-external-documents', [
+            'documents' => $documents
+        ]);
     }
 }

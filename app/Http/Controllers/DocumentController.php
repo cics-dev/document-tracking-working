@@ -111,7 +111,10 @@ class DocumentController extends Controller
                 if ($presidentOfficeId) {
                     $presidentDocs = Document::where(function ($q) {
                             $q->where('document_type_id', 3)
-                            ->orWhere('document_type_id', 1);
+                            ->orWhere(function ($subQuery) {
+                                $subQuery->where('document_type_id', 1)
+                                        ->where('status', '!=', 'draft'); // Only applies if type is 1
+                            });
                         })
                         ->when($user->role_id == 4, function ($query) {
                             $query->whereDoesntHave('routings.user', fn($q) => $q->where('office_id', 19));
