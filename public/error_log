@@ -7,3 +7,9 @@ Stack trace:
 #2 /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/index.php(57): require('/home/kvdf1eyoy...')
 #3 {main}
   thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/vendor/composer/autoload_real.php on line 41
+[03-Dec-2025 00:54:32 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/index.php on line 57
+[03-Dec-2025 00:54:32 UTC] PHP Warning:  require(/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/../vendor/autoload.php): Failed to open stream: No such file or directory in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/index.php on line 57
+[03-Dec-2025 00:54:32 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/../vendor/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/index.php:57
+Stack trace:
+#0 {main}
+  thrown in /home/kvdf1eyoyn6j/public_html/_SUBDOMAINS/document-tracking-working/public/index.php on line 57

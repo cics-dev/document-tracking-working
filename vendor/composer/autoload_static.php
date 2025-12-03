@@ -243,9 +243,9 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         ),
         'phpDocumentor\\Reflection\\' => 
         array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
-            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
+            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
         ),
         'Whoops\\' => 
         array (
@@ -417,8 +417,8 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-factory/src',
-            1 => __DIR__ . '/..' . '/psr/http-message/src',
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+            1 => __DIR__ . '/..' . '/psr/http-factory/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -490,8 +490,8 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         ),
         'Nette\\' => 
         array (
-            0 => __DIR__ . '/..' . '/nette/schema/src',
-            1 => __DIR__ . '/..' . '/nette/utils/src',
+            0 => __DIR__ . '/..' . '/nette/utils/src',
+            1 => __DIR__ . '/..' . '/nette/schema/src',
         ),
         'Monolog\\' => 
         array (
@@ -515,8 +515,8 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         ),
         'League\\Uri\\' => 
         array (
-            0 => __DIR__ . '/..' . '/league/uri',
-            1 => __DIR__ . '/..' . '/league/uri-interfaces',
+            0 => __DIR__ . '/..' . '/league/uri-interfaces',
+            1 => __DIR__ . '/..' . '/league/uri',
         ),
         'League\\MimeTypeDetection\\' => 
         array (
@@ -2671,6 +2671,7 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         'Illuminate\\Foundation\\Console\\PolicyMakeCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/PolicyMakeCommand.php',
         'Illuminate\\Foundation\\Console\\ProviderMakeCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/ProviderMakeCommand.php',
         'Illuminate\\Foundation\\Console\\QueuedCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/QueuedCommand.php',
+        'Illuminate\\Foundation\\Console\\ReloadCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/ReloadCommand.php',
         'Illuminate\\Foundation\\Console\\RequestMakeCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/RequestMakeCommand.php',
         'Illuminate\\Foundation\\Console\\ResourceMakeCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/ResourceMakeCommand.php',
         'Illuminate\\Foundation\\Console\\RouteCacheCommand' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/Console/RouteCacheCommand.php',
@@ -2793,6 +2794,7 @@ class ComposerStaticInitc27a8950bdb81b7750cd556ac4faaa2a
         'Illuminate\\Http\\Client\\Events\\RequestSending' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/Events/RequestSending.php',
         'Illuminate\\Http\\Client\\Events\\ResponseReceived' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/Events/ResponseReceived.php',
         'Illuminate\\Http\\Client\\Factory' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/Factory.php',
+        'Illuminate\\Http\\Client\\FluentPromise' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/FluentPromise.php',
         'Illuminate\\Http\\Client\\HttpClientException' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/HttpClientException.php',
         'Illuminate\\Http\\Client\\PendingRequest' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/PendingRequest.php',
         'Illuminate\\Http\\Client\\Pool' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Http/Client/Pool.php',
