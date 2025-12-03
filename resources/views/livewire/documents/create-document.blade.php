@@ -70,8 +70,50 @@
     </div>
 
     <div class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">{{ $revision_document_number ?: 'Document Details' }}</h2>
+        <div class="flex items-center justify-between border-b pb-2 mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">{{ $revision_document_number ?: 'Document Details' }}</h2>
+            
+            <div class="flex items-center">
+                <flux:switch 
+                    wire:model.live="is_manual_document_number" 
+                    label="Manual Document No." 
+                    class="text-sm"
+                />
+            </div>
+        </div>
         
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <flux:field>
+                    <flux:label>Document Number @if($is_manual_document_number)<span class="text-red-500">*</span>@endif</flux:label>
+                    
+                    @if($is_manual_document_number)
+                        <flux:input 
+                            wire:model.blur="manual_document_number" 
+                            type="text" 
+                            placeholder="Enter Reference/Document No."
+                            required
+                        />
+                    @else
+                        <div class="relative">
+                            <flux:input 
+                                type="text" 
+                                value="System Generated upon Sending" 
+                                disabled 
+                                class="bg-gray-100 text-gray-500 italic border-dashed"
+                            />
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <flux:icon icon="sparkles" class="size-4 text-gray-400" />
+                            </div>
+                        </div>
+                    @endif
+                    <flux:error name="document_number" />
+                </flux:field>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <flux:field>

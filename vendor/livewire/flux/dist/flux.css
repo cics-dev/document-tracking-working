@@ -15,6 +15,14 @@
     }
 }
 
+@keyframes flux-shimmer {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(200%);
+    }
+}
 
 *:has(>[data-flux-main]) {
     display: grid;
@@ -44,7 +52,7 @@ Transition dialogs with fade a slight scale effect...
 
 [data-flux-modal] > dialog { transform: scale(0.95); }
 
-[data-flux-modal] > dialog[data-flux-flyout] { transform: scale(1) var(--fx-flyout-translate, translateX(50px)); }
+[data-flux-modal] > dialog[data-flux-flyout] { transform: scale(1) var(--flux-flyout-translate, var(--fx-flyout-translate, translateX(50px))); }
 
 [data-flux-modal] > dialog[open], [data-flux-modal] > dialog[open]::backdrop {
     opacity: 1;
@@ -61,11 +69,11 @@ Transition dialogs with fade a slight scale effect...
         transform: scale(0.95);
     }
 
-    [data-flux-modal] > dialog[open][data-flux-flyout] { transform: scale(1) var(--fx-flyout-translate, translateX(50px)); }
+    [data-flux-modal] > dialog[open][data-flux-flyout] { transform: scale(1) var(--flux-flyout-translate, var(--fx-flyout-translate, translateX(50px))); }
 }
 
 [data-flux-modal] > dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.10);
 }
 
 /**
@@ -95,6 +103,13 @@ select[data-flux-select-native]:hover:not(:disabled) {
 
 .dark select[data-flux-select-native]:hover:not(:disabled) {
     background-image: url("data:image/svg+xml,%3csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M8 9L12 5L16 9' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3cpath d='M16 15L12 19L8 15' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+}
+
+/**
+Button styles...
+*/
+ui-button {
+    display: block;
 }
 
 /**

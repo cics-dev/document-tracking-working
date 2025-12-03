@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentForReview;
 
 class ViewDocument extends Component
 {
@@ -267,6 +269,49 @@ class ViewDocument extends Component
                 'description' => $this->myReview->user->office->name . ' approved the document'
             ]);
         }
+
+        if ($event != 'lastSignatory') {
+
+            $recipientEmail = null;
+            $recipientName = null;
+
+            // SAFE routing query
+            $firstRoute = optional($this->document)
+                ->routings()
+                ->whereNull('reviewed_at')
+                ->whereNull('returned_at')
+                ->orderBy('id', 'asc')
+                ->first();
+
+            // Check routing user + email safely
+            if ($firstRoute && optional($firstRoute->user)->email) {
+                $recipientEmail = $firstRoute->user->email;
+                $recipientName = $firstRoute->user->name;
+            } else {
+
+                // SAFE signatory query
+                $firstSignatory = optional($this->document)
+                    ->signatories()
+                    ->whereNull('signed_at')
+                    ->whereNull('rejected_at')
+                    ->orderBy('sequence', 'asc')
+                    ->first();
+
+                // Check signatory user + email safely
+                if ($firstSignatory && optional($firstSignatory->user)->email) {
+                    $recipientEmail = $firstSignatory->user->email;
+                    $recipientName = $firstSignatory->user->name;
+                }
+            }
+
+            // Send email only if valid
+            if (!empty($recipientEmail)) {
+                Mail::to($recipientEmail)->send(
+                    new DocumentForReview($this->document, $recipientName ?? 'User')
+                );
+            }
+        }
+
 
         $data = [
             'title' => 'Document signed!',

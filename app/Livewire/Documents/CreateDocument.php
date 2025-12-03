@@ -13,6 +13,8 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Validate;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentForReview;
 
 class CreateDocument extends Component
 {
@@ -56,6 +58,9 @@ class CreateDocument extends Component
 
     public $readyToLoad = false;
     public $redirect_mode = null;
+
+    public $manual_document_number = null; 
+    public $is_manual_document_number = false;
 
     // --- Lifecycle & Setup ---
 
@@ -287,8 +292,11 @@ class CreateDocument extends Component
         $docNumber = null;
         
         // Generate number only if sending or if it's not a revision
-        if ($isSend) {
+        if ($isSend && !$this->is_manual_document_number && empty($this->document_number)) {
             $docNumber = $this->generateDocumentNumber();
+        }
+        else {
+            $docNumber = $this->manual_document_number;
         }
 
         // 3. Create or Update Document
@@ -324,6 +332,43 @@ class CreateDocument extends Component
             $this->processAttachments($document);
             $this->processSpecialDocumentTypes($document);
             $this->processSignatoriesAndRouting($document);
+
+            $recipientEmail = null;
+            $recipientName = null;
+
+            // SAFE routing query
+            $firstRoute = optional($document)
+                ->routings()
+                ->whereNull('reviewed_at')
+                ->whereNull('returned_at')
+                ->orderBy('id', 'asc')
+                ->first();
+
+            if ($firstRoute && optional($firstRoute->user)->email) {
+                $recipientEmail = $firstRoute->user->email;
+                $recipientName = $firstRoute->user->name;
+            } else {
+
+                // SAFE signatory query
+                $firstSignatory = optional($document)
+                    ->signatories()
+                    ->whereNull('signed_at')
+                    ->whereNull('rejected_at')
+                    ->orderBy('sequence', 'asc')
+                    ->first();
+
+                if ($firstSignatory && optional($firstSignatory->user)->email) {
+                    $recipientEmail = $firstSignatory->user->email;
+                    $recipientName = $firstSignatory->user->name;
+                }
+            }
+
+            // Send email safely
+            if (!empty($recipientEmail)) {
+                Mail::to($recipientEmail)->send(
+                    new DocumentForReview($document, $recipientName ?? 'User')
+                );
+            }
             
             $document->logs()->create([
                 'user_id' => Auth::id(),
@@ -344,6 +389,7 @@ class CreateDocument extends Component
             'document_type_id' => 'required',
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
+            'manual_document_number' => $this->is_manual_document_number ? 'required|unique:documents,document_number' : 'nullable',
         ];
 
         // Conditional Rules based on type
