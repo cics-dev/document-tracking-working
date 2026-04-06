@@ -54,6 +54,6 @@ class ViewExternalDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.view-external-document');
+        return view('livewire.documents.view-external-document')->layout('layouts.app');
     }
 }

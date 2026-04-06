@@ -1,3 +1,10 @@
+@blaze(fold: true, unsafe: [
+    'name', 'label', 'badge',
+    'description', 'description:trailing',
+    'label:badge', 'label:aside', 'label:trailing',
+    'error:name', 'error:bag', 'error:message', 'error:icon', 'error:nested', 'error:deep',
+])
+
 @php
 extract(Flux::forwardedAttributes($attributes, [
     'name',
@@ -37,7 +44,10 @@ extract(Flux::forwardedAttributes($attributes, [
 
         {{ $slot }}
 
-        <flux:error :attributes="$errorAttributes" />
+        {{-- We're using ->getAttributes() here because ->all() is only available since Laravel 11... --}}
+        @unblaze(scope: ['attributes' => $errorAttributes->getAttributes()])
+        <flux:error :attributes="new \Illuminate\View\ComponentAttributeBag($scope['attributes'])" />
+        @endunblaze
 
         <?php if (isset($descriptionTrailing)): ?>
             <flux:description :attributes="$descriptionAttributes">{{ $descriptionTrailing }}</flux:description>

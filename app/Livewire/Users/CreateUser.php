@@ -44,7 +44,7 @@ class CreateUser extends Component
     
     public function render()
     {
-        return view('livewire.users.create-user', ['offices' => app(OfficeController::class)->index('ADMIN', false)]);
+        return view('livewire.users.create-user', ['offices' => app(OfficeController::class)->index('ADMIN', false)])->layout('layouts.app');
     }
 
     public function saveUser()

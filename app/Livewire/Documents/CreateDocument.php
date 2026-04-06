@@ -90,7 +90,7 @@ class CreateDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.create-document');
+        return view('livewire.documents.create-document')->layout('layouts.app');
     }
 
     // --- Interaction Methods ---

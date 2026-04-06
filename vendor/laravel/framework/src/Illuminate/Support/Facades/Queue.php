@@ -19,6 +19,7 @@ use Illuminate\Support\Testing\Fakes\QueueFake;
  * @method static void pauseFor(string $connection, string $queue, \DateTimeInterface|\DateInterval|int $ttl)
  * @method static void resume(string $connection, string $queue)
  * @method static bool isPaused(string $connection, string $queue)
+ * @method static void withoutInterruptionPolling()
  * @method static void extend(string $driver, \Closure $resolver)
  * @method static void addConnector(string $driver, \Closure $resolver)
  * @method static string getDefaultDriver()
@@ -50,6 +51,7 @@ use Illuminate\Support\Testing\Fakes\QueueFake;
  * @method static void setContainer(\Illuminate\Container\Container $container)
  * @method static \Illuminate\Support\Testing\Fakes\QueueFake except(array|string $jobsToBeQueued)
  * @method static void assertPushed(string|\Closure $job, callable|int|null $callback = null)
+ * @method static void assertPushedTimes(string $job, int $times = 1)
  * @method static void assertPushedOn(string $queue, string|\Closure $job, callable|null $callback = null)
  * @method static void assertPushedWithChain(string $job, array $expectedChain = [], callable|null $callback = null)
  * @method static void assertPushedWithoutChain(string $job, callable|null $callback = null)
@@ -66,6 +68,7 @@ use Illuminate\Support\Testing\Fakes\QueueFake;
  * @method static array pushedJobs()
  * @method static array rawPushes()
  * @method static \Illuminate\Support\Testing\Fakes\QueueFake serializeAndRestore(bool $serializeAndRestore = true)
+ * @method static void releaseUniqueJobLocks()
  *
  * @see \Illuminate\Queue\QueueManager
  * @see \Illuminate\Queue\Queue
@@ -94,7 +97,7 @@ class Queue extends Facade
     public static function fake($jobsToFake = [])
     {
         $actualQueueManager = static::isFake()
-            ? static::getFacadeRoot()->queue
+            ? tap(static::getFacadeRoot(), fn ($fake) => $fake->releaseUniqueJobLocks())->queue
             : static::getFacadeRoot();
 
         return tap(new QueueFake(static::getFacadeApplication(), $jobsToFake, $actualQueueManager), function ($fake) {

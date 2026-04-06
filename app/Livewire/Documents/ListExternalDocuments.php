@@ -53,6 +53,6 @@ class ListExternalDocuments extends Component
 
         return view('livewire.documents.list-external-documents', [
             'documents' => $documents
-        ]);
+        ])->layout('layouts.app');
     }
 }

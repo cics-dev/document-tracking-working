@@ -17,6 +17,6 @@ class TrackDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.track-document');
+        return view('livewire.documents.track-document')->layout('layouts.app');
     }
 }

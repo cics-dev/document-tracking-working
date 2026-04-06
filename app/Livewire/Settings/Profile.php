@@ -143,4 +143,9 @@ class Profile extends Component
 
         Session::flash('status', 'verification-link-sent');
     }
+
+    public function render()
+    {
+        return view('livewire.settings.profile')->layout('layouts.app');
+    }
 }

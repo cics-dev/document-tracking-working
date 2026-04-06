@@ -118,6 +118,6 @@ class ReceiveExternalDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.receive-external-document');
+        return view('livewire.documents.receive-external-document')->layout('layouts.app');
     }
 }

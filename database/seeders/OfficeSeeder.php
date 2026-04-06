@@ -166,9 +166,28 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'CAO',
             'office_type' => ''
         ]);
+
         Office::create([
             'name' => 'Office of the President',
             'abbreviation' => 'OP',
+            'office_type' => ''
+        ]);
+
+        Office::create([
+            'name' => 'Information and Communications Technology Unity',
+            'abbreviation' => 'ICTU',
+            'office_type' => ''
+        ]);
+
+        Office::create([
+            'name' => 'University Registrar',
+            'abbreviation' => 'Registrar',
+            'office_type' => ''
+        ]);
+
+        Office::create([
+            'name' => 'Public Information Office',
+            'abbreviation' => 'PIO',
             'office_type' => ''
         ]);
     }

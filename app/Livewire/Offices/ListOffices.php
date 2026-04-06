@@ -94,6 +94,6 @@ class ListOffices extends Component
 
     public function render()
     {
-        return view('livewire.offices.list-offices', ['offices'=>app(OfficeController::class)->index('ADMIN', true)]);
+        return view('livewire.offices.list-offices', ['offices'=>app(OfficeController::class)->index('ADMIN', true)])->layout('layouts.app');
     }
 }

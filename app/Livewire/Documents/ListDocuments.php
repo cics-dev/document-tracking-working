@@ -101,7 +101,7 @@ class ListDocuments extends Component
         return view('livewire.documents.list-documents', [
             'documents' => $paginatedDocuments,
             'documentTypes' => $documentTypes,
-        ]);
+        ])->layout('layouts.app');
     }
     
     public function editDocument($id) { return redirect()->route('documents.create-document', ['id' => $id]); }

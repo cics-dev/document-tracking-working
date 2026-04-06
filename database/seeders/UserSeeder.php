@@ -373,5 +373,71 @@ class UserSeeder extends Seeder
             'titles' => '',
             'gender' => 'Male',
         ]);
+
+        $ictu = User::create([
+            'name' => 'Keith Carlou Jaramilla',
+            'email' => 'kit@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'ICTU Office Head',
+            'role_id' => 10,
+            'office_id' => 25, // set if needed
+        ]);
+        $ictu->profile()->create([
+            'honorifics' => 'Mr',
+            'given_name' => 'Keith Carlou',
+            'middle_name' => 'N',
+            'middle_initial' => 'N',
+            'family_name' => 'Jaramilla',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Male',
+        ]);
+        $ictu->office()->update([
+            'head_id' => $ictu->id
+        ]);
+
+        $registrar = User::create([
+            'name' => 'Ma. Asie Tubil II',
+            'email' => 'tubil@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'Registrar Office Head',
+            'role_id' => 10,
+            'office_id' => 26, // set if needed
+        ]);
+        $registrar->profile()->create([
+            'honorifics' => 'Ms',
+            'given_name' => 'Ma. Asie',
+            'middle_name' => 'G',
+            'middle_initial' => 'G',
+            'family_name' => 'Tubil',
+            'suffix' => 'II',
+            'titles' => '',
+            'gender' => 'Female',
+        ]);
+        $registrar->office()->update([
+            'head_id' => $registrar->id
+        ]);
+
+        $pio = User::create([
+            'name' => 'Anthony Colico',
+            'email' => 'colico@example.com',
+            'password' => Hash::make('password'),
+            'position' => 'PIO Office Head',
+            'role_id' => 10,
+            'office_id' => 27, // set if needed
+        ]);
+        $pio->profile()->create([
+            'honorifics' => 'Mr',
+            'given_name' => 'Anthony',
+            'middle_name' => 'B',
+            'middle_initial' => 'B',
+            'family_name' => 'Colico',
+            'suffix' => '',
+            'titles' => '',
+            'gender' => 'Male',
+        ]);
+        $pio->office()->update([
+            'head_id' => $pio->id
+        ]);
     }
 }

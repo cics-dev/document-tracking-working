@@ -596,6 +596,6 @@ class ViewDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.view-document');
+        return view('livewire.documents.view-document')->layout('layouts.app');
     }
 }

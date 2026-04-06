@@ -1,6 +1,14 @@
-@blaze
+@blaze(fold: true, unsafe: [
+    // variant props
+    'size',
+    // flux:with-field props
+    'name', 'label', 'badge',
+    'description', 'description:trailing',
+    'label:badge', 'label:aside', 'label:trailing',
+    'error:name', 'error:bag', 'error:message', 'error:icon', 'error:nested', 'error:deep',
+])
 
-@aware([ 'variant' ])
+@aware([ 'variant', 'size', 'indicator' ])
 
 @props([
     'variant' => 'default',

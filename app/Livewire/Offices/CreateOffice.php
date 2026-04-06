@@ -26,7 +26,7 @@ class CreateOffice extends Component
 
     public function render()
     {
-        return view('livewire.offices.create-office');
+        return view('livewire.offices.create-office')->layout('layouts.app');
     }
 
     public function saveOffice()

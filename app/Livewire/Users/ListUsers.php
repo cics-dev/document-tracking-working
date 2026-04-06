@@ -9,6 +9,6 @@ class ListUsers extends Component
 {
     public function render()
     {
-        return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)]);
+        return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)])->layout('layouts.app');
     }
 }
