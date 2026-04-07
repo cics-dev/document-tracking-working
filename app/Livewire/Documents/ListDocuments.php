@@ -104,7 +104,6 @@ class ListDocuments extends Component
         ])->layout('layouts.app');
     }
     
-    public function editDocument($id) { return redirect()->route('documents.create-document', ['id' => $id]); }
     public function viewDocument($number) { return redirect()->route('documents.view-document', ['number' => $number]); }
     public function trackDocument($number) { return redirect()->route('documents.track-document', ['number' => $number]); }
 }

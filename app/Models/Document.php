@@ -106,24 +106,16 @@ class Document extends Model
     // 👇 Custom accessor that merges both
     public function getAllAttachmentsAttribute()
     {
-        $externalDocs = collect($this->externalDocuments)
-            ->values()
-            ->map(function ($doc, $index) {
-                $doc->name = $doc->document_number;
-                $doc->type = 'external';
+        return collect($this->externalDocuments)->values()->map(function ($doc) {
+            $doc->setAttribute('name', $doc->document_number);
+            $doc->setAttribute('type', 'external');
+            return $doc;
+        })->merge(
+            collect($this->attachments)->values()->map(function ($doc) {
+                $doc->setAttribute('type', 'internal');
                 return $doc;
-            });
-
-        $attachments = collect($this->attachments)
-            ->values()
-            ->map(function ($doc) {
-                $doc->type = 'internal';
-                return $doc;
-            });
-
-        $merged = $externalDocs->merge($attachments);
-        // dd($merged);
-        return $merged;
+            })
+        );
     }
 
     public function signatories()

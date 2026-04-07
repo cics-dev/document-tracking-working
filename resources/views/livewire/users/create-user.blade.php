@@ -78,6 +78,17 @@
                 </div>
                 <div class="md:col-span-4">
                     <flux:field>
+                        <flux:label>System Role <span class="text-red-500">*</span></flux:label>
+                        <flux:select wire:model="role_id" placeholder="Choose role...">
+                            @foreach ($roles as $role)
+                                <flux:select.option value="{{ $role->id }}">{{ $role->role }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:error name="role_id" />
+                    </flux:field>
+                </div>
+                <div class="md:col-span-4">
+                    <flux:field>
                         <flux:label>Position <span class="text-red-500">*</span></flux:label>
                         <flux:input wire:model="position" type="text" required />
                         <flux:error name="position" />

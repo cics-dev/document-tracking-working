@@ -7,6 +7,7 @@ use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
 use App\Models\Document;
 use App\Models\Office;
+use App\Models\DocumentAttachment;
 use App\Models\ExternalDocument;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -22,6 +23,10 @@ class CreateDocument extends Component
 
     #[Validate(['attachments.*' => 'max:5120'])] // 5MB per file
     public $attachments = [];
+    public $existingAttachments = [];
+
+    public $selectedAttachment;
+    public $attachmentPreviewUrl;
     
     // Form Properties
     public $original_document_number;
@@ -64,19 +69,17 @@ class CreateDocument extends Component
 
     // --- Lifecycle & Setup ---
 
-    public function mount($number = null)
+    public function mount($number = null, $draft_id = null)
     {
+        $this->redirect_mode = $number? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
         
-        // Load Data
         $this->users = app(UserController::class)->index(false);
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
-        
-        // Optimization: Key offices by ID for O(1) lookup later
         $officesData = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
         $this->offices = collect($officesData)->keyBy('id');
 
-        $this->handleSessionData() ?: $this->handleRevisionData($number);
+        $this->handleSessionData() ?: $this->handlePassedData($number, $draft_id);
     }
 
     public function loadInitialContent()
@@ -124,6 +127,10 @@ class CreateDocument extends Component
             $this->document_to_id = null;
             $this->document_to_text = null;
         }
+
+
+
+        if($this->document_type_id == 2 && (Auth::user()->id ==10 || Auth::user()->id ==16)) $this->document_from_id = 1;
     }
 
     public function addCfOffice()
@@ -139,18 +146,16 @@ class CreateDocument extends Component
         $this->cf_offices = array_diff($this->cf_offices, [$officeId]);
     }
 
-    public function addSignatory()
+    public function addSignatory($data = null)
     {
-        $newSignatory = ['role' => '', 'office_id' => '', 'locked' => false];
+        $newSignatory = $data ?? ['role' => '', 'office_id' => '', 'locked' => false];
 
-        // Check if the last signatory is locked (The President)
         $lastIndex = count($this->signatories) - 1;
 
+        // President/Locked logic
         if ($lastIndex >= 0 && ($this->signatories[$lastIndex]['locked'] ?? false)) {
-            // Insert BEFORE the last element so President stays at the bottom
             array_splice($this->signatories, $lastIndex, 0, [$newSignatory]);
         } else {
-            // Normal append
             $this->signatories[] = $newSignatory;
         }
     }
@@ -164,14 +169,6 @@ class CreateDocument extends Component
 
         unset($this->signatories[$index]);
         $this->signatories = array_values($this->signatories);
-    }
-
-    public function removeAttachment($filename)
-    {
-        $this->attachments = collect($this->attachments)
-            ->reject(fn($file) => $file->getClientOriginalName() === $filename)
-            ->values()
-            ->all();
     }
 
     // --- Content Updates (Quill) ---
@@ -293,7 +290,7 @@ class CreateDocument extends Component
         
         // Generate number only if sending or if it's not a revision
         if ($isSend && !$this->is_manual_document_number && empty($this->document_number)) {
-            $docNumber = $this->generateDocumentNumber();
+            $docNumber = $this->generateDocumentNumber($fromUser->office->id);
         }
         else {
             $docNumber = $this->manual_document_number;
@@ -365,9 +362,9 @@ class CreateDocument extends Component
 
             // Send email safely
             if (!empty($recipientEmail)) {
-                Mail::to($recipientEmail)->send(
-                    new DocumentForReview($document, $recipientName ?? 'User')
-                );
+                // Mail::to($recipientEmail)->send(
+                //     new DocumentForReview($document, $recipientName ?? 'User')
+                // );
             }
             
             $document->logs()->create([
@@ -431,18 +428,17 @@ class CreateDocument extends Component
         }
     }
 
-    private function generateDocumentNumber()
+    private function generateDocumentNumber($from_id)
     {
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         
-        // Find latest number
-        $query = Document::where('document_type_id', $this->document_type_id)
+        $latestDoc = Document::where('from_id', $from_id)
+            ->where('document_type_id', $this->document_type_id)
             ->where('status', '!=', 'draft')
             ->whereYear('created_at', date('Y'))
-            ->orderByDesc('document_number');
-            
-        // Use Office specific query if not global type? (Original code logic was ambiguous here, cleaned up)
-        $latestDoc = $query->first();
+            ->orderByRaw('LENGTH(document_number) DESC')
+            ->orderByDesc('document_number')
+            ->first();
 
         $lastNumber = 0;
         if ($latestDoc) {
@@ -475,38 +471,62 @@ class CreateDocument extends Component
 
     private function processAttachments(Document $document)
     {
-        // Handle inherited attachments (IOM/SO revisions)
+        // 1. Handle "Inherited" attachments from original document (Specific to IOM/SO)
         if (in_array($this->document_type, ['IOM', 'SO']) && $this->original_document_id) {
             $originalDoc = Document::find($this->original_document_id);
             if ($originalDoc) {
                 $document->attachments()->create([
                     'attachment_document_id' => $this->original_document_id,
                     'name' => $originalDoc->document_number,
-                    'status' => 'approved',
+                    'status' => 'Generated '.$this->document_type,
                     'file_type' => 'pdf',
                     'is_upload' => false
                 ]);
                 $originalDoc->update(['status' => 'Generated ' . $this->document_type]);
             }
-        } else {
-            // Handle standard uploads
-            foreach ($this->attachments as $file) {
-                $path = $file->store('attachments', 'public');
+        } 
+
+        // 2. Handle existingAttachments (Files already in the system)
+        if (!empty($this->existingAttachments)) {
+            foreach ($this->existingAttachments as $existing) {
+                // We create a NEW record for the NEW document but point to the OLD file path
                 $document->attachments()->create([
-                    'name' => $file->getClientOriginalName(),
+                    'name' => $existing['name'],
+                    'file_url' => $existing['file_url'],
+                    'file_type' => $existing['file_type'],
                     'status' => 'sent',
-                    'file_url' => $path,
-                    'file_type' => $file->getClientOriginalExtension(),
-                    'is_upload' => true
+                    'is_upload' => $existing['is_upload'] ?? true,
+                    // If it's a link to another document, preserve that
+                    'attachment_document_id' => $existing['attachment_document_id'] ?? null,
                 ]);
             }
         }
+
+        // 3. Handle NEW uploads from the dropzone
+        foreach ($this->attachments as $file) {
+            $path = $file->store('attachments', 'public');
+            $document->attachments()->create([
+                'name' => $file->getClientOriginalName(),
+                'status' => 'sent',
+                'file_url' => $path,
+                'file_type' => $file->getClientOriginalExtension(),
+                'is_upload' => true
+            ]);
+        }
+    }
+
+    public function removeAttachment($filename)
+    {
+        $this->attachments = collect($this->attachments)
+            ->reject(fn($file) => $file->getClientOriginalName() === $filename)
+            ->values()
+            ->all();
     }
 
     private function processSpecialDocumentTypes(Document $document)
     {
         // IOM Specifics
-        if ($this->document_type === 'IOM' && $this->original_document_id) {
+        if ($this->document_type === 'IOM') {
             $document->signatories()->create([
                 'signatory_label' => 'Approved by',
                 'user_id' => 2, // HARDCODED ID: Consider moving to config/const
@@ -611,13 +631,102 @@ class CreateDocument extends Component
         return true;
     }
 
-    private function handleRevisionData($number)
+    private function handlePassedData($number, $draft_id)
     {
-        if (!$number) return;
+        if ($this->redirect_mode == null) return;
 
-        $this->redirect_mode = 'revision';
-        $this->original_document_number = $number;
-        
+        $document = null;
+
+        if ($this->redirect_mode === 'revision' && $number) {
+            $document = Document::where('document_number', $number)->first();
+        } elseif ($this->redirect_mode === 'edit' && $draft_id) {
+            $document = Document::find($draft_id);
+        }
+
+        if (!$document) return;
+
+        $this->original_document_id = $document->id;
+        $this->document_to_id = $document->to_id;
+        $this->document_type_id = $document->document_type_id;
+        $this->thru = $document->thru;
+        $this->subject = $document->subject;
+        $this->content = $document->content;
+        $this->existingAttachments = $document->all_attachments->map(function($attachment) {
+            $data = $attachment->toArray();
+            // Manually re-inject these because toArray() might skip dynamic setAttributes
+            $data['type'] = $attachment->type; 
+            $data['name'] = $attachment->name ?? $attachment->document_number;
+            return $data;
+        })->toArray();
+
+
+        $this->handleUpdateDocumentType();
+
+        $incomingSignatories = $document->signatories->map(fn($s) => [
+            'role' => $s->signatory_label,
+            'office_id' => $s->user->office->id ?? null,
+            'locked' => (bool) ($s->locked ?? false),
+        ]);
+
+        foreach ($incomingSignatories as $newSig) {
+            $isDuplicate = collect($this->signatories)->contains(function ($existing) use ($newSig) {
+                return $existing['office_id'] == $newSig['office_id'] 
+                    && $existing['role'] === $newSig['role'];
+            });
+
+            if (!$isDuplicate) {
+                $this->addSignatory($newSig);
+            }
+        }
+
+        $this->cf_offices = $document->cfs->pluck('user.office.id')->toArray() ?? [];
+
+        if ($this->document_type === 'RLM') {
+            // Map your keys to the specific Office IDs used in processSignatoriesAndRouting
+            $routeMap = [
+                'budget_office' => 19,
+                'motor_pool' => 20,
+                'legal_review' => 21,
+                'igp_review' => 22,
+            ];
+
+            // Get all office IDs currently assigned to this document's routing
+            $existingRouteOfficeIds = $document->routings->pluck('user.office.id')->toArray();
+
+            foreach ($routeMap as $key => $officeId) {
+                // If the office ID is in the document's routing, set the checkbox to true
+                $this->routingRequirements[$key] = in_array($officeId, $existingRouteOfficeIds);
+            }
+        }
+
+
+        if ($document->status === 'draft') {
+            $this->redirect_mode = 'edit';
+            $this->revision_document_number = $document->document_number;
+        } else {
+            $this->redirect_mode = 'revision';
+            $this->original_document_number = $number;
+
+            $parts = explode('-', $document->document_number);
+            if (count($parts) >= 4) {
+                $baseNumber = $parts[2];
+                $prefix = $parts[0] . '-' . $parts[1];
+                $suffix = $parts[3];
+
+                $original = $document->originalRevisedDocument ?? $document;
+                $lastRevision = $original->revisions->last();
+
+                if ($lastRevision) {
+                    $lastBase = explode('-', $lastRevision->document_number)[2];
+                    $lastLetter = substr($lastBase, -1);
+                    $nextLetter = chr(ord($lastLetter) + 1);
+                    $this->revision_document_number = "{$prefix}-" . intval($baseNumber) . "{$nextLetter}-{$suffix}";
+                } else {
+                    $this->revision_document_number = "{$prefix}-" . intval($baseNumber) . "a-{$suffix}";
+                }
+            }
+        }
+
         $document = Document::where('document_number', $number)->first();
         if (!$document) return;
 
@@ -641,14 +750,28 @@ class CreateDocument extends Component
                 $this->revision_document_number = "{$prefix}-" . intval($baseNumber) . "a-{$suffix}";
             }
         }
+    }
 
-        $this->document_to_id = $document->to_id;
-        $this->document_type_id = $document->document_type_id;
-        $this->subject = $document->subject;
-        $this->content = $document->content;
-        $this->thru = $document->thru;
+    public function viewAttachment($id, $type)
+    {
+        if ($type == 'internal') {
+            $this->selectedAttachment = DocumentAttachment::find($id);
+        }
+        else if ($type == 'external') {
+            $this->selectedAttachment = ExternalDocument::find($id);
+        }
+        if (!$this->selectedAttachment->is_upload && $type =='internal') {
+            $attachment_document = $this->selectedAttachment->attachmentDocument;
+            $attachment_query = $this->processPDF($attachment_document);
+            // $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);
+            $key = uniqid();
+            session([$key => $attachment_query]);
+            $this->attachmentPreviewUrl = '/document/preview?' . $key;
+        }
+        else {
+            $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);
+        }
 
-
-        $this->handleUpdateDocumentType();
+        $this->modal('view-attachment-modal')->show();
     }
 }

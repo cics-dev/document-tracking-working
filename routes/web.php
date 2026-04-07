@@ -78,6 +78,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['sent', 'received', 'all'])->name('list-documents');
         Route::get('/create', CreateDocument::class)->name('create-document');
         Route::get('/create-revision/{number}', CreateDocument::class)->name('create-revision');
+        Route::get('/edit-draft/{draft_id}', CreateDocument::class)->name('edit-draft');
         Route::get('/view/{number}', ViewDocument::class)->name('view-document');
         Route::get('/track/{number}', TrackDocument::class)->name('track-document');
     });

@@ -73,44 +73,48 @@
         <div class="flex items-center justify-between border-b pb-2 mb-4">
             <h2 class="text-xl font-semibold text-gray-900">{{ $revision_document_number ?: 'Document Details' }}</h2>
             
-            <div class="flex items-center">
-                <flux:switch 
-                    wire:model.live="is_manual_document_number" 
-                    label="Manual Document No." 
-                    class="text-sm"
-                />
-            </div>
+            @if($redirect_mode != 'revision')
+                <div class="flex items-center">
+                    <flux:switch 
+                        wire:model.live="is_manual_document_number" 
+                        label="Manual Document No." 
+                        class="text-sm"
+                    />
+                </div>
+            @endif
         </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <flux:field>
-                    <flux:label>Document Number @if($is_manual_document_number)<span class="text-red-500">*</span>@endif</flux:label>
-                    
-                    @if($is_manual_document_number)
-                        <flux:input 
-                            wire:model.blur="manual_document_number" 
-                            type="text" 
-                            placeholder="Enter Reference/Document No."
-                            required
-                        />
-                    @else
-                        <div class="relative">
+
+        @if($redirect_mode != 'revision')
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <flux:field>
+                        <flux:label>Document Number @if($is_manual_document_number)<span class="text-red-500">*</span>@endif</flux:label>
+                        
+                        @if($is_manual_document_number)
                             <flux:input 
+                                wire:model.blur="manual_document_number" 
                                 type="text" 
-                                value="System Generated upon Sending" 
-                                disabled 
-                                class="bg-gray-100 text-gray-500 italic border-dashed"
+                                placeholder="Enter Reference/Document No."
+                                required
                             />
-                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <flux:icon icon="sparkles" class="size-4 text-gray-400" />
+                        @else
+                            <div class="relative">
+                                <flux:input 
+                                    type="text" 
+                                    value="System Generated upon Sending" 
+                                    disabled 
+                                    class="bg-gray-100 text-gray-500 italic border-dashed"
+                                />
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <flux:icon icon="sparkles" class="size-4 text-gray-400" />
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                    <flux:error name="document_number" />
-                </flux:field>
+                        @endif
+                        <flux:error name="document_number" />
+                    </flux:field>
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 
     <div class="mb-8">
@@ -333,7 +337,38 @@
                     @enderror
 
                     <div id="file-list" class="space-y-2">
-                        @if ($attachments)
+                        @if (!empty($attachments) || !empty($existingAttachments))
+                            @foreach ($existingAttachments as $file)
+                                <div wire:key="attachment-{{ $file['id'] }}" class="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-md border border-blue-200">
+                                    <div class="flex items-center min-w-0">
+                                        <div class="mr-2 flex-shrink-0 text-blue-500">
+                                            <flux:icon icon="document" class="size-4" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-medium text-gray-900 truncate">
+                                                {{ $file['name'] }}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                EXISTING FILE • {{ strtoupper($file['file_type']) }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <button type="button"
+                                            wire:click="viewAttachment({{ $file['id'] }}, '{{ $file['type'] }}')">
+                                            <flux:icon.eye class="w-5 h-5" />
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            wire:click="removeExistingAttachment({{ $file['id'] }})"
+                                            class="text-red-500 hover:text-red-700 p-1"
+                                        >
+                                            <flux:icon icon="x-mark" class="size-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
                             @foreach ($attachments as $attachment)
                                 <div class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md border border-gray-200">
                                     <div class="flex items-center min-w-0">
@@ -397,6 +432,27 @@
             </flux:button>
         </div>
     </div>
+
+    <flux:modal name="view-attachment-modal" class="max-w-5xl w-full">
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <flux:heading size="lg">Attachment Preview</flux:heading>
+            </div>
+            @if ($selectedAttachment)
+                <div class="border rounded-lg overflow-hidden">
+                    @if ($selectedAttachment->file_type == 'pdf')
+                        @if ($attachmentPreviewUrl)
+                            <iframe src="{{ $attachmentPreviewUrl }}" class="w-full h-[600px] border rounded" frameborder="0"></iframe>
+                        @else
+                            <p>Loading preview...</p>
+                        @endif
+                    @else
+                        <img src="{{ $attachmentPreviewUrl }}" class="w-full max-h-[700px] object-contain" alt="Attachment Preview">
+                    @endif
+                </div>
+            @endif
+        </div>
+    </flux:modal>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

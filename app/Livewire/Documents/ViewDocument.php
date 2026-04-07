@@ -54,7 +54,8 @@ class ViewDocument extends Component
             'action' => 'viewed',
         ]);
 
-        if ($this->document->document_type_id == 2 && $this->document->attachments[0]->attachment_document_id) {
+        // if ($this->document->document_type_id == 2 && $this->document->attachments[0]->attachment_document_id) {
+        if ($this->document->document_type_id == 2 && $this->document->attachments->first()?->attachment_document_id) {
             $origDoc = Document::find($this->document->attachments[0]->attachment_document_id);
             $origDoc->signatories()
                 ->where('user_id', Auth::id())
@@ -306,9 +307,9 @@ class ViewDocument extends Component
 
             // Send email only if valid
             if (!empty($recipientEmail)) {
-                Mail::to($recipientEmail)->send(
-                    new DocumentForReview($this->document, $recipientName ?? 'User')
-                );
+                // Mail::to($recipientEmail)->send(
+                //     new DocumentForReview($this->document, $recipientName ?? 'User')
+                // );
             }
         }
 
@@ -343,6 +344,7 @@ class ViewDocument extends Component
             $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
             $lastSignatory = $docSignatories->last();
             $lastSignatory->signed_at = now();
+            $lastSignatory->status = 'Approved';
             $lastSignatory->save();
             $attachmentDetails->update([
                 'status' => 'Approved'
@@ -466,7 +468,8 @@ class ViewDocument extends Component
         if ($this->mySignatory){
             $this->mySignatory->update([
                 'rejected_at' => now(),
-                'comments' => $remarks
+                'comments' => $remarks,
+                'status' => 'Rejected'
             ]);
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
@@ -490,6 +493,23 @@ class ViewDocument extends Component
             $this->document->status ='Rejected';
             $this->document->save();
             $this->myReview->save();
+        }
+        if ($this->document->document_type_id == 2 && $this->document->attachments()->latest()->first() != null) {
+            $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->attachment_document_id);
+            $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
+            $lastSignatory = $docSignatories->last();
+            $lastSignatory->rejected_at = now();
+            $lastSignatory->comments = $remarks;
+            $lastSignatory->status = 'Rejected';
+            $lastSignatory->save();
+            $attachmentDetails->update([
+                'status' => 'Rejected',
+            ]);
+            $attachmentDetails->logs()->create([
+                'user_id' => Auth::id(),
+                'action' => 'rejected',
+                'description' => $lastSignatory->user->office->name . ' rejected the document with remarks: '. $remarks
+            ]);
         }
 
         $data = [

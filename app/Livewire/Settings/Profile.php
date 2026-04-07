@@ -50,7 +50,7 @@ class Profile extends Component
         // 2. Extra Details
         $this->honorifics = $user->profile->honorifics ?? '';
         $this->titles = $user->profile->titles ?? ''; // Ensure your DB column name matches here
-        $this->gender = strtolower($user->profile->gender) ?? '';
+        $this->gender = strtolower($user->profile?->gender) ?? '';
         
         // 3. Contact & Work
         $this->email = $user->email ?? '';

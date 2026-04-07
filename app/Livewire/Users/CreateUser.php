@@ -25,6 +25,7 @@ class CreateUser extends Component
     public $office_id = '';
     public $position = '';
     public $is_head = false;
+    public $role_id = '';
 
     protected $rules = [
         'signature' => 'nullable|image|max:2048',
@@ -38,21 +39,23 @@ class CreateUser extends Component
         'gender'     => 'required|string|max:20',
         'email'      => 'required|email|max:255|unique:users,email',
         'office_id'  => 'required|exists:offices,id',
+        'role_id' => 'required|exists:roles,id',
         'position'   => 'required|string|max:100',
         'is_head'    => 'boolean',
     ];
     
     public function render()
     {
-        return view('livewire.users.create-user', ['offices' => app(OfficeController::class)->index('ADMIN', false)])->layout('layouts.app');
+        return view('livewire.users.create-user', [
+            'offices' => app(OfficeController::class)->index('ADMIN', false),
+            'roles' => \App\Models\Role::all(),
+        ])->layout('layouts.app');
     }
 
     public function saveUser()
     {
-        $this->validate($this->rules,['middle_initial.required_with' => 'Required', '*.required' => 'Required']);
-        if ($this->signature) {
-            $signature_path = $this->signature->store('assets/img', 'public');
-        }
+        $this->validate($this->rules,['middle_initial.required_with' => 'Required', '*.required' => 'Required', 'role_id.required' => 'Please assign a role to this user.',]);
+        $signature_path = $this->signature ? $this->signature->store('assets/img', 'public') : null;
         $data = new Request([
             'given_name'      => $this->given_name,
             'middle_name'     => $this->middle_name,
@@ -66,6 +69,7 @@ class CreateUser extends Component
             'office_id'       => $this->office_id,
             'position'        => $this->position,
             'is_head'         => $this->is_head,
+            'role_id'         => $this->role_id,
             'signature'       => $signature_path,
         ]);
         $response = app(UserController::class)->store($data);

@@ -140,7 +140,7 @@
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
                                 @if($document->status == 'draft')
-                                    <flux:button wire:click="editDocument({{ $document->id }})" size="sm" icon="pencil-square" variant="subtle" class="text-blue-600">Edit</flux:button>
+                                    <flux:button href="{{ route('documents.edit-draft', $document->id) }}" size="sm" icon="pencil-square" variant="subtle" class="text-blue-600">Edit</flux:button>
                                 @endif
 
                                 @if($mode == 'sent' && $document->status == 'Rejected')
