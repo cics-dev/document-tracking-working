@@ -44,6 +44,13 @@ class ReceiveExternalDocument extends Component
             ->get();
     }
 
+    public function mount()
+    {
+        if(Auth::user()->id !=17) {
+            $this->document_to_id = Auth::user()->office->id;
+        }
+    }
+
     public function removeAttachment()
     {
         $this->attachment = null;

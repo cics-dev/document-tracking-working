@@ -17,7 +17,7 @@
 
     <div class="mb-4">
         <div class="flex justify-between mb-3">
-            <p class="text-sm"><span class="font-bold">DATE:</span> {{ \Carbon\Carbon::parse($date)->format('F d, Y') }}</p>
+            <p class="text-sm"><span class="font-bold">DATE & TIME:</span> {{ \Carbon\Carbon::parse($date)->format('F d, Y h:i A') }}</p>
         </div>
         
         {{-- <p class="text-sm mb-3">Respectfully returning/forwarding the attached letter/documents, for the following:</p>

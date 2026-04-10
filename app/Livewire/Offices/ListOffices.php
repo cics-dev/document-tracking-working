@@ -53,7 +53,7 @@ class ListOffices extends Component
         $this->office_type = $office['office_type'];
         $this->head_id = $office['head_id'];
         
-        return view('livewire.offices.edit-office');
+        return redirect()->route('offices.edit-office', $id);
     }
 
     public function updateOffice()

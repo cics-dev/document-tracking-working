@@ -1,7 +1,7 @@
 <div class="max-w-5xl px-4 mx-auto container">
     <div class="mb-8">
-        <flux:heading size="xl" level="1">Create New Office</flux:heading>
-        <flux:subheading>Fill in the details below to create a new office</flux:subheading>
+        <flux:heading size="xl" level="1">{{ $editMode ? 'Edit Office' : 'Create New Office' }}</flux:heading>
+        <flux:subheading>Fill in the details below to {{ $editMode ? 'edit' : 'create new' }} office</flux:subheading>
     </div>
 
     <form wire:submit="saveOffice" class="bg-white shadow rounded-lg p-6">
@@ -35,7 +35,7 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <div class="md:col-span-6">
                     <flux:field>
-                        <flux:label>Type of Office <span class="text-red-500">*</span></flux:label>
+                        <flux:label>Type of Office</flux:label>
                         <flux:select wire:model="office_type" placeholder="Choose office type...">
                             <flux:select.option value="ACAD">Academic</flux:select.option>
                             <flux:select.option value="ADMIN">Administration</flux:select.option>
@@ -80,7 +80,7 @@
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <flux:button wire:click="cancel" variant="subtle">Cancel</flux:button>
-            <flux:button type="submit" variant="primary">Create Office</flux:button>
+            <flux:button type="submit" variant="primary">{{ $edit_mode ? 'Update' : 'Create' }} Office</flux:button>
         </div>
     </form>
 </div>

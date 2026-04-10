@@ -6,11 +6,11 @@
             <flux:subheading>Manage documents received from outside agencies.</flux:subheading>
         </div>
 
-        @if(Auth::user()->position == 'Staff')
+        {{-- @if(Auth::user()->position == 'Staff') --}}
             <flux:button href="{{ route('documents.receive-external-document') }}" variant="primary" icon="plus" class="w-full md:w-auto">
                 Receive Document
             </flux:button>
-        @endif
+        {{-- @endif --}}
     </div>
 
     <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -56,8 +56,8 @@
                         </td>
 
                         <td class="px-6 py-4 text-gray-500 whitespace-nowrap">
-                            {{ \Carbon\Carbon::parse($document->received_date)->format('M d, Y') }}<br>
-                            <span class="text-xs">{{ \Carbon\Carbon::parse($document->received_date)->format('h:i A') }}</span>
+                            {{ \Carbon\Carbon::parse($document->created_at)->format('M d, Y') }}<br>
+                            <span class="text-xs">{{ \Carbon\Carbon::parse($document->created_at)->format('h:i A') }}</span>
                         </td>
 
                         <td class="px-6 py-4 text-right">

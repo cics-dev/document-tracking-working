@@ -1,7 +1,7 @@
 <div class="max-w-5xl px-4 mx-auto container">
     <div class="mb-8">
-        <flux:heading size="xl" level="1">Create New User</flux:heading>
-        <flux:subheading>Fill in the details below to create a new user account</flux:subheading>
+        <flux:heading size="xl" level="1">{{ $editMode ? 'Edit User' : 'Create New User' }}</flux:heading>
+        <flux:subheading>Fill in the details below to {{ $editMode ? 'edit' : 'create new' }} user account</flux:subheading>
     </div>
 
     <form wire:submit="saveUser" class="bg-white shadow rounded-lg p-6">
@@ -113,6 +113,9 @@
                             <div class="absolute -top-2 -right-2">
                                 <flux:button wire:click="$set('signature', null)" icon="x-mark" size="xs" variant="filled" class="rounded-full bg-red-500 hover:bg-red-600 text-white border-none" />
                             </div>
+                        @elseif($existingSignature)
+                            {{-- Existing DB image --}}
+                            <img src="{{ asset('storage/' . $existingSignature) }}" class="w-40 h-20 object-contain border rounded">
                         @else
                             <div class="w-40 h-20 bg-gray-50 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400">
                                 <span class="text-xs text-gray-400">No Signature</span>
@@ -129,7 +132,7 @@
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <flux:button wire:click="cancel" variant="subtle">Cancel</flux:button>
-            <flux:button type="submit" variant="primary">Create User</flux:button>
+            <flux:button type="submit" variant="primary">{{ $editMode ? 'Update User' : 'Create User' }}</flux:button>
         </div>
     </form>
 </div>

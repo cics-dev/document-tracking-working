@@ -307,9 +307,9 @@ class ViewDocument extends Component
 
             // Send email only if valid
             if (!empty($recipientEmail)) {
-                // Mail::to($recipientEmail)->send(
-                //     new DocumentForReview($this->document, $recipientName ?? 'User')
-                // );
+                Mail::to($recipientEmail)->send(
+                    new DocumentForReview($this->document, $recipientName ?? 'User')
+                );
             }
         }
 

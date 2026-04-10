@@ -61,12 +61,13 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
         Route::get('/create', CreateOffice::class)->name('create-office');
-        // Route::get('/edit', CreateOffice::class)->name('edit-office');
+        Route::get('/edit/{id}', CreateOffice::class)->name('edit-office');
     });
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', ListUsers::class)->name('list-users');
         Route::get('/create', CreateUser::class)->name('create-user');
+        Route::get('/edit/{id}', CreateUser::class)->name('edit-user');
     });
 
     Route::prefix('documents')->name('documents.')->group(function () {

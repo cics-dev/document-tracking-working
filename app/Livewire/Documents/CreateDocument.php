@@ -222,8 +222,14 @@ class CreateDocument extends Component
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         $docTypeAbbr = $typeObj['abbreviation'] ?? 'N/A';
         
+        $officePart = Auth::user()->office->abbreviation;
+
+        if (Auth::user()->office->office_type) {
+            $officePart .= '(' . Auth::user()->office->office_type . ')';
+        }
+
         $docNumber = ($this->document_type != 'Intra')
-            ? Auth::user()->office->abbreviation . '(' . Auth::user()->office->office_type . ')-' . $docTypeAbbr . '-_____-' . date('Y')
+            ? $officePart . '-' . $docTypeAbbr . '-_____-' . date('Y')
             : 'CM-' . Auth::user()->office->abbreviation . '-_____-' . date('Y');
 
         // Prepare Signatories & CFs
@@ -362,9 +368,9 @@ class CreateDocument extends Component
 
             // Send email safely
             if (!empty($recipientEmail)) {
-                // Mail::to($recipientEmail)->send(
-                //     new DocumentForReview($document, $recipientName ?? 'User')
-                // );
+                Mail::to($recipientEmail)->send(
+                    new DocumentForReview($document, $recipientName ?? 'User')
+                );
             }
             
             $document->logs()->create([

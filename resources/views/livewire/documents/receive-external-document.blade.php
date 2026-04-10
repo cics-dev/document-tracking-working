@@ -83,7 +83,8 @@
 
             <flux:field>
                 <flux:label>To <span class="text-red-500">*</span></flux:label>
-                <flux:select wire:model="document_to_id" placeholder="Choose recipient...">
+                <flux:select wire:model="document_to_id" placeholder="Choose recipient..."
+                    :disabled="Auth::user()->id == 17 ? false : true">
                     @foreach ($this->offices as $office)
                         <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
                     @endforeach

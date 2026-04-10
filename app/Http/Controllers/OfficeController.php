@@ -29,7 +29,6 @@ class OfficeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'abbreviation' => 'required|string|max:50|unique:offices,abbreviation',
-            'office_type' => 'required|in:ACAD,ADMIN',
             'head_id' => 'nullable|exists:users,id',
         ]);
 
@@ -41,7 +40,6 @@ class OfficeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'abbreviation' => 'required|string|max:50|unique:offices,abbreviation,' . $office->id,
-            'office_type' => 'required|in:ACAD,ADMIN',
             'head_id' => 'nullable|exists:users,id',
         ]);
 
