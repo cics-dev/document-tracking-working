@@ -1,7 +1,7 @@
 <div class="max-w-5xl px-4 mx-auto container">
     <div class="mb-8">
-        <flux:heading size="xl" level="1">{{ $editMode ? 'Edit Office' : 'Create New Office' }}</flux:heading>
-        <flux:subheading>Fill in the details below to {{ $editMode ? 'edit' : 'create new' }} office</flux:subheading>
+        <flux:heading size="xl" level="1">{{ $edit_mode ? 'Edit Office' : 'Create New Office' }}</flux:heading>
+        <flux:subheading>Fill in the details below to {{ $edit_mode ? 'edit' : 'create new' }} office</flux:subheading>
     </div>
 
     <form wire:submit="saveOffice" class="bg-white shadow rounded-lg p-6">

@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DocumentForReview;
+use App\Mail\DocumentStatusUpdate;
 
 class ViewDocument extends Component
 {
@@ -234,6 +235,7 @@ class ViewDocument extends Component
 
     public function documentSigned($remarks = null)
     {
+        $mail_desc = '';
         if ($this->mySignatory) {
             $this->signatories = $this->document->signatories->sortBy('sequence');
             $lastSignatory = $this->signatories->last();
@@ -243,19 +245,21 @@ class ViewDocument extends Component
 
             $this->mySignatory->signed_at = now();
             $this->mySignatory->save();
+            $mail_desc = $this->mySignatory->user->office->name . ' signed the document';
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
-                'description' => $this->mySignatory->user->office->name . ' signed the document'
+                'description' => $mail_desc
             ]);
         }
         else if ($this->document->document_type_id == 2 && auth()->user()->position == 'University President') {
             $event = 'lastSignatory';
 
+            $mail_desc = auth()->user()->office->name . ' signed the document';
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
-                'description' => auth()->user()->office->name . ' signed the document'
+                'description' => $mail_desc
             ]);
         }
         else if ($this->myReview) {
@@ -264,10 +268,12 @@ class ViewDocument extends Component
             $this->myReview->reviewed_at = now();
             $this->myReview->comments = $remarks;
             $this->myReview->save();
+
+            $mail_desc = $this->myReview->user->office->name . ' approved the document';
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
-                'description' => $this->myReview->user->office->name . ' approved the document'
+                'description' => $mail_desc
             ]);
         }
 
@@ -311,6 +317,19 @@ class ViewDocument extends Component
                     new DocumentForReview($this->document, $recipientName ?? 'User')
                 );
             }
+        }
+
+        $fromUser = optional($this->document->fromOffice->head);
+
+        if (!empty($fromUser->email)) {
+            Mail::to($fromUser->email)->send(
+                new DocumentStatusUpdate(
+                    $this->document,
+                    $fromUser->name ?? 'User',
+                    'signed',
+                    $mail_desc
+                )
+            );
         }
 
 
@@ -465,16 +484,18 @@ class ViewDocument extends Component
 
     public function documentRejected($remarks)
     {
+        $mail_desc = '';
         if ($this->mySignatory){
             $this->mySignatory->update([
                 'rejected_at' => now(),
                 'comments' => $remarks,
                 'status' => 'Rejected'
             ]);
+            $mail_desc = $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks;
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'rejected',
-                'description' => $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks
+                'description' => $mail_desc
             ]);
             $this->document->status ='Rejected';
             $this->document->save();
@@ -485,10 +506,11 @@ class ViewDocument extends Component
                 'returned_at' => now(),
                 'comments' => $remarks
             ]);
+            $mail_desc = $this->myReview->user->office->name . ' returned the document with remarks: '. $remarks;
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'returned',
-                'description' => $this->myReview->user->office->name . ' returned the document with remarks: '. $remarks
+                'description' => $mail_desc
             ]);
             $this->document->status ='Rejected';
             $this->document->save();
@@ -505,11 +527,25 @@ class ViewDocument extends Component
             $attachmentDetails->update([
                 'status' => 'Rejected',
             ]);
+            $mail_desc = $lastSignatory->user->office->name . ' rejected the document with remarks: '. $remarks;
             $attachmentDetails->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'rejected',
-                'description' => $lastSignatory->user->office->name . ' rejected the document with remarks: '. $remarks
+                'description' => $mail_desc
             ]);
+        }
+
+        $fromUser = optional($this->document->fromOffice->head);
+
+        if (!empty($fromUser->email)) {
+            Mail::to($fromUser->email)->send(
+                new DocumentStatusUpdate(
+                    $this->document,
+                    $fromUser->name ?? 'User',
+                    'rejected',
+                    $mail_desc
+                )
+            );
         }
 
         $data = [
