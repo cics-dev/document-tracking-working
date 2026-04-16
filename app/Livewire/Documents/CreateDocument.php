@@ -438,23 +438,38 @@ class CreateDocument extends Component
     {
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         
-        $latestDoc = Document::where('from_id', $from_id)
+        $documents = Document::where('from_id', $from_id)
             ->where('document_type_id', $this->document_type_id)
             ->where('status', '!=', 'draft')
             ->whereYear('created_at', date('Y'))
-            ->orderByRaw('LENGTH(document_number) DESC')
-            ->orderByDesc('document_number')
-            ->first();
+            ->pluck('document_number');
 
         $lastNumber = 0;
-        if ($latestDoc) {
-            $parts = explode('-', $latestDoc->document_number);
-            // Handle variations in format (ZPPSU prefix vs standard)
-            $index = isset($parts[4]) ? 3 : 2;
-            if (isset($parts[$index]) && is_numeric($parts[$index])) {
-                $lastNumber = (int) $parts[$index];
+
+        foreach ($documents as $docNumber) {
+            if (empty($docNumber)) continue;
+
+            $parts = explode('-', trim($docNumber));
+            $count = count($parts);
+
+            // Scan backwards, skip year (last part)
+            for ($i = $count - 2; $i >= 0; $i--) {
+                $part = trim($parts[$i]);
+
+                if (preg_match('/\d+/', $part, $matches)) {
+                    $num = (int) $matches[0];
+
+                    // Keep highest numeric value found
+                    if ($num > $lastNumber) {
+                        $lastNumber = $num;
+                    }
+
+                    break; // stop for this document
+                }
             }
         }
+
+        $nextNumber = $lastNumber + 1;
 
         $officePart = Auth::user()->office->abbreviation;
         if (Auth::user()->office->office_type) {
