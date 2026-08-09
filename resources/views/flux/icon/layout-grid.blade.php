@@ -9,7 +9,7 @@
         throw new \Exception('The "solid" variant is not supported in Lucide.');
     }
 
-    $classes = Flux::classes('shrink-0')->add(
+    $classes = Flux::classes('shrink-0 w-6 h-6')->add(
         match ($variant) {
             'outline' => '[:where(&)]:size-6',
             'solid' => '[:where(&)]:size-6',
@@ -30,6 +30,9 @@
     data-flux-icon
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    style="max-width: 24px; max-height: 24px;"
     fill="none"
     stroke="currentColor"
     stroke-width="{{ $strokeWidth }}"
