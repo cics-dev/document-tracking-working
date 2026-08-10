@@ -10,8 +10,8 @@ class DocumentTrackingController extends Controller
     public function getTrackingStatus(Document $document)
     {
         try {
-            // Eager load relationships to avoid N+1 queries
-            $document->load(['status_logs', 'logs', 'currentOffice', 'office', 'documentType']);
+            // Load only relationships that exist on the current document model.
+            $document->load(['logs', 'fromOffice', 'toOffice', 'documentType', 'routings.user', 'signatories.user']);
             
             // Get status dates from logs
             $statusDates = [
@@ -39,7 +39,7 @@ class DocumentTrackingController extends Controller
             
             return response()->json([
                 'status' => $document->status,
-                'assignedTo' => $document->currentOffice->name ?? $document->office->name ?? $document->assigned_to ?? $document->current_office ?? 'Unknown',
+                'assignedTo' => $this->assignedTo($document),
                 'subject' => $document->subject,
                 'statusDates' => $statusDates,
                 'timeline' => $timeline,
@@ -57,7 +57,8 @@ class DocumentTrackingController extends Controller
     
     private function getStatusDate($document, $status)
     {
-        $log = $document->status_logs->where('status', $status)->first();
+        $log = $document->logs
+            ->first(fn ($log) => strtolower($log->action) === $status);
         return $log ? $log->created_at->format('M d, h:i A') : '-';
     }
     
@@ -73,17 +74,19 @@ class DocumentTrackingController extends Controller
         ];
         
         // Status logs
-        if ($document->status_logs) {
-            foreach ($document->status_logs as $log) {
-                $title = 'Document ' . ucfirst($log->status);
-                $description = $this->getStatusDescription($log->status, $document);
-                
-                $timeline[] = [
-                    'date' => $log->created_at->format('M d, h:i A'),
-                    'title' => $title,
-                    'description' => $description
-                ];
+        foreach ($document->logs as $log) {
+            if (!in_array(strtolower($log->action), ['sent', 'signed', 'reviewed', 'returned'], true)) {
+                continue;
             }
+
+            $title = 'Document ' . ucfirst($log->action);
+            $description = $log->description ?: $this->getStatusDescription($log->action, $document);
+
+            $timeline[] = [
+                'date' => $log->created_at->format('M d, h:i A'),
+                'title' => $title,
+                'description' => $description
+            ];
         }
         
         return $timeline;
@@ -93,11 +96,29 @@ class DocumentTrackingController extends Controller
     {
         $descriptions = [
             'filed' => 'Document officially filed in the system',
-            'sent' => 'Document forwarded to ' . ($document->currentOffice->name ?? $document->office->name ?? 'relevant office') . ' for review',
+            'sent' => 'Document forwarded to ' . $this->assignedTo($document) . ' for review',
             'processing' => 'Document is being reviewed and processed',
             'completed' => 'Document processing has been completed'
         ];
         
         return $descriptions[$status] ?? 'Document status updated';
+    }
+
+    private function assignedTo(Document $document): string
+    {
+        $pendingRouting = $document->routings
+            ->first(fn ($routing) => is_null($routing->reviewed_at) && is_null($routing->returned_at));
+
+        if ($pendingRouting?->user?->office?->name) {
+            return $pendingRouting->user->office->name;
+        }
+
+        $pendingSignatory = $document->signatories
+            ->sortBy('sequence')
+            ->first(fn ($signatory) => is_null($signatory->signed_at) && is_null($signatory->rejected_at));
+
+        return $pendingSignatory?->user?->office?->name
+            ?? $document->toOffice?->name
+            ?? 'Unknown';
     }
 }

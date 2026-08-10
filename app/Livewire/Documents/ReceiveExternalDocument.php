@@ -115,7 +115,6 @@ class ReceiveExternalDocument extends Component
             'received_date' => now(), // Or use a date picker input if backdating is allowed
             'file_url' => $path,
             'file_type' => $fileType,
-            'created_by' => Auth::id(), // Good practice to track who encoded it
         ]);
 
         session()->flash('success', 'External Document received successfully.');

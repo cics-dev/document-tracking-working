@@ -20,10 +20,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentTrackingController;
 
 
-Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
-    ->name('documents.tracking-status');
-
-
  Route::get('/offline', function () {
    return view('offline');
   })->name('offline');
@@ -35,7 +31,7 @@ Route::get('/help', function () {
 // Route for the public landing page at "/"
 Route::get('/landing', function () {
     return view('landing'); // shows landing.blade.php
-})->name('landing');
+});
 
 Route::get('/', function () {
     return view('landing'); // shows landing.blade.php
@@ -91,19 +87,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
 });
 
-Route::get('/documents/{document}/tracking-status', function(Document $document) {
-    return response()->json([
-        'status' => $document->status,
-        'assignedTo' => $document->currentOffice->name ?? $document->office->name ?? 'Unknown',
-        'statusDates' => [
-            'filed' => $document->getStatusDate('filed'),
-            'sent' => $document->getStatusDate('sent'),
-            'processing' => $document->getStatusDate('processing'),
-            'completed' => $document->getStatusDate('completed'),
-        ],
-        'timeline' => $document->buildTimelineData(),
-        'activityLogs' => $document->getRecentLogs()
-    ]);
-})->name('documents.tracking-status');
+Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
+    ->name('documents.tracking-status');
 
 require __DIR__.'/auth.php';

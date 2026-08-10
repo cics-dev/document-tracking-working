@@ -189,6 +189,15 @@ class DocumentController extends Controller
     }
 
     public function getDocument($number) {
-        return Document::with(['fromOffice', 'toOffice', 'documentType', 'signatories'])->where('document_number', $number)->first();
+        return Document::with([
+            'fromOffice.head',
+            'toOffice.head',
+            'documentType',
+            'attachments',
+            'externalDocuments',
+            'signatories.user.office.head',
+            'routings.user.office',
+            'cfs.user.office.head',
+        ])->where('document_number', $number)->firstOrFail();
     }
 }

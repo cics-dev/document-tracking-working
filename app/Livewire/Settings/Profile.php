@@ -26,6 +26,9 @@ class Profile extends Component
     public $titles = ''; // "Title" in DB, "titles" in form model
     public $gender = '';
     public $email = '';
+    // Kept for compatibility with callers that submit a full name rather than
+    // the structured profile fields used by this form.
+    public $name = '';
 
     // Signature
     #[Validate('nullable|image|max:2048')] // 2MB Max
@@ -54,6 +57,7 @@ class Profile extends Component
         
         // 3. Contact & Work
         $this->email = $user->email ?? '';
+        $this->name = $user->name ?? '';
 
         // 4. Signature
         $this->current_signature = $user->signature ?? null;
@@ -64,6 +68,12 @@ class Profile extends Component
      */
     public function updateProfileInformation()
     {
+        if (blank($this->given_name) && blank($this->family_name) && filled($this->name)) {
+            $nameParts = preg_split('/\s+/', trim($this->name), 2);
+            $this->given_name = $nameParts[0] ?? '';
+            $this->family_name = $nameParts[1] ?? '';
+        }
+
         // 1. Validation 
         $this->validate([
             'family_name' => 'required',
@@ -102,16 +112,25 @@ class Profile extends Component
         }
 
         // 3. Update User Data
+        $fullName = implode(' ', array_filter([
+            trim($this->given_name),
+            trim($this->middle_initial),
+            trim($this->family_name),
+            trim($this->suffix),
+        ]));
+
         $user->fill([
-            'name' => trim("{$this->given_name} {$this->middle_initial} {$this->family_name} {$this->suffix}"),
+            'name' => $fullName,
             'email' => $this->email,
             'signature'       => $signature_path,
         ]);
 
-        // Construct full name for compatibility
-        $user->name = trim("{$this->given_name} {$this->middle_initial} {$this->family_name} {$this->suffix}");
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
 
         $user->save();
+        $this->name = $fullName;
 
         $user->profile()->updateOrCreate(
             ['user_id' => $user->id], // Search criteria
