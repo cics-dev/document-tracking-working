@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DocumentType;
-use App\Models\User;
-use App\Models\DocumentAttachment;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
-use setasign\Fpdi\Fpdi;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 class DocumentPreviewController extends Controller
-{    
+{
     public function preview(Request $request)
     {
         $key = array_key_first($request->all());
@@ -20,119 +19,58 @@ class DocumentPreviewController extends Controller
             abort(404, 'Preview session expired or not found.');
         }
 
-        $data['date_sent'] = $data['date_sent'] ?? now();
+        $data = $this->normalizePreviewData($data);
+        $temporaryFiles = [];
 
-        if (isset($data['document']) && is_string($data['document'])) {
-            $data['document'] = json_decode($data['document'], true);
-        }
-        if (isset($data['signatories']) && is_string($data['signatories'])) {
-            $data['signatories'] = json_decode($data['signatories'], true);
-        }
-        if (isset($data['attachments']) && is_string($data['attachments'])) {
-            $data['attachments'] = json_decode($data['attachments'], true);
-        }
-        if (isset($data['cfs']) && is_string($data['cfs'])) {
-            $data['cfs'] = json_decode($data['cfs'], true);
-        }
-
-        $tempGeneratedPdf = tempnam(sys_get_temp_dir(), 'generated_') . '.pdf';
-        $tempMergedPdf = null;
+        $generatedPdf = $this->temporaryFile('generated_');
+        $temporaryFiles[] = $generatedPdf;
 
         Pdf::loadView('pdf.document-preview', $data)
             ->setPaper([0, 0, 612.00, 936.00])
-            ->save($tempGeneratedPdf);
-
-        $filesToMerge = [$tempGeneratedPdf];
-
-        if (!empty($data['attachments']) && is_array($data['attachments'])) {
-            foreach ($data['attachments'] as $attachment) {
-                $this->processAttachment($attachment, $filesToMerge);
-            }
-        }
-
-        $pdfToShow = $tempGeneratedPdf;
-
-        if (count($filesToMerge) > 1) {
-            $tempMergedPdf = tempnam(sys_get_temp_dir(), 'merged_') . '.pdf';
-            $this->mergePdfs($filesToMerge, $tempMergedPdf);
-            $pdfToShow = $tempMergedPdf;
-        }
-
-        if ($data['action'] === 'preview') {
-            $response = response()->file($pdfToShow, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="document-preview.pdf"',
-            ]);
-        } else {
-            $response = response()->file($pdfToShow, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . ($data['documentNumber'] ?? 'Document') . '.pdf"',
-            ]);
-        }
+            ->save($generatedPdf);
 
         session()->forget($key);
 
-        register_shutdown_function(function () use ($tempGeneratedPdf, $tempMergedPdf, $filesToMerge) {
-            if (file_exists($tempGeneratedPdf)) {
-                unlink($tempGeneratedPdf);
-            }
-            if ($tempMergedPdf && file_exists($tempMergedPdf)) {
-                unlink($tempMergedPdf);
-            }
-            foreach ($filesToMerge as $file) {
-                if ($file !== $tempGeneratedPdf && file_exists($file)) {
-                    unlink($file);
+        // Cleanup the single generated preview file on shutdown
+        register_shutdown_function(function () use ($temporaryFiles): void {
+            foreach ($temporaryFiles as $file) {
+                if (is_file($file)) {
+                    @unlink($file);
                 }
             }
         });
 
-        return $response;
+        $filename = $data['action'] === 'preview'
+            ? 'document-preview.pdf'
+            : ($data['documentNumber'] ?? 'Document') . '.pdf';
+
+        return response()->file($generatedPdf, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
     }
 
-    function processAttachment($attachment, &$filesToMerge)
+    private function normalizePreviewData(array $data): array
     {
-        if (empty($attachment['file_url'])) {
-            return;
-        }
+        $data['date_sent'] = $data['date_sent'] ?? now();
 
-        $path = public_path('storage/' . $attachment['file_url']);
-        if (!file_exists($path)) {
-            return;
-        }
-
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-        if (in_array($extension, ['pdf'])) {
-            $filesToMerge[] = $path;
-        } elseif (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-            $imagePdfPath = tempnam(sys_get_temp_dir(), 'img_') . '.pdf';
-
-            \Pdf::loadView('pdf.image-wrapper', [
-                'imagePath' => $path
-            ])->setPaper([0, 0, 612.00, 936.00])
-                ->save($imagePdfPath);
-
-            $filesToMerge[] = $imagePdfPath;
-        } elseif (in_array($extension, ['docx'])) {
-            // Future conversion hook
-        }
-    }
-
-    function mergePdfs($files, $outputPath)
-    {
-        $pdf = new Fpdi();
-
-        foreach ($files as $file) {
-            $pageCount = $pdf->setSourceFile($file);
-            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                $templateId = $pdf->importPage($pageNo);
-                $size = $pdf->getTemplateSize($templateId);
-
-                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $pdf->useTemplate($templateId);
+        foreach (['document', 'signatories', 'attachments', 'cfs'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = json_decode($data[$field], true);
             }
         }
 
-        $pdf->Output('F', $outputPath);
+        return $data;
+    }
+
+    private function temporaryFile(string $prefix): string
+    {
+        $path = tempnam(sys_get_temp_dir(), $prefix);
+
+        if ($path === false) {
+            throw new RuntimeException('Unable to create a temporary PDF file.');
+        }
+
+        return $path;
     }
 }

@@ -43,7 +43,7 @@ class OfficeSeeder extends Seeder
 
         Office::create([
             'name' => 'Office of the University President',
-            'abbreviation' => 'SAO',
+            'abbreviation' => 'OP',
             'office_type' => 'ADMIN'
         ]);
         Office::create([
@@ -132,8 +132,8 @@ class OfficeSeeder extends Seeder
         ]);
 
         Office::create([
-            'name' => 'Administration',
-            'abbreviation' => 'SAO',
+            'name' => 'Office of the Supervising Administrative Officer for Admin',
+            'abbreviation' => 'SAO-A',
             'office_type' => 'ADMIN'
         ]);
         
@@ -189,6 +189,12 @@ class OfficeSeeder extends Seeder
             'name' => 'Public Information Office',
             'abbreviation' => 'PIO',
             'office_type' => ''
+        ]);
+
+        Office::create([
+            'name' => 'Office of the Supervising Administrative Officer for Finance',
+            'abbreviation' => 'SAO-F',
+            'office_type' => 'ADMIN'
         ]);
     }
 }
