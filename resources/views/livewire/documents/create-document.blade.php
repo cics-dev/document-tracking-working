@@ -1,4 +1,4 @@
-<form wire:submit="submitDocument" class="max-w-7xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6 relative">
+<form wire:submit.prevent="submitDocument('send')" class="max-w-7xl mx-auto bg-white rounded-xl shadow-[0_0_10px_0_rgba(0,0,0,0.5)] overflow-hidden p-6 relative">
     
     <style>
         @keyframes glow {

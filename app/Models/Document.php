@@ -68,6 +68,43 @@ class Document extends Model
         return $this->hasMany(Document::class, 'original_document_id');
     }
 
+    /** The first document in this revision family. */
+    public function revisionRoot(): Document
+    {
+        return $this->originalRevisedDocument?->revisionRoot() ?? $this;
+    }
+
+    public function nextPendingRouting(): ?DocumentRouting
+    {
+        return $this->routings()
+            ->whereNull('reviewed_at')
+            ->whereNull('returned_at')
+            ->orderBy('sequence')
+            ->orderBy('id')
+            ->first();
+    }
+
+    public function nextPendingSignatory(): ?DocumentSignatory
+    {
+        return $this->signatories()
+            ->whereNull('signed_at')
+            ->whereNull('rejected_at')
+            ->orderBy('sequence')
+            ->orderBy('id')
+            ->first();
+    }
+
+    public function allRoutingsReviewed(): bool
+    {
+        return ! $this->routings()->whereNull('reviewed_at')->exists();
+    }
+
+    public function allSignatoriesSigned(): bool
+    {
+        return $this->signatories()->exists()
+            && ! $this->signatories()->whereNull('signed_at')->exists();
+    }
+
     public function originalRevisedDocument()
     {
         return $this->belongsTo(Document::class, 'original_document_id');

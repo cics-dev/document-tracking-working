@@ -23,7 +23,11 @@ class DocumentTypeController extends Controller
             ->where('is_allowed', true)
             ->pluck('document_type_id');
 
-        // Return only those document types
-        return DocumentType::whereIn('id', $allowedIds)->get();
+        // Every authenticated end user may initiate an RLM. Other document
+        // types continue to follow the role-specific permission matrix.
+        return DocumentType::where(function ($query) use ($allowedIds) {
+            $query->whereIn('id', $allowedIds)
+                ->orWhere('abbreviation', 'RLM');
+        })->get();
     }
 }

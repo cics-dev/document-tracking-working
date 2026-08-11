@@ -14,7 +14,7 @@ class ViewExternalDocument extends Component
 
     public function mount($id)
     {
-        $this->document = ExternalDocument::find($id);
+        $this->document = ExternalDocument::with('toOffice.head')->findOrFail($id);
 
         $this->document->accessLogs()->firstOrCreate([
             'user_id' => Auth::id(),
@@ -25,6 +25,7 @@ class ViewExternalDocument extends Component
 
     public function generateRLM()
     {
+        $this->assertAssignedRecipient();
         $redirectData = [
             'subject' => 'RE: ' . $this->document->subject,
             'external_document_id' => $this->document->id,
@@ -39,6 +40,7 @@ class ViewExternalDocument extends Component
 
     public function generateECLR()
     {
+        $this->assertAssignedRecipient();
         $redirectData = [
             'to' => $this->document->from,
             'subject' => 'RE: ' . $this->document->subject,
@@ -55,5 +57,10 @@ class ViewExternalDocument extends Component
     public function render()
     {
         return view('livewire.documents.view-external-document')->layout('layouts.app');
+    }
+
+    private function assertAssignedRecipient(): void
+    {
+        abort_unless($this->document->toOffice?->head_id === Auth::id(), 403, 'Only the assigned office may prepare a response or request.');
     }
 }

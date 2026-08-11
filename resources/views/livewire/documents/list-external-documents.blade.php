@@ -6,11 +6,11 @@
             <flux:subheading>Manage documents received from outside agencies.</flux:subheading>
         </div>
 
-        {{-- @if(Auth::user()->position == 'Staff') --}}
+        @if(Auth::user()->position === 'University President')
             <flux:button href="{{ route('documents.receive-external-document') }}" variant="primary" icon="plus" class="w-full md:w-auto">
                 Receive Document
             </flux:button>
-        {{-- @endif --}}
+        @endif
     </div>
 
     <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200">

@@ -46,9 +46,7 @@ class ReceiveExternalDocument extends Component
 
     public function mount()
     {
-        if(Auth::user()->id !=17) {
-            $this->document_to_id = Auth::user()->office->id;
-        }
+        abort_unless(Auth::user()->position === 'University President', 403, 'Only the Office of the President may register external communications.');
     }
 
     public function removeAttachment()

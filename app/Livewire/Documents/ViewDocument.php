@@ -34,6 +34,7 @@ class ViewDocument extends Component
     public $isCf;
     public $isRecipient;
     public $isRouting;
+    public bool $canAct = false;
 
     protected $listeners = ['documentSigned', 'documentRejected', 'lastSignatory'];
 
@@ -152,9 +153,9 @@ class ViewDocument extends Component
             }
         }
 
-        $toPosition = $this->document->toOffice->head->position ?? 'N/A';
+        $toPosition = $this->document->toOffice?->head?->position ?? 'N/A';
         if ($toPosition !== 'University President' && $toPosition != 'N/A') {
-            $toPosition .= ', ' . $this->document->toOffice->name;
+            $toPosition .= ', ' . $this->document->toOffice?->name;
         }
 
         $fromPosition = $this->document->fromOffice->head->position ?? 'N/A';
@@ -170,6 +171,11 @@ class ViewDocument extends Component
         $this->isCf = $this->document->cfs->contains('user_id', Auth::id()) || $this->isRouting;
 
         $this->isRecipient = $this->document->toOffice?->head_id == Auth::id();
+        $nextRouting = $this->document->nextPendingRouting();
+        $nextSignatory = $this->document->nextPendingSignatory();
+        $this->canAct = $this->document->status === 'sent'
+            && (($nextRouting && $nextRouting->user_id === Auth::id())
+                || (! $nextRouting && $nextSignatory && $nextSignatory->user_id === Auth::id()));
 
 
         $this->document_query = [
@@ -202,6 +208,7 @@ class ViewDocument extends Component
 
     public function sign()
     {        
+        $this->assertCurrentActorCanAct();
         if ($this->mySignatory != null)
             $data = [
                 'title' => 'Are you sure?',
@@ -235,27 +242,15 @@ class ViewDocument extends Component
 
     public function documentSigned($remarks = null)
     {
+        $this->assertCurrentActorCanAct();
         $mail_desc = '';
         if ($this->mySignatory) {
             $this->signatories = $this->document->signatories->sortBy('sequence');
-            $lastSignatory = $this->signatories->last();
-
-            if ($lastSignatory->user_id === Auth::id()) $event = 'lastSignatory';
-            else $event = 'redirect';
-
             $this->mySignatory->signed_at = now();
+            $this->mySignatory->status = 'approved';
             $this->mySignatory->save();
+            $event = $this->document->fresh()->allSignatoriesSigned() ? 'lastSignatory' : 'redirect';
             $mail_desc = $this->mySignatory->user->office->name . ' signed the document';
-            $this->document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'signed',
-                'description' => $mail_desc
-            ]);
-        }
-        else if ($this->document->document_type_id == 2 && auth()->user()->position == 'University President') {
-            $event = 'lastSignatory';
-
-            $mail_desc = auth()->user()->office->name . ' signed the document';
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
@@ -267,6 +262,7 @@ class ViewDocument extends Component
 
             $this->myReview->reviewed_at = now();
             $this->myReview->comments = $remarks;
+            $this->myReview->status = 'reviewed';
             $this->myReview->save();
 
             $mail_desc = $this->myReview->user->office->name . ' approved the document';
@@ -313,23 +309,23 @@ class ViewDocument extends Component
 
             // Send email only if valid
             if (!empty($recipientEmail)) {
-                Mail::to($recipientEmail)->send(
-                    new DocumentForReview($this->document, $recipientName ?? 'User')
-                );
+                // Mail::to($recipientEmail)->send(
+                //     new DocumentForReview($this->document, $recipientName ?? 'User')
+                // );
             }
         }
 
         $fromUser = optional($this->document->fromOffice->head);
 
         if (!empty($fromUser->email)) {
-            Mail::to($fromUser->email)->send(
-                new DocumentStatusUpdate(
-                    $this->document,
-                    $fromUser->name ?? 'User',
-                    'signed',
-                    $mail_desc
-                )
-            );
+            // Mail::to($fromUser->email)->send(
+            //     new DocumentStatusUpdate(
+            //         $this->document,
+            //         $fromUser->name ?? 'User',
+            //         'signed',
+            //         $mail_desc
+            //     )
+            // );
         }
 
 
@@ -351,35 +347,21 @@ class ViewDocument extends Component
 
     public function lastSignatory()
     {
+        $this->document->refresh();
+        if (! $this->document->allRoutingsReviewed() || ! $this->document->allSignatoriesSigned()) {
+            abort(403, 'This document is not ready for final approval.');
+        }
+
         $this->document->update([
             'status' => 'Approved'
         ]);
 
-        $this->document->signatories[0]->signed_at = now();
-        $this->document->signatories[0]->save();
-
-        if ($this->document->document_type_id == 2 && $this->document->attachments()->latest()->first() != null) {
-            $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->attachment_document_id);
-            $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
-            $lastSignatory = $docSignatories->last();
-            $lastSignatory->signed_at = now();
-            $lastSignatory->status = 'Approved';
-            $lastSignatory->save();
-            $attachmentDetails->update([
-                'status' => 'Approved'
-            ]);
-            $attachmentDetails->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'signed',
-                'description' => $lastSignatory->user->office->name . ' signed the document'
-            ]);
-        }
-        
         return redirect()->route('documents.list-documents', ['mode' => 'received']);
     }
 
     public function generate()
     {
+        $this->assertCanGenerate('IOM');
         // if ($this->document->status == 'pending') {
             // $this->document->status = 'Generated IOM';
             // $this->document->save();
@@ -450,7 +432,9 @@ class ViewDocument extends Component
 
     public function generateSO()
     {
+        $this->assertCanGenerate('SO');
         $redirectData = [
+            'to' => $this->document->from_id,
             'from' => $this->document->toOffice->id??1,
             'subject' => 'RE: ' . $this->document->subject,
             'original_document_id' => $this->document->id,
@@ -465,6 +449,7 @@ class ViewDocument extends Component
 
     public function reject()
     {
+        $this->assertCurrentActorCanAct();
         $data = [
             'title' => 'Are you sure?',
             'text' => "Please confirm and optionally leave a remark.",
@@ -484,6 +469,7 @@ class ViewDocument extends Component
 
     public function documentRejected($remarks)
     {
+        $this->assertCurrentActorCanAct();
         $mail_desc = '';
         if ($this->mySignatory){
             $this->mySignatory->update([
@@ -516,36 +502,17 @@ class ViewDocument extends Component
             $this->document->save();
             $this->myReview->save();
         }
-        if ($this->document->document_type_id == 2 && $this->document->attachments()->latest()->first() != null) {
-            $attachmentDetails = Document::find($this->document->attachments()->latest()->first()->attachment_document_id);
-            $docSignatories = $attachmentDetails->signatories->sortBy('sequence');
-            $lastSignatory = $docSignatories->last();
-            $lastSignatory->rejected_at = now();
-            $lastSignatory->comments = $remarks;
-            $lastSignatory->status = 'Rejected';
-            $lastSignatory->save();
-            $attachmentDetails->update([
-                'status' => 'Rejected',
-            ]);
-            $mail_desc = $lastSignatory->user->office->name . ' rejected the document with remarks: '. $remarks;
-            $attachmentDetails->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'rejected',
-                'description' => $mail_desc
-            ]);
-        }
-
         $fromUser = optional($this->document->fromOffice->head);
 
         if (!empty($fromUser->email)) {
-            Mail::to($fromUser->email)->send(
-                new DocumentStatusUpdate(
-                    $this->document,
-                    $fromUser->name ?? 'User',
-                    'rejected',
-                    $mail_desc
-                )
-            );
+            // Mail::to($fromUser->email)->send(
+            //     new DocumentStatusUpdate(
+            //         $this->document,
+            //         $fromUser->name ?? 'User',
+            //         'rejected',
+            //         $mail_desc
+            //     )
+            // );
         }
 
         $data = [
@@ -562,6 +529,32 @@ class ViewDocument extends Component
         ];
         
         $this->dispatch('fireSwal', $data);
+    }
+
+    private function assertCurrentActorCanAct(): void
+    {
+        $document = $this->document->fresh(['routings', 'signatories']);
+        if ($document->status !== 'sent') {
+            abort(403, 'This document is no longer awaiting action.');
+        }
+
+        $nextRouting = $document->nextPendingRouting();
+        if ($nextRouting) {
+            abort_unless($nextRouting->user_id === Auth::id(), 403, 'It is not your turn to review this document.');
+            return;
+        }
+
+        $nextSignatory = $document->nextPendingSignatory();
+        abort_unless($nextSignatory && $nextSignatory->user_id === Auth::id(), 403, 'It is not your turn to sign this document.');
+    }
+
+    private function assertCanGenerate(string $target): void
+    {
+        abort_unless(Auth::user()->office?->name === 'Administration', 403);
+        abort_unless($this->document->status === 'Approved', 403, 'Only approved documents can produce an IOM or SO.');
+        $source = $this->document->documentType?->abbreviation;
+        $allowed = $target === 'IOM' ? in_array($source, ['RLM', 'IL'], true) : $source === 'IL';
+        abort_unless($allowed, 403, 'This outcome is not allowed for this document type.');
     }
 
     public function viewAttachment($id, $type) {
@@ -614,9 +607,9 @@ class ViewDocument extends Component
             ];
         });
 
-        $toPosition = $attachment_document->toOffice->head->position ?? 'N/A';
+        $toPosition = $attachment_document->toOffice?->head?->position ?? 'N/A';
         if ($toPosition !== 'University President' && $toPosition != 'N/A') {
-            $toPosition .= ', ' . $attachment_document->toOffice->name;
+            $toPosition .= ', ' . $attachment_document->toOffice?->name;
         }
 
         $fromPosition = $attachment_document->fromOffice->head->position ?? 'N/A';

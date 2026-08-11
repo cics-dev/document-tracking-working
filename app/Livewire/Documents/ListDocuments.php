@@ -96,7 +96,7 @@ class ListDocuments extends Component
             ]
         );
 
-        $documentTypes = DocumentType::where('name', '!=', 'Intra-Office Memorandum')->get();
+        $documentTypes = DocumentType::where('abbreviation', '!=', 'Intra')->get();
 
         return view('livewire.documents.list-documents', [
             'documents' => $paginatedDocuments,

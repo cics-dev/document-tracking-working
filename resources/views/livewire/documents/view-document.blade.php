@@ -71,15 +71,15 @@
         ||
         (
             auth()->user()->office->name == 'Administration' &&
-            ($document->document_type_id == 1 || $document->document_type_id == 3)
+            in_array($document->documentType?->abbreviation, ['RLM', 'IL'])
         )
     )
         {{-- @if($office_name != 'Administration' && $office_name != 'Records Section') --}}
         @if($office_name != 'Administration')
-            @if(is_null($signed) && is_null($rejected))
+            @if($canAct && is_null($signed) && is_null($rejected))
                 <div class="mt-4 flex gap-4">
-                    <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Sign' : 'Set as reviewed' }}</button>
-                    <button wire:click="reject" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Reject' : 'Return with remarks' }}</button>
+                    <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory ? 'Sign' : 'Set as reviewed' }}</button>
+                    <button wire:click="reject" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">{{ $mySignatory ? 'Reject' : 'Return with remarks' }}</button>
                 </div>
             @else
                 <div class="mt-4 text-lg font-semibold">
@@ -87,16 +87,16 @@
                 </div>
             @endif
         @elseif ($office_name == 'Administration')
-            @if ($document->status == 'pending' || $document->status == 'sent')
+            @if ($document->status === 'Approved' && in_array($document->documentType?->abbreviation, ['RLM', 'IL']))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
-                    @if ($document->document_type_id == 3)
+                    @if ($document->documentType?->abbreviation === 'IL')
                         <button wire:click="generateSO" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate SO</button>
                     @endif
                     {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
                 </div>
             @else
-                @if ($document->document_type_id == 3)
+                @if ($document->documentType?->abbreviation === 'IL')
                     <div class="mt-4 text-lg font-semibold">
                         You've already generated document
                     </div>

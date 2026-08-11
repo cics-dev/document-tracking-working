@@ -23,6 +23,11 @@ class ExternalDocument extends Model
         return $this->morphMany(DocumentAccessLog::class, 'documentable');
     }
 
+    public function toOffice()
+    {
+        return $this->belongsTo(Office::class, 'to_id');
+    }
+
     protected function isViewedByMe(): Attribute
     {
         return Attribute::make(

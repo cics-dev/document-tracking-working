@@ -14,6 +14,7 @@ class DocumentRouting extends Model
         'viewed_at',
         'reviewed_at',
         'returned_at',
+        'sequence',
     ];
 
     public function document()
