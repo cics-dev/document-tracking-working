@@ -81,7 +81,7 @@ class ListDocuments extends Component
             \Illuminate\Database\Eloquent\Collection::make($currentPageItems)
                 ->load(['accessLogs' => function ($q) {
                     $q->where('user_id', Auth::id())
-                    ->where('action', 'viewed');
+                    ->where('action', 'Viewed');
                 }]);
         }
 

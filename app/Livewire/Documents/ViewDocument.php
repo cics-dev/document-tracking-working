@@ -20,8 +20,7 @@ class ViewDocument extends Component
 {
     public $office_name;
     public $document;
-    public $mySignatory;
-    public $myReview;
+    public $myStep;
     public $signatories;
     public $previewUrl;
     public $signed;
@@ -36,7 +35,7 @@ class ViewDocument extends Component
     public $isRouting;
     public bool $canAct = false;
 
-    protected $listeners = ['documentSigned', 'documentRejected', 'lastSignatory'];
+    protected $listeners = ['documentSigned', 'documentRejected', 'lastStep'];
 
     public $showRemarks = true;
     public $remarksExpanded = false;
@@ -53,17 +52,17 @@ class ViewDocument extends Component
 
         $this->document->accessLogs()->firstOrCreate([
             'user_id' => Auth::id(),
-            'action' => 'viewed',
+            'action' => 'Viewed',
         ]);
 
-        // if ($this->document->document_type_id == 2 && $this->document->attachments[0]->attachment_document_id) {
         if ($this->document->document_type_id == 2 && $this->document->attachments->first()?->attachment_document_id) {
             $origDoc = Document::find($this->document->attachments[0]->attachment_document_id);
-            $origDoc->signatories()
+            $origDoc->steps()
                 ->where('user_id', Auth::id())
                 ->whereNull('viewed_at')
                 ->update(['viewed_at' => now()]);
         }
+        
         $updated = $this->document->cfs()
             ->where('user_id', Auth::id())
             ->whereNull('viewed_at')
@@ -72,82 +71,70 @@ class ViewDocument extends Component
         if ($updated) {
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
-                'action' => 'viewed',
+                'action' => 'Viewed',
                 'description' => Auth::user()->office->name . ' viewed the document'
             ]);
         }
         
-        $signatories = $this->document->signatories->map(function ($signatory) {
+        $signatories = $this->document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
-                'role' => $signatory->signatory_label,
-                'user_name' => $signatory->user->office->head->name ?? '',
-                'position' => $signatory->user->office->head->position ?? '',
-                'signature' => $signatory->user->signature ?? '',
-                'signed' => $signatory->signed_at,
+                'role' => $step->step_label,
+                'user_name' => $step->user->office->head->name ?? '',
+                'position' => $step->user->office->head->position ?? '',
+                'signature' => $step->user->signature ?? '',
+                'signed' => $step->processed_at,
             ];
         });
+
         $cfs = $this->document->cfs->map(function ($signatory) {
             return [
-                'role' => $signatory->signatory_label,
+                'role' => $signatory->signatory_label ?? 'Carbon Copy',
                 'name' => $signatory->user->office->head->name ?? '',
                 'office' => $signatory->user->office->name ?? '',
                 'position' => $signatory->user->office->head->position ?? '',
                 'signature' => $signatory->user->signature ?? '',
-                'signed' => $signatory->signed_at,
+                'signed' => $signatory->signed_at ?? null,
             ];
         });
+
         $this->office_name = Auth::user()->office->name;
 
         if ($this->office_name != 'Administration' && $this->office_name != 'Records Section') {
-            if ($this->document->routings->isNotEmpty() || $this->document->signatories->isNotEmpty() || $this->document->cfs->isNotEmpty()) {
-                $this->mySignatory = $this->document->signatories->firstWhere('user_id', Auth::user()->id);
-                $this->myReview = $this->document->routings->firstWhere('user_id', Auth::user()->id);
-                if ($this->mySignatory) {
-                    $this->signed = $this->mySignatory->signed_at;
-                    $this->rejected = $this->mySignatory->rejected_at;
+            if ($this->document->steps->isNotEmpty() || $this->document->cfs->isNotEmpty()) {
+                $this->myStep = $this->document->steps->firstWhere('user_id', Auth::user()->id);
+                if ($this->myStep) {
+                    $this->signed = !empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Approved', 'Reviewed']);
+                    $this->rejected = !empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Rejected', 'Returned']);
 
                     if ($this->signed) {
-                        $this->display_text = 'You have already signed this document.';
+                        $this->display_text = match($this->myStep->step_type) {
+                            'signatory' => 'You have already signed this document.',
+                            'action' => 'You have already processed/generated this document.',
+                            default => 'You have already reviewed this document.',
+                        };
                     } elseif ($this->rejected) {
-                        $this->display_text = 'You have rejected this document.';
+                        $this->display_text = match($this->myStep->step_type) {
+                            'signatory' => 'You have rejected this document.',
+                            'action' => 'You have rejected/returned this document.',
+                            default => 'You have returned this document.',
+                        };
                     }
 
-                    if (is_null($this->mySignatory->viewed_at)) {
-                        $this->mySignatory->viewed_at = now();
-                        $this->mySignatory->save();
+                    if (is_null($this->myStep->viewed_at)) {
+                        $this->myStep->viewed_at = now();
+                        $this->myStep->save();
                         $this->document->logs()->create([
                             'user_id' => Auth::id(),
-                            'action' => 'viewed',
-                            'description' => $this->mySignatory->user->office->name . ' viewed the document'
+                            'action' => 'Viewed',
+                            'description' => $this->myStep->user->office->name . ' viewed the document'
                         ]);
                     }
                 }
-                else if ($this->myReview) {
-                    $this->signed = $this->myReview->reviewed_at;
-                    $this->rejected = $this->myReview->returned_at;
-
-                    if ($this->signed) {
-                        $this->display_text = 'You have already reviewed this document.';
-                    } elseif ($this->rejected) {
-                        $this->display_text = 'You have returned this document.';
-                    }
-
-                    if (is_null($this->myReview->viewed_at)) {
-                        $this->myReview->viewed_at = now();
-                        $this->myReview->save();
-                        $this->document->logs()->create([
-                            'user_id' => Auth::id(),
-                            'action' => 'viewed',
-                            'description' => $this->myReview->user->office->name . ' viewed the document'
-                        ]);
-                    }
-                }
-            }
-            else {
+            } else {
                 if (!$this->document->viewed_at) {
                     $this->document->logs()->create([
                         'user_id' => Auth::id(),
-                        'action' => 'viewed'
+                        'action' => 'Viewed'
                     ]);
                 }
             }
@@ -164,23 +151,17 @@ class ViewDocument extends Component
             $fromPosition .= ', ' . $this->document->fromOffice->name;
         }
 
-        $this->isSignatory = $this->document->signatories->contains('user_id', Auth::id());
-
-        $this->isRouting = $this->document->routings->contains('user_id', Auth::id());
-
+        $this->isSignatory = $this->document->steps->where('step_type', 'signatory')->contains('user_id', Auth::id());
+        $this->isRouting = $this->document->steps->where('step_type', 'routing')->contains('user_id', Auth::id());
         $this->isCf = $this->document->cfs->contains('user_id', Auth::id()) || $this->isRouting;
-
         $this->isRecipient = $this->document->toOffice?->head_id == Auth::id();
-        $nextRouting = $this->document->nextPendingRouting();
-        $nextSignatory = $this->document->nextPendingSignatory();
-        $this->canAct = $this->document->status === 'sent'
-            && (($nextRouting && $nextRouting->user_id === Auth::id())
-                || (! $nextRouting && $nextSignatory && $nextSignatory->user_id === Auth::id()));
 
+        $nextStep = $this->document->nextPendingStep();
+        $this->canAct = in_array($this->document->status, ['Sent', 'In Process']) && $nextStep && $nextStep->user_id === Auth::id();
 
         $this->document_query = [
             'document' => $this->document->toJson(),
-            'action' => 'sent',
+            'action' => 'Sent',
             'date_sent' => $this->document->date_sent,
             'subject' => $this->document->subject,
             'content' => $this->document->content,
@@ -190,16 +171,13 @@ class ViewDocument extends Component
             'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
-            'documentType' => $this->document->document_level=='Intra'?'Intra':($this->document->documentType->name ?? 'N/A'),
+            'documentType' => $this->document->document_level == 'Intra' ? 'Intra' : ($this->document->documentType->name ?? 'N/A'),
             'documentNumber' => $this->document->document_number,
             'unit' => $this->document->fromOffice->abbreviation,
             'signatories' => $signatories->toJson(),
             'cfs' => $cfs->toJson(),
             'attachments' => $this->document->attachments->toJson(),
         ];
-
-
-        // $this->previewUrl = '/document/preview?' . http_build_query($this->document_query);
 
         $key = uniqid();
         session([$key => $this->document_query]);
@@ -209,33 +187,31 @@ class ViewDocument extends Component
     public function sign()
     {        
         $this->assertCurrentActorCanAct();
-        if ($this->mySignatory != null)
-            $data = [
-                'title' => 'Are you sure?',
-                'text' => "You won't be able to revert this!",
-                'icon' => 'warning',
-                'showCancelButton' => true,
-                'confirmButtonColor' => '#d33',
-                'cancelButtonColor' => '#3085d6',
-                'confirmButtonText' => 'Sign!',
-                'event' => 'documentSigned',
-                'withId' => false,
-            ];
-        else
-            $data = [
-                'title' => 'Are you sure?',
-                'text' => "You won't be able to revert this!",
-                'icon' => 'warning',
-                'input' => 'text',
-                'inputLabel' => 'Remarks',
-                'inputPlaceholder' => 'Enter your remarks here...',
-                'showCancelButton' => true,
-                'confirmButtonColor' => '#d33',
-                'cancelButtonColor' => '#3085d6',
-                'confirmButtonText' => 'Set as reviewed',
-                'event' => 'documentSigned',
-                'withId' => false,
-            ];
+        
+        $stepType = $this->myStep->step_type ?? 'signatory';
+
+        $confirmText = match($stepType) {
+            'routing' => 'Set as reviewed',
+            'action' => 'Complete Action',
+            default => 'Sign!',
+        };
+
+        $requiresInput = in_array($stepType, ['routing', 'action']);
+
+        $data = [
+            'title' => 'Are you sure?',
+            'text' => "You won't be able to revert this!",
+            'icon' => 'warning',
+            'input' => $requiresInput ? 'text' : null,
+            'inputLabel' => $requiresInput ? 'Remarks' : null,
+            'inputPlaceholder' => $requiresInput ? 'Enter your remarks here...' : null,
+            'showCancelButton' => true,
+            'confirmButtonColor' => '#d33',
+            'cancelButtonColor' => '#3085d6',
+            'confirmButtonText' => $confirmText,
+            'event' => 'documentSigned',
+            'withId' => false,
+        ];
         
         $this->dispatch('fireSwal', $data);
     }
@@ -244,94 +220,80 @@ class ViewDocument extends Component
     {
         $this->assertCurrentActorCanAct();
         $mail_desc = '';
-        if ($this->mySignatory) {
-            $this->signatories = $this->document->signatories->sortBy('sequence');
-            $this->mySignatory->signed_at = now();
-            $this->mySignatory->status = 'approved';
-            $this->mySignatory->save();
-            $event = $this->document->fresh()->allSignatoriesSigned() ? 'lastSignatory' : 'redirect';
-            $mail_desc = $this->mySignatory->user->office->name . ' signed the document';
+
+        if ($this->myStep) {
+            $stepType = $this->myStep->step_type;
+            
+            $statusMap = [
+                'routing' => 'Reviewed',
+                'action' => 'Approved',
+                'signatory' => 'Approved',
+            ];
+
+            $this->myStep->processed_at = now();
+            $this->myStep->comments = $remarks;
+            $this->myStep->status = $statusMap[$stepType] ?? 'Approved';
+            $this->myStep->save();
+
+            // Check if all steps with type 'routing' or 'signatory' are completed
+            $isComplete = $this->document->fresh()->steps()
+                ->whereIn('step_type', ['routing', 'signatory'])
+                ->where(function ($query) {
+                    $query->whereNull('processed_at')
+                          ->orWhereNotIn('status', ['Approved', 'Reviewed']);
+                })
+                ->doesntExist();
+
+            if ($isComplete) {
+                $this->document->update(['status' => 'Approved']);
+                $event = 'lastStep';
+            } else {
+                if ($this->document->status === 'Sent') {
+                    $this->document->update(['status' => 'In Process']);
+                }
+                $event = 'redirect';
+            }
+
+            $actionDescMap = [
+                'routing' => ' reviewed the document',
+                'action' => ' completed action on the document',
+                'signatory' => ' signed the document',
+            ];
+            $mail_desc = $this->myStep->user->office->name . ($actionDescMap[$stepType] ?? ' signed the document');
+            
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'signed',
                 'description' => $mail_desc
             ]);
-        }
-        else if ($this->myReview) {
+        } else {
             $event = 'redirect';
-
-            $this->myReview->reviewed_at = now();
-            $this->myReview->comments = $remarks;
-            $this->myReview->status = 'reviewed';
-            $this->myReview->save();
-
-            $mail_desc = $this->myReview->user->office->name . ' approved the document';
-            $this->document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'signed',
-                'description' => $mail_desc
-            ]);
         }
 
-        if ($event != 'lastSignatory') {
-
+        if ($event != 'lastStep') {
             $recipientEmail = null;
             $recipientName = null;
 
-            // SAFE routing query
-            $firstRoute = optional($this->document)
-                ->routings()
-                ->whereNull('reviewed_at')
-                ->whereNull('returned_at')
-                ->orderBy('id', 'asc')
-                ->first();
-
-            // Check routing user + email safely
-            if ($firstRoute && optional($firstRoute->user)->email) {
-                $recipientEmail = $firstRoute->user->email;
-                $recipientName = $firstRoute->user->name;
-            } else {
-
-                // SAFE signatory query
-                $firstSignatory = optional($this->document)
-                    ->signatories()
-                    ->whereNull('signed_at')
-                    ->whereNull('rejected_at')
-                    ->orderBy('sequence', 'asc')
-                    ->first();
-
-                // Check signatory user + email safely
-                if ($firstSignatory && optional($firstSignatory->user)->email) {
-                    $recipientEmail = $firstSignatory->user->email;
-                    $recipientName = $firstSignatory->user->name;
-                }
+            $nextStep = optional($this->document)->nextPendingStep();
+            if ($nextStep && optional($nextStep->user)->email) {
+                $recipientEmail = $nextStep->user->email;
+                $recipientName = $nextStep->user->name;
             }
 
-            // Send email only if valid
             if (!empty($recipientEmail)) {
-                // Mail::to($recipientEmail)->send(
-                //     new DocumentForReview($this->document, $recipientName ?? 'User')
-                // );
+                // Mail::to($recipientEmail)->send(new DocumentForReview($this->document, $recipientName ?? 'User'));
             }
         }
 
         $fromUser = optional($this->document->fromOffice->head);
 
         if (!empty($fromUser->email)) {
-            // Mail::to($fromUser->email)->send(
-            //     new DocumentStatusUpdate(
-            //         $this->document,
-            //         $fromUser->name ?? 'User',
-            //         'signed',
-            //         $mail_desc
-            //     )
-            // );
+            // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name ?? 'User', 'signed', $mail_desc));
         }
 
-
         $data = [
-            'title' => 'Document signed!',
-            'text' => "You've successfully signed the document",
+            'title' => 'Document processed!',
+            'text' => "You've successfully processed the document",
             'icon' => 'success',
             'showCancelButton' => false,
             'confirmButtonColor' => '#d33',
@@ -345,12 +307,19 @@ class ViewDocument extends Component
         $this->dispatch('fireSwal', $data);
     }
 
-    public function lastSignatory()
+    public function lastStep()
     {
         $this->document->refresh();
-        if (! $this->document->allRoutingsReviewed() || ! $this->document->allSignatoriesSigned()) {
-            abort(403, 'This document is not ready for final approval.');
-        }
+        
+        $isComplete = $this->document->steps()
+            ->whereIn('step_type', ['routing', 'signatory'])
+            ->where(function ($query) {
+                $query->whereNull('processed_at')
+                      ->orWhereNotIn('status', ['Approved', 'Reviewed']);
+            })
+            ->doesntExist();
+
+        abort_unless($isComplete, 403, 'This document is not ready for final approval.');
 
         $this->document->update([
             'status' => 'Approved'
@@ -362,43 +331,10 @@ class ViewDocument extends Component
     public function generate()
     {
         $this->assertCanGenerate('IOM');
-        // if ($this->document->status == 'pending') {
-            // $this->document->status = 'Generated IOM';
-            // $this->document->save();
-            
-            // $this->document_query['date_sent'] = $this->document_query['date_sent'] ?? now();
-            // $this->document_query['attachment'] = $this->document_query['attachment'] ?? null;
-
-            // if (isset($this->document_query['signatories']) && is_string($this->document_query['signatories'])) {
-            //     $this->document_query['signatories'] = json_decode($this->document_query['signatories'], true);
-            // }
-            // if (isset($this->document_query['cfs']) && is_string($this->document_query['cfs'])) {
-            //     $this->document_query['cfs'] = json_decode($this->document_query['cfs'], true);
-            // }
-
-            // $pdf = Pdf::loadView('pdf.document-preview', $this->document_query)->setPaper([0, 0, 612.00, 936.00]);
-
-            // $filename = 'document_' . $this->document->document_number . '.pdf';
-            // Storage::disk('public')->put('assets/files/' . $filename, $pdf->output());
-            // $this->document->attachments()->create([
-            //     'document_number'=>$this->document->document_number,
-            //     'attachment_document_id'=>$this->document->id,
-            //     'status'=>'Waiting for Signature',
-            //     'file_url'=>'assets/files/' . $filename,
-            // ]);
-            // $filename = 'assets/files/' . $filename;
-            // $this->document->update([
-            //     'file_url'=>$filename
-            // ]);
-
-        // }
-        // else {
-        //     $filename = $this->document->attachments()->latest()->first()->file_url;
-        // }
 
         $redirectData = [
             'to' => $this->document->fromOffice->id,
-            'from' => $this->document->toOffice->id??1,
+            'from' => $this->document->toOffice->id ?? 1,
             'subject' => 'RE: ' . $this->document->subject,
             'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
@@ -407,26 +343,23 @@ class ViewDocument extends Component
             'thru' => null,
         ];
 
-        // ✅ Add 'cf' only if there are signatories
-        if ($this->document->signatories->isNotEmpty()) {
-            if ($this->document->signatories?->isNotEmpty()) {
-                $recordsSectionId = Office::where('name', 'Records Section')->value('id');
-                
-                $redirectData['cf'] = $this->document->signatories
-                    ->pluck('user.office.id')
-                    ->push($this->document->from_id)
-                    ->push($recordsSectionId)
-                    ->push(Auth::user()->office?->id)
-                    ->flatten()
-                    ->filter() 
-                    ->unique() 
-                    ->values() 
-                    ->toArray();
-            }
+        $signatorySteps = $this->document->steps->where('step_type', 'signatory');
+        if ($signatorySteps->isNotEmpty()) {
+            $recordsSectionId = Office::where('name', 'Records Section')->value('id');
+            
+            $redirectData['cf'] = $signatorySteps
+                ->pluck('user.office.id')
+                ->push($this->document->from_id)
+                ->push($recordsSectionId)
+                ->push(Auth::user()->office?->id)
+                ->flatten()
+                ->filter() 
+                ->unique() 
+                ->values() 
+                ->toArray();
         }
 
         session()->flash('redirect_data', $redirectData);
-    
         return redirect()->route('documents.create-document');
     }
 
@@ -435,7 +368,7 @@ class ViewDocument extends Component
         $this->assertCanGenerate('SO');
         $redirectData = [
             'to' => $this->document->from_id,
-            'from' => $this->document->toOffice->id??1,
+            'from' => $this->document->toOffice->id ?? 1,
             'subject' => 'RE: ' . $this->document->subject,
             'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'SO')->value('id'),
@@ -443,13 +376,20 @@ class ViewDocument extends Component
         ];
 
         session()->flash('redirect_data', $redirectData);
-    
         return redirect()->route('documents.create-document');
     }
 
     public function reject()
     {
         $this->assertCurrentActorCanAct();
+        $stepType = $this->myStep->step_type ?? 'signatory';
+
+        $confirmText = match($stepType) {
+            'routing' => 'Return with remarks',
+            'action' => 'Reject Action',
+            default => 'Reject',
+        };
+
         $data = [
             'title' => 'Are you sure?',
             'text' => "Please confirm and optionally leave a remark.",
@@ -460,7 +400,7 @@ class ViewDocument extends Component
             'showCancelButton' => true,
             'confirmButtonColor' => '#d33',
             'cancelButtonColor' => '#3085d6',
-            'confirmButtonText' => $this->mySignatory != null? 'Reject':'Return with remarks',
+            'confirmButtonText' => $confirmText,
             'event' => 'documentRejected',
             'withId' => false,
         ];
@@ -471,48 +411,52 @@ class ViewDocument extends Component
     {
         $this->assertCurrentActorCanAct();
         $mail_desc = '';
-        if ($this->mySignatory){
-            $this->mySignatory->update([
-                'rejected_at' => now(),
+
+        if ($this->myStep) {
+            $stepType = $this->myStep->step_type;
+            
+            $statusMap = [
+                'routing' => 'Returned',
+                'action' => 'Rejected',
+                'signatory' => 'Rejected',
+            ];
+
+            $newStatus = $statusMap[$stepType] ?? 'Rejected';
+
+            $this->myStep->update([
+                'processed_at' => now(),
                 'comments' => $remarks,
-                'status' => 'Rejected'
+                'status' => $newStatus
             ]);
-            $mail_desc = $this->mySignatory->user->office->name . ' rejected the document with remarks: '. $remarks;
+
+            $actionDescMap = [
+                'routing' => ' returned the document with remarks: ',
+                'action' => ' rejected action on the document with remarks: ',
+                'signatory' => ' rejected the document with remarks: ',
+            ];
+
+            $mail_desc = $this->myStep->user->office->name . ($actionDescMap[$stepType] ?? ' rejected the document with remarks: ') . $remarks;
+            
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
-                'action' => 'rejected',
+                'action' => $newStatus,
                 'description' => $mail_desc
             ]);
-            $this->document->status ='Rejected';
+
+            $documentStatusMap = [
+                'routing' => 'Returned',
+                'action' => 'Rejected',
+                'signatory' => 'Rejected',
+            ];
+            
+            $this->document->status = $documentStatusMap[$stepType] ?? 'Rejected';
             $this->document->save();
-            $this->mySignatory->save();
         }
-        else if ($this->myReview){
-            $this->myReview->update([
-                'returned_at' => now(),
-                'comments' => $remarks
-            ]);
-            $mail_desc = $this->myReview->user->office->name . ' returned the document with remarks: '. $remarks;
-            $this->document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'returned',
-                'description' => $mail_desc
-            ]);
-            $this->document->status ='Rejected';
-            $this->document->save();
-            $this->myReview->save();
-        }
+
         $fromUser = optional($this->document->fromOffice->head);
 
         if (!empty($fromUser->email)) {
-            // Mail::to($fromUser->email)->send(
-            //     new DocumentStatusUpdate(
-            //         $this->document,
-            //         $fromUser->name ?? 'User',
-            //         'rejected',
-            //         $mail_desc
-            //     )
-            // );
+            // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name ?? 'User', 'Rejected', $mail_desc));
         }
 
         $data = [
@@ -533,19 +477,13 @@ class ViewDocument extends Component
 
     private function assertCurrentActorCanAct(): void
     {
-        $document = $this->document->fresh(['routings', 'signatories']);
-        if ($document->status !== 'sent') {
+        $document = $this->document->fresh(['steps']);
+        if (!in_array($document->status, ['Sent', 'In Process'])) {
             abort(403, 'This document is no longer awaiting action.');
         }
 
-        $nextRouting = $document->nextPendingRouting();
-        if ($nextRouting) {
-            abort_unless($nextRouting->user_id === Auth::id(), 403, 'It is not your turn to review this document.');
-            return;
-        }
-
-        $nextSignatory = $document->nextPendingSignatory();
-        abort_unless($nextSignatory && $nextSignatory->user_id === Auth::id(), 403, 'It is not your turn to sign this document.');
+        $nextStep = $document->nextPendingStep();
+        abort_unless($nextStep && $nextStep->user_id === Auth::id(), 403, 'It is not your turn to act on this document.');
     }
 
     private function assertCanGenerate(string $target): void
@@ -560,20 +498,17 @@ class ViewDocument extends Component
     public function viewAttachment($id, $type) {
         if ($type == 'internal') {
             $this->selectedAttachment = DocumentAttachment::find($id);
-        }
-        else if ($type == 'external') {
+        } else if ($type == 'external') {
             $this->selectedAttachment = ExternalDocument::find($id);
         }
-        // dd($type);
-        if (!$this->selectedAttachment->is_upload && $type =='internal') {
+        
+        if (!$this->selectedAttachment->is_upload && $type == 'internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
-            // $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);
             $key = uniqid();
             session([$key => $attachment_query]);
             $this->attachmentPreviewUrl = '/document/preview?' . $key;
-        }
-        else {
+        } else {
             $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);
         }
 
@@ -592,18 +527,18 @@ class ViewDocument extends Component
         if ($updated) {
             $attachment_document->logs()->create([
                 'user_id' => Auth::id(),
-                'action' => 'viewed',
+                'action' => 'Viewed',
                 'description' => Auth::user()->office->name . ' viewed the document'
             ]);
         }
         
-        $signatories = $attachment_document->signatories->map(function ($signatory) {
+        $signatories = $attachment_document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
-                'role' => $signatory->signatory_label,
-                'user_name' => $signatory->user->office->head->name ?? '',
-                'position' => $signatory->user->office->head->position ?? '',
-                'signature' => $signatory->user->signature ?? '',
-                'signed' => $signatory->signed_at,
+                'role' => $step->step_label,
+                'user_name' => $step->user->office->head->name ?? '',
+                'position' => $step->user->office->head->position ?? '',
+                'signature' => $step->user->signature ?? '',
+                'signed' => $step->processed_at,
             ];
         });
 
@@ -618,12 +553,9 @@ class ViewDocument extends Component
             $fromPosition .= ', ' . $attachment_document->fromOffice->name;
         }
 
-        // dd($attachment_document->attachments()->latest()->first()->file_url);
-    
-        // dd($attachment_document->attachments[0]->file_url);
         $attachment_query = [
             'document' => $attachment_document->toJson(),
-            'action' => 'sent',
+            'action' => 'Sent',
             'date_sent' => $attachment_document->date_sent,
             'subject' => $attachment_document->subject,
             'content' => $attachment_document->content,
@@ -633,7 +565,7 @@ class ViewDocument extends Component
             'fromName' => $attachment_document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
-            'documentType' => $attachment_document->document_level=='Intra'?'Intra':($attachment_document->documentType->name ?? 'N/A'),
+            'documentType' => $attachment_document->document_level == 'Intra' ? 'Intra' : ($attachment_document->documentType->name ?? 'N/A'),
             'documentNumber' => $attachment_document->document_number,
             'unit' => $attachment_document->fromOffice->abbreviation,
             'signatories' => $signatories->toJson(),

@@ -10,34 +10,29 @@ use App\Models\Office;
 use App\Models\DocumentAttachment;
 use App\Models\ExternalDocument;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Validate;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use App\Mail\DocumentForReview;
 
 class CreateDocument extends Component
 {
     use WithFileUploads;
 
-    #[Validate(['attachments.*' => 'file|max:102400'])] // 100MB per file
+    #[Validate(['attachments.*' => 'file|max:102400'])]
     public $attachments = [];
     public $existingAttachments = [];
 
     public $selectedAttachment;
     public $attachmentPreviewUrl;
     
-    // Form Properties
     public $original_document_number;
     public $revision_document_number;
     public $original_document_id = null;
     public $external_document_id = null;
     public $office_type = '';
-    public $document_type = ''; // The Abbreviation (e.g., RLM)
+    public $document_type = '';
     
-    // Inputs
     public $document_type_id = '';
     public $document_to_id = '';
     public $document_to_text = '';
@@ -45,13 +40,12 @@ class CreateDocument extends Component
     public $thru = '';
     public $subject = '';
     public $content = '';
-    public $attachment = ''; // Legacy/Single attachment container
+    public $attachment = '';
     
-    // Arrays & Collections
     public $signatories = [];
     public $users = [];
     public $types = [];
-    public $offices = []; // Will be a keyed collection
+    public $offices = [];
     public $cf_offices = [];
     public $selected_cf_office = '';
     
@@ -68,20 +62,15 @@ class CreateDocument extends Component
     public $manual_document_number = null; 
     public $is_manual_document_number = false;
 
-    // --- Lifecycle & Setup ---
-
     public function mount($number = null, $draft_id = null)
     {
-        $this->redirect_mode = $number? 'revision' : ($draft_id ? 'edit' : null);
+        $this->redirect_mode = $number ? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
         
         $this->users = app(UserController::class)->index(false);
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
         $officesData = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
-        $this->offices = collect($officesData)
-            ->merge(Office::whereHas('users', fn ($query) => $query->where('position', 'University President'))->with('head')->get())
-            ->unique('id')
-            ->keyBy('id');
+        $this->offices = collect($officesData)->keyBy('id');
 
         $this->handleSessionData() ?: $this->handlePassedData($number, $draft_id);
     }
@@ -99,18 +88,14 @@ class CreateDocument extends Component
         return view('livewire.documents.create-document')->layout('layouts.app');
     }
 
-    // --- Interaction Methods ---
-
     public function handleUpdateDocumentType()
     {
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         $this->document_type = $typeObj ? $typeObj->abbreviation : 'Intra';
-        $this->document_type == ''? $this->document_type='Intra':$this->document_type;
+        $this->document_type = $this->document_type == '' ? 'Intra' : $this->document_type;
 
-        // 1. Reset Signatories
         $this->signatories = [];
 
-        // 2. RLM Logic: Add Locked University President
         if ($this->document_type === 'RLM') {
             $presidentOffice = $this->presidentOffice();
             $this->document_to_id = $presidentOffice?->id;
@@ -126,14 +111,11 @@ class CreateDocument extends Component
         } 
         elseif (in_array($this->document_type, ['ECLR', 'Intra'])) {
             $this->document_to_id = null;
-            $this->document_to_text != ''?:'';
-        } elseif (! in_array($this->document_type, ['IOM', 'SO'], true)) {
+        } 
+        elseif (!in_array($this->document_type, ['IOM', 'SO'], true)) {
             $this->document_to_id = null;
             $this->document_to_text = null;
         }
-
-
-
     }
 
     private function presidentOffice(): ?Office
@@ -169,10 +151,8 @@ class CreateDocument extends Component
     public function addSignatory($data = null)
     {
         $newSignatory = $data ?? ['role' => '', 'office_id' => '', 'locked' => false];
-
         $lastIndex = count($this->signatories) - 1;
 
-        // President/Locked logic
         if ($lastIndex >= 0 && ($this->signatories[$lastIndex]['locked'] ?? false)) {
             array_splice($this->signatories, $lastIndex, 0, [$newSignatory]);
         } else {
@@ -182,7 +162,6 @@ class CreateDocument extends Component
 
     public function removeSignatory($index)
     {
-        // Prevent removing locked rows
         if ($this->signatories[$index]['locked'] ?? false) {
             return;
         }
@@ -191,32 +170,29 @@ class CreateDocument extends Component
         $this->signatories = array_values($this->signatories);
     }
 
-    // --- Content Updates (Quill) ---
-
     public function updateContentWithTo()
     {
-        if ($this->document_type === 'ECLR') $this->formatECLRContent();
+        if ($this->document_type === 'ECLR') {
+            $this->formatECLRContent();
+        }
     }
 
     public function updateContentWithSubject()
     {
-        if ($this->document_type === 'ECLR') $this->formatECLRContent();
+        if ($this->document_type === 'ECLR') {
+            $this->formatECLRContent();
+        }
     }
 
     private function formatECLRContent()
     {
         $html = '<strong>' . strtoupper($this->document_to_text) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . strtoupper($this->subject) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]';
-        
         $this->dispatch('update-quill', ['content' => $html]);
     }
-
-    // --- Main Logic: Submit & Preview ---
 
     public function previewDocument()
     {
         $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
-        
-        // Prepare "To" Details
         $toName = 'N/A';
         $toPosition = 'N/A';
         
@@ -231,17 +207,14 @@ class CreateDocument extends Component
             $toName = $this->document_to_text;
         }
 
-        // Prepare "From" Details
         $fromName = $fromUser->name . ($fromUser->profile->title ? ', ' . $fromUser->profile->title : '');
         $fromPosition = $fromUser->position ?? 'N/A';
         if ($fromUser->position != 'University President' && $fromPosition != 'N/A') {
             $fromPosition .= ', ' . $fromUser->office->name;
         }
 
-        // Prepare Doc Number & Type
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         $docTypeAbbr = $typeObj['abbreviation'] ?? 'N/A';
-        
         $officePart = Auth::user()->office->abbreviation;
 
         if (Auth::user()->office->office_type) {
@@ -252,7 +225,6 @@ class CreateDocument extends Component
             ? $officePart . '-' . $docTypeAbbr . '-_____-' . date('Y')
             : 'CM-' . Auth::user()->office->abbreviation . '-_____-' . date('Y');
 
-        // Prepare Signatories & CFs
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
             $office = $this->offices[$sig['office_id']] ?? null;
             return [
@@ -269,7 +241,6 @@ class CreateDocument extends Component
             ];
         });
 
-        // Store in Session
         $query = [
             'action' => 'preview',
             'subject' => $this->subject,
@@ -297,35 +268,32 @@ class CreateDocument extends Component
     public function submitDocument($action)
     {
         $isSend = $action === 'send';
-        $status = $isSend ? 'sent' : 'draft';
+        $status = $isSend ? 'Sent' : 'Draft';
 
-        // 1. Validation Logic
         $this->ensureDocumentTypeAllowed();
         if ($isSend) {
             $this->validateForSend();
         } else {
-            // Minimal validation for drafts
             $this->validate([
                 'document_type_id' => 'required',
                 'subject' => 'required|max:255',
             ]);
         }
 
-        // 2. Prepare Data
         $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
         $docNumber = null;
         
-        // Generate number only if sending or if it's not a revision
         if ($isSend && !$this->is_manual_document_number && empty($this->document_number)) {
             $docNumber = $this->generateDocumentNumber($fromUser->office->id);
-        }
-        else {
+        } else {
             $docNumber = $this->manual_document_number;
         }
 
         $this->ensureGenerationIsAllowed();
 
-        // 3. Create or Update Document
+        $isRevision = !empty($this->revision_document_number);
+        $isGenerated = in_array($this->document_type, ['IOM', 'SO'], true) && !empty($this->original_document_id) && !$isRevision;
+
         $data = [
             'from_id' => $fromUser->office->id,
             'to_id' => in_array($this->document_type, ['Intra', 'ECLR'], true) ? null : $this->document_to_id,
@@ -337,92 +305,50 @@ class CreateDocument extends Component
             'content' => $this->content,
             'created_by' => Auth::id(),
             'status' => $status,
-            'date_sent' => now(), // Set date even for drafts to track last edit, or move to 'updated_at' logic
+            'date_sent' => now(),
             'document_level' => $this->document_type === 'Intra' ? 'Intra' : 'Inter',
-            'is_revision' => !empty($this->revision_document_number),
-            'original_document_id' => !empty($this->revision_document_number) ? $this->original_document_id : null,
+            'is_revision' => $isRevision,
+            'original_document_id' => $isRevision ? $this->original_document_id : ($isGenerated ? $this->original_document_id : null),
         ];
 
-        // Check if updating an existing draft
-        $existingDraft = Document::where('id', $this->original_document_id)->where('status', 'draft')->first();
+        $existingDraft = Document::where('id', $this->original_document_id)->where('status', 'Draft')->first();
 
         $document = DB::transaction(function () use ($existingDraft, $data, $isSend) {
             $document = $existingDraft ?: new Document();
             $document->fill($data)->save();
 
             if ($isSend) {
-                // A draft can be sent only once; ensure it has a clean workflow.
                 $document->attachments()->delete();
-                $document->signatories()->delete();
-                $document->routings()->delete();
+                $document->steps()->delete();
                 $document->cfs()->delete();
                 $this->processAttachments($document);
                 $this->processSpecialDocumentTypes($document);
-                $this->processSignatoriesAndRouting($document);
+                $this->processDocumentSteps($document);
             }
 
             return $document;
         });
 
-        // 4. Notify the first actionable reviewer/signatory.
         if ($isSend) {
-
-            $recipientEmail = null;
-            $recipientName = null;
-
-            // SAFE routing query
-            $firstRoute = optional($document)
-                ->routings()
-                ->whereNull('reviewed_at')
-                ->whereNull('returned_at')
-                ->orderBy('id', 'asc')
-                ->first();
-
-            if ($firstRoute && optional($firstRoute->user)->email) {
-                $recipientEmail = $firstRoute->user->email;
-                $recipientName = $firstRoute->user->name;
-            } else {
-
-                // SAFE signatory query
-                $firstSignatory = optional($document)
-                    ->signatories()
-                    ->whereNull('signed_at')
-                    ->whereNull('rejected_at')
-                    ->orderBy('sequence', 'asc')
-                    ->first();
-
-                if ($firstSignatory && optional($firstSignatory->user)->email) {
-                    $recipientEmail = $firstSignatory->user->email;
-                    $recipientName = $firstSignatory->user->name;
-                }
-            }
-
-            // Send email safely
-            if (!empty($recipientEmail)) {
-                // Mail::to($recipientEmail)->send(
-                //     new DocumentForReview($document, $recipientName ?? 'User')
-                // );
-            }
-            
             $document->logs()->create([
                 'user_id' => Auth::id(),
-                'action' => 'sent',
+                'action' => 'Sent',
                 'description' => 'Document Sent'
             ]);
         }
 
         session()->flash('message', $isSend ? 'Document successfully sent.' : 'Document saved as draft.');
-        return redirect()->route('documents.list-documents', ['mode' => 'sent']);
+        return redirect()->route('documents.list-documents', ['mode' => 'Sent']);
     }
 
     private function ensureGenerationIsAllowed(): void
     {
-        if (! in_array($this->document_type, ['IOM', 'SO'], true)) {
+        if (!in_array($this->document_type, ['IOM', 'SO'], true)) {
             return;
         }
 
         $source = $this->original_document_id ? Document::find($this->original_document_id) : null;
-        if (! $source || $source->status !== 'Approved') {
+        if (!$source || $source->status !== 'Approved') {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'document_type_id' => 'An IOM or SO may only be created from an approved source document.',
             ]);
@@ -433,7 +359,7 @@ class CreateDocument extends Component
             ? in_array($sourceType, ['RLM', 'IL'], true)
             : $sourceType === 'IL';
 
-        if (! $allowed) {
+        if (!$allowed) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'document_type_id' => 'This document type is not a permitted outcome of the selected source document.',
             ]);
@@ -446,8 +372,6 @@ class CreateDocument extends Component
         }
     }
 
-    // --- Helper Methods ---
-
     protected function validateForSend()
     {
         $rules = [
@@ -457,22 +381,18 @@ class CreateDocument extends Component
             'manual_document_number' => $this->is_manual_document_number ? 'required|unique:documents,document_number' : 'nullable',
         ];
 
-        // Conditional Rules based on type
         if (!in_array($this->document_type, ['Intra', 'ECLR', 'IL', 'IOM', 'SO'])) {
-             // Standard documents need a recipient
-             $rules['document_to_id'] = 'required';
+            $rules['document_to_id'] = 'required';
         } elseif ($this->document_type === 'ECLR' || $this->document_type === 'Intra') {
-             // These use text input for recipient
-             $rules['document_to_text'] = 'required';
+            $rules['document_to_text'] = 'required';
         }
 
         if ($this->document_type == 'RLM') {
             $rules['signatories'] = 'required|array|min:1';
-            $rules['signatories.*.role'] = 'required';      // Role cannot be empty
-            $rules['signatories.*.office_id'] = 'required'; // Signatory cannot be empty
+            $rules['signatories.*.role'] = 'required';
+            $rules['signatories.*.office_id'] = 'required';
         }
 
-        // Execute Standard Validation first
         $this->validate($rules, [
             'signatories.required' => 'At least one signatory is required.',
             'signatories.min' => 'At least one signatory is required.',
@@ -480,15 +400,11 @@ class CreateDocument extends Component
             'signatories.*.office_id.required' => 'Signatory is required.',
         ]);
         
-        // 2. Custom Check: Must contain "Approved by"
         if ($this->document_type == 'RLM') {
             $hasApprovedBy = collect($this->signatories)->contains('role', 'Approved by');
 
             if (!$hasApprovedBy) {
-                // Add error to the main 'signatories' bag so it shows at the top of the section
                 $this->addError('signatories', 'You must include a signatory with the role "Approved by".');
-                
-                // Throw exception to stop the submit process immediately
                 throw \Illuminate\Validation\ValidationException::withMessages([
                     'signatories' => 'You must include a signatory with the role "Approved by".'
                 ]);
@@ -505,7 +421,7 @@ class CreateDocument extends Component
             ->where('is_allowed', true)
             ->exists();
 
-        if (! $isRlm && ! $allowed) {
+        if (!$isRlm && !$allowed) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'document_type_id' => 'You are not authorized to create this document type.',
             ]);
@@ -518,7 +434,7 @@ class CreateDocument extends Component
         
         $documents = Document::where('from_id', $from_id)
             ->where('document_type_id', $this->document_type_id)
-            ->where('status', '!=', 'draft')
+            ->where('status', '!=', 'Draft')
             ->whereYear('created_at', date('Y'))
             ->pluck('document_number');
 
@@ -530,24 +446,18 @@ class CreateDocument extends Component
             $parts = explode('-', trim($docNumber));
             $count = count($parts);
 
-            // Scan backwards, skip year (last part)
             for ($i = $count - 2; $i >= 0; $i--) {
                 $part = trim($parts[$i]);
 
                 if (preg_match('/\d+/', $part, $matches)) {
                     $num = (int) $matches[0];
-
-                    // Keep highest numeric value found
                     if ($num > $lastNumber) {
                         $lastNumber = $num;
                     }
-
-                    break; // stop for this document
+                    break;
                 }
             }
         }
-
-        $nextNumber = $lastNumber + 1;
 
         $officePart = Auth::user()->office->abbreviation;
         if (Auth::user()->office->office_type) {
@@ -560,7 +470,6 @@ class CreateDocument extends Component
             $num = 'CM-' . $officePart . '-' . ($lastNumber + 1) . '-' . date('Y');
         }
 
-        // Prefix ID 5 (Assuming ZPPSU specific)
         if ($this->document_type === 'ECLR') {
             $num = 'ZPPSU-' . $num;
         }
@@ -570,42 +479,78 @@ class CreateDocument extends Component
 
     private function processAttachments(Document $document)
     {
-        // 1. Handle "Inherited" attachments from original document (Specific to IOM/SO)
         if (in_array($this->document_type, ['IOM', 'SO']) && $this->original_document_id) {
             $originalDoc = Document::find($this->original_document_id);
             if ($originalDoc) {
                 $document->attachments()->create([
                     'attachment_document_id' => $this->original_document_id,
                     'name' => $originalDoc->document_number,
-                    'status' => 'Generated '.$this->document_type,
+                    'status' => 'Generated ' . $this->document_type,
                     'file_type' => 'pdf',
                     'is_upload' => false
                 ]);
+                $originalDoc->update([
+                    'status' => 'Generated ' . $this->document_type
+                ]);
+
+                // Update original document step and status if generated by SAO-A (10) or SAO-F (16) for RLM (1) or IL (3)
+                $userId = Auth::id();
+                if (in_array($userId, [10, 16], true) && in_array($originalDoc->document_type_id, [1, 3], true)) {
+                    $actionStep = $originalDoc->steps()
+                        ->where('user_id', $userId)
+                        ->where('step_type', 'action')
+                        ->first();
+
+                    if ($actionStep) {
+                        $actionStep->update([
+                            'processed_at' => now(),
+                            'status' => 'Approved',
+                            'comments' => 'Generated downstream document: ' . $document->document_number,
+                        ]);
+                    }
+
+                    // Check if all routing, signatory, and action steps are complete
+                    $isComplete = $originalDoc->fresh()->steps()
+                        ->whereIn('step_type', ['routing', 'signatory', 'action'])
+                        ->where(function ($query) {
+                            $query->whereNull('processed_at')
+                                  ->orWhereNotIn('status', ['Approved', 'Reviewed']);
+                        })
+                        ->doesntExist();
+
+                    // if ($isComplete) {
+                    //     $originalDoc->update(['status' => 'Approved']);
+                    // } else {
+                    //     $originalDoc->update(['status' => 'In Process']);
+                    // }
+
+                    $originalDoc->logs()->create([
+                        'user_id' => $userId,
+                        'action' => 'Generated Downstream Document',
+                        'description' => Auth::user()->office->name . ' generated ' . $this->document_type . ' (' . $document->document_number . ') from this document.',
+                    ]);
+                }
             }
         } 
 
-        // 2. Handle existingAttachments (Files already in the system)
         if (!empty($this->existingAttachments)) {
             foreach ($this->existingAttachments as $existing) {
-                // We create a NEW record for the NEW document but point to the OLD file path
                 $document->attachments()->create([
                     'name' => $existing['name'],
                     'file_url' => $existing['file_url'],
                     'file_type' => $existing['file_type'],
-                    'status' => 'sent',
+                    'status' => 'Sent',
                     'is_upload' => $existing['is_upload'] ?? true,
-                    // If it's a link to another document, preserve that
                     'attachment_document_id' => $existing['attachment_document_id'] ?? null,
                 ]);
             }
         }
 
-        // 3. Handle NEW uploads from the dropzone
         foreach ($this->attachments as $file) {
             $path = $file->store('attachments', 'public');
             $document->attachments()->create([
                 'name' => $file->getClientOriginalName(),
-                'status' => 'sent',
+                'status' => 'Sent',
                 'file_url' => $path,
                 'file_type' => $file->getClientOriginalExtension(),
                 'is_upload' => true
@@ -623,72 +568,90 @@ class CreateDocument extends Component
 
     private function processSpecialDocumentTypes(Document $document)
     {
-        // IOM Specifics
-        if ($this->document_type === 'IOM') {
-            $president = $this->presidentOffice();
-            if (! $president?->head_id) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['signatories' => 'A University President must be assigned before an IOM can be sent.']);
-            }
-            $document->signatories()->create([
-                'signatory_label' => 'Approved by',
-                'user_id' => $president->head_id,
-                'sequence' => 1,
-            ]);
-        }
-        
-        // ECLR External Update
         if ($this->document_type === 'ECLR' && $this->external_document_id) {
             ExternalDocument::where('id', $this->external_document_id)->update(['document_id' => $document->id]);
         }
     }
 
-    private function processSignatoriesAndRouting(Document $document)
+    private function processDocumentSteps(Document $document)
     {
         if ($this->document_type === 'Intra') return;
 
-        // RLM Routing
+        $sequence = 1;
+
         if ($this->document_type === 'RLM') {
             $routeIds = $this->requiredReviewOfficeIds();
-
-            $sequence = 1;
             foreach ($this->routingRequirements as $key => $isActive) {
                 if ($isActive && !empty($routeIds[$key])) {
                     $officeId = $routeIds[$key];
-                    // Optimization: Look up user ID from loaded offices if possible, else query
                     $userId = $this->offices[$officeId]['head']['id'] ?? Office::find($officeId)?->head->id;
                     if ($userId) {
-                        $document->routings()->create(['user_id' => $userId, 'sequence' => $sequence++]);
+                        $document->steps()->create([
+                            'user_id' => $userId,
+                            'step_type' => 'routing',
+                            'step_label' => ucwords(str_replace('_', ' ', $key)),
+                            'sequence' => $sequence++,
+                            'status' => 'Pending'
+                        ]);
                     }
                 }
             }
-            
+
             if ($this->external_document_id) {
                 ExternalDocument::where('id', $this->external_document_id)->update(['document_id' => $document->id]);
             }
         }
 
-        // Auto-add Signatory for certain types
-        if (in_array($this->document_type, ['ECLR', 'SO', 'IL'])) {
+        if (in_array($this->document_type, ['ECLR', 'SO', 'IL', 'IOM'])) {
             $president = $this->presidentOffice();
-            if (! $president?->head_id) {
+            if (!$president?->head_id) {
                 throw \Illuminate\Validation\ValidationException::withMessages(['signatories' => 'A University President must be assigned before this document can be sent.']);
             }
-            $this->signatories[] = ['role' => 'Approved by', 'office_id' => $president->id];
+            
+            $alreadyAdded = collect($this->signatories)->contains(fn($s) => $s['office_id'] === $president->id);
+            if (!$alreadyAdded && $this->document_type !== 'RLM') {
+                $this->signatories[] = ['role' => 'Approved by', 'office_id' => $president->id];
+            }
         }
 
-        // Save Signatories
-        foreach ($this->signatories as $index => $signatory) {
+        foreach ($this->signatories as $signatory) {
             $office = $this->offices[$signatory['office_id']] ?? null;
             if ($office && isset($office['head']['id'])) {
-                $document->signatories()->create([
-                    'signatory_label' => $signatory['role'],
+                $document->steps()->create([
                     'user_id' => $office['head']['id'],
-                    'sequence' => $index + 1,
+                    'step_type' => 'signatory',
+                    'step_label' => $signatory['role'],
+                    'sequence' => $sequence++,
+                    'status' => 'Pending'
                 ]);
             }
         }
 
-        // Save CFs
+        if (in_array($this->document_type, ['RLM', 'IL'])) {
+            $hasBudgetRouting = $this->document_type === 'RLM' && ($this->routingRequirements['budget_office'] ?? false);
+            
+            $targetSaoRole = $hasBudgetRouting ? 'Supervising Administrative Officer for Finance' : 'Supervising Administrative Officer for Administration';
+            
+            $saoUser = \App\Models\User::where('position', $targetSaoRole)->first();
+
+            if ($saoUser) {
+                if ($this->document_type === 'RLM') {
+                    $actionLabel = 'Generation of IOM';
+                } else {
+                    // IL can result in either IOM or SO
+                    $actionLabel = 'Generation of IOM or SO';
+                }
+
+                $document->steps()->create([
+                    'user_id' => $saoUser->id,
+                    'step_type' => 'action',
+                    'step_label' => $actionLabel,
+                    'sequence' => $sequence++,
+                    'status' => 'Pending'
+                ]);
+            }
+        }
+
         foreach ($this->cf_offices as $cfId) {
             $office = $this->offices[$cfId] ?? null;
             if ($office && isset($office['head']['id'])) {
@@ -698,8 +661,6 @@ class CreateDocument extends Component
             }
         }
     }
-
-    // --- Data Loading Helpers ---
 
     private function handleSessionData()
     {
@@ -746,49 +707,45 @@ class CreateDocument extends Component
         $this->content = $document->content;
         $this->existingAttachments = $document->all_attachments->map(function($attachment) {
             $data = $attachment->toArray();
-            // Manually re-inject these because toArray() might skip dynamic setAttributes
             $data['type'] = $attachment->type; 
             $data['name'] = $attachment->name ?? $attachment->document_number;
             return $data;
         })->toArray();
 
-
         $this->handleUpdateDocumentType();
 
-        $incomingSignatories = $document->signatories->map(fn($s) => [
-            'role' => $s->signatory_label,
-            'office_id' => $s->user->office->id ?? null,
-            'locked' => (bool) ($s->locked ?? false),
-        ]);
+        foreach ($document->steps()->where('step_type', 'signatory')->get() as $s) {
+            $incomingSignatories[] = [
+                'role' => $s->step_label,
+                'office_id' => $s->user->office->id ?? null,
+                'locked' => false,
+            ];
+        }
 
-        foreach ($incomingSignatories as $newSig) {
-            $isDuplicate = collect($this->signatories)->contains(function ($existing) use ($newSig) {
-                return $existing['office_id'] == $newSig['office_id'] 
-                    && $existing['role'] === $newSig['role'];
-            });
+        if (!empty($incomingSignatories)) {
+            foreach ($incomingSignatories as $newSig) {
+                $isDuplicate = collect($this->signatories)->contains(function ($existing) use ($newSig) {
+                    return $existing['office_id'] == $newSig['office_id'] && $existing['role'] === $newSig['role'];
+                });
 
-            if (!$isDuplicate) {
-                $this->addSignatory($newSig);
+                if (!$isDuplicate) {
+                    $this->addSignatory($newSig);
+                }
             }
         }
 
         $this->cf_offices = $document->cfs->pluck('user.office.id')->toArray() ?? [];
 
         if ($this->document_type === 'RLM') {
-            // Map your keys to the specific Office IDs used in processSignatoriesAndRouting
             $routeMap = $this->requiredReviewOfficeIds();
-
-            // Get all office IDs currently assigned to this document's routing
-            $existingRouteOfficeIds = $document->routings->pluck('user.office.id')->toArray();
+            $existingRouteOfficeIds = $document->steps()->where('step_type', 'routing')->pluck('user.office.id')->toArray();
 
             foreach ($routeMap as $key => $officeId) {
-                // If the office ID is in the document's routing, set the checkbox to true
                 $this->routingRequirements[$key] = $officeId && in_array($officeId, $existingRouteOfficeIds);
             }
         }
 
-
-        if ($document->status === 'draft') {
+        if ($document->status === 'Draft') {
             $this->redirect_mode = 'edit';
             $this->revision_document_number = $document->document_number;
         } else {
@@ -806,7 +763,7 @@ class CreateDocument extends Component
 
     private function nextRevisionNumber(Document $root): string
     {
-        if (! preg_match('/^(.*-)(\d+)[a-z]*(-\d{4})$/i', $root->document_number, $matches)) {
+        if (!preg_match('/^(.*-)(\d+)[a-z]*(-\d{4})$/i', $root->document_number, $matches)) {
             throw \Illuminate\Validation\ValidationException::withMessages(['document_number' => 'This document number cannot be revised automatically.']);
         }
 
@@ -818,19 +775,17 @@ class CreateDocument extends Component
     {
         if ($type == 'internal') {
             $this->selectedAttachment = DocumentAttachment::find($id);
-        }
-        else if ($type == 'external') {
+        } else if ($type == 'external') {
             $this->selectedAttachment = ExternalDocument::find($id);
         }
-        if (!$this->selectedAttachment->is_upload && $type =='internal') {
+        
+        if (!$this->selectedAttachment->is_upload && $type == 'internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
-            // $this->attachmentPreviewUrl = '/document/preview?' . http_build_query($attachment_query);
             $key = uniqid();
             session([$key => $attachment_query]);
             $this->attachmentPreviewUrl = '/document/preview?' . $key;
-        }
-        else {
+        } else {
             $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);
         }
 

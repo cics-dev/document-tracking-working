@@ -5,13 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Collection;
 
 class Document extends Model
 {
-    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'thru', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url', 'document_level', 'to_text',
+    protected $fillable = [
+        'document_number',
+        'from_id',
+        'to_id',
+        'document_type_id',
+        'thru',
+        'subject',
+        'content',
+        'created_by',
+        'status',
+        'date_sent',
+        'file_url',
+        'document_level',
+        'to_text',
         'is_revision',
-        'original_document_id'
+        'original_document_id',
     ];
 
     protected function viewedAt(): Attribute
@@ -19,7 +31,7 @@ class Document extends Model
         return Attribute::get(function () {
             $log = $this->logs()
                 ->where('user_id', Auth::id())
-                ->where('action', 'viewed')
+                ->where('action', 'Viewed')
                 ->latest('created_at')
                 ->first();
 
@@ -30,35 +42,19 @@ class Document extends Model
     protected function currentRecipient(): Attribute
     {
         return Attribute::get(function () {
-            // 1. Check pending routings first (in their defined order)
-            $pendingRouting = $this->routings()
-                ->where('status', '!=', 'reviewed')
+            $pendingStep = $this->steps()
+                ->where('status', 'Pending')
                 ->orderBy('sequence')
                 ->first();
 
-            if ($pendingRouting) {
+            if ($pendingStep) {
                 return [
-                    'type' => 'routing',
-                    'office' => $pendingRouting->office,
-                    'model' => $pendingRouting
+                    'type' => $pendingStep->step_type,
+                    'user' => $pendingStep->user,
+                    'model' => $pendingStep
                 ];
             }
 
-            // 2. If all routings are reviewed, check pending signatories
-            $pendingSignatory = $this->signatories()
-                ->where('status', '!=', 'approved')
-                ->orderBy('sequence')
-                ->first();
-
-            if ($pendingSignatory) {
-                return [
-                    'type' => 'signatory',
-                    'user' => $pendingSignatory->user,
-                    'model' => $pendingSignatory
-                ];
-            }
-
-            // 3. If everything is completed
             return null;
         });
     }
@@ -68,41 +64,24 @@ class Document extends Model
         return $this->hasMany(Document::class, 'original_document_id');
     }
 
-    /** The first document in this revision family. */
     public function revisionRoot(): Document
     {
         return $this->originalRevisedDocument?->revisionRoot() ?? $this;
     }
 
-    public function nextPendingRouting(): ?DocumentRouting
+    public function nextPendingStep(): ?DocumentStep
     {
-        return $this->routings()
-            ->whereNull('reviewed_at')
-            ->whereNull('returned_at')
+        return $this->steps()
+            ->where('status', 'Pending')
             ->orderBy('sequence')
             ->orderBy('id')
             ->first();
     }
 
-    public function nextPendingSignatory(): ?DocumentSignatory
+    public function allStepsCompleted(): bool
     {
-        return $this->signatories()
-            ->whereNull('signed_at')
-            ->whereNull('rejected_at')
-            ->orderBy('sequence')
-            ->orderBy('id')
-            ->first();
-    }
-
-    public function allRoutingsReviewed(): bool
-    {
-        return ! $this->routings()->whereNull('reviewed_at')->exists();
-    }
-
-    public function allSignatoriesSigned(): bool
-    {
-        return $this->signatories()->exists()
-            && ! $this->signatories()->whereNull('signed_at')->exists();
+        return $this->steps()->exists()
+            && !$this->steps()->where('status', 'Pending')->exists();
     }
 
     public function originalRevisedDocument()
@@ -140,7 +119,6 @@ class Document extends Model
         return $this->hasMany(ExternalDocument::class);
     }
 
-    // 👇 Custom accessor that merges both
     public function getAllAttachmentsAttribute()
     {
         return collect($this->externalDocuments)->values()->map(function ($doc) {
@@ -155,14 +133,9 @@ class Document extends Model
         );
     }
 
-    public function signatories()
+    public function steps()
     {
-        return $this->hasMany(DocumentSignatory::class);
-    }
-
-    public function routings()
-    {
-        return $this->hasMany(DocumentRouting::class);
+        return $this->hasMany(DocumentStep::class)->orderBy('sequence');
     }
 
     public function cfs()
@@ -175,7 +148,6 @@ class Document extends Model
         return $this->hasMany(DocumentLog::class);
     }
 
-
     public function accessLogs()
     {
         return $this->morphMany(DocumentAccessLog::class, 'documentable');
@@ -185,20 +157,14 @@ class Document extends Model
     {
         return Attribute::make(
             get: function ($value, $attributes) {
-                // Case 1: You used query->withExists(...) (Scenario 1)
-                // The value is already sitting in the raw attributes array.
                 if (isset($attributes['is_viewed_by_me'])) {
                     return (bool) $attributes['is_viewed_by_me'];
                 }
 
-                // Case 2: You used collection->load(...) (Scenario 2 - Current)
-                // The accessLogs relationship is loaded in memory.
                 if ($this->relationLoaded('accessLogs')) {
                     return $this->accessLogs->isNotEmpty();
                 }
 
-                // Case 3: Fallback (Safety net)
-                // If we forgot to load anything, assume unread to prevent N+1 queries
                 return false; 
             }
         );

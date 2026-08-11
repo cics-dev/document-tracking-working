@@ -16,9 +16,9 @@ class DocumentTrackingController extends Controller
             // Get status dates from logs
             $statusDates = [
                 'filed' => $this->getStatusDate($document, 'filed'),
-                'sent' => $this->getStatusDate($document, 'sent'),
-                'processing' => $this->getStatusDate($document, 'processing'),
-                'completed' => $this->getStatusDate($document, 'completed'),
+                'Sent' => $this->getStatusDate($document, 'Sent'),
+                'Processing' => $this->getStatusDate($document, 'Processing'),
+                'Completed' => $this->getStatusDate($document, 'Completed'),
             ];
             
             // Build timeline data
@@ -75,7 +75,7 @@ class DocumentTrackingController extends Controller
         
         // Status logs
         foreach ($document->logs as $log) {
-            if (!in_array(strtolower($log->action), ['sent', 'signed', 'reviewed', 'returned'], true)) {
+            if (!in_array(strtolower($log->action), ['Sent', 'signed', 'Reviewed', 'Returned'], true)) {
                 continue;
             }
 
@@ -96,9 +96,9 @@ class DocumentTrackingController extends Controller
     {
         $descriptions = [
             'filed' => 'Document officially filed in the system',
-            'sent' => 'Document forwarded to ' . $this->assignedTo($document) . ' for review',
-            'processing' => 'Document is being reviewed and processed',
-            'completed' => 'Document processing has been completed'
+            'Sent' => 'Document forwarded to ' . $this->assignedTo($document) . ' for review',
+            'Processing' => 'Document is being reviewed and processed',
+            'Completed' => 'Document processing has been completed'
         ];
         
         return $descriptions[$status] ?? 'Document status updated';

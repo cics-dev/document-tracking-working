@@ -8,7 +8,6 @@
         }
         .animate-glow { animation: glow 2s ease-in-out infinite; }
         
-        /* Green gradient for upload progress */
         .upload-progress-gradient {
             background: linear-gradient(90deg, #4ade80, #22c55e, #16a34a);
             background-size: 200% 100%;
@@ -176,7 +175,7 @@
                     @endforeach
                 </flux:select>
             </div>
-            <flux:button wire:click="addCfOffice" icon="plus" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none" />
+            <flux:button wire:click="addCfOffice" wire:loading.attr="disabled" icon="plus" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none" />
         </div>
 
         @if(is_array($cf_offices) && count($cf_offices) > 0)
@@ -249,7 +248,7 @@
                     <flux:heading size="lg">Signatories</flux:heading>
                     <span class="text-red-500">*</span>
                 </div>
-                <flux:button wire:click="addSignatory" variant="ghost" size="sm" icon="plus" class="text-indigo-600">Add Signatory</flux:button>
+                <flux:button wire:click="addSignatory" wire:loading.attr="disabled" variant="ghost" size="sm" icon="plus" class="text-indigo-600">Add Signatory</flux:button>
             </div>
             
             <flux:separator variant="subtle" class="mb-4" />
@@ -259,7 +258,6 @@
             <div class="space-y-3">
                 @foreach ($signatories as $index => $signatory)
                     @php 
-                        // specific check for the locked state
                         $isLocked = $signatory['locked'] ?? false; 
                     @endphp
 
@@ -294,7 +292,7 @@
 
                         <div class="md:col-span-1 flex justify-end">
                             @if(!$isLocked)
-                                <flux:button wire:click="removeSignatory({{ $index }})" icon="trash" variant="subtle" class="text-red-500 hover:text-red-700 hover:bg-red-50 mt-1" />
+                                <flux:button wire:click="removeSignatory({{ $index }})" wire:loading.attr="disabled" icon="trash" variant="subtle" class="text-red-500 hover:text-red-700 hover:bg-red-50 mt-1" />
                             @else
                                 <div class="mt-2 text-gray-400" title="Required Signatory">
                                     <flux:icon icon="lock-closed" class="size-5" />
@@ -356,12 +354,13 @@
 
                                     <div>
                                         <button type="button"
-                                            wire:click="viewAttachment({{ $file['id'] }}, '{{ $file['type'] }}')">
+                                            wire:click="viewAttachment({{ $file['id'] }}, '{{ $file['type'] }}')" wire:loading.attr="disabled">
                                             <flux:icon.eye class="w-5 h-5" />
                                         </button>
                                         <button 
                                             type="button" 
                                             wire:click="removeExistingAttachment({{ $file['id'] }})"
+                                            wire:loading.attr="disabled"
                                             class="text-red-500 hover:text-red-700 p-1"
                                         >
                                             <flux:icon icon="x-mark" class="size-4" />
@@ -388,6 +387,7 @@
                                     <button 
                                         type="button" 
                                         wire:click="removeAttachment('{{ $attachment->getClientOriginalName() }}')" 
+                                        wire:loading.attr="disabled"
                                         class="text-red-500 hover:text-red-700 p-1"
                                     >
                                         <flux:icon icon="x-mark" class="size-4" />
@@ -403,32 +403,41 @@
 
     <div class="flex flex-col-reverse sm:flex-row justify-between items-center pt-6 border-t border-gray-200 gap-4">
         <flux:button 
-            wire:click.prevent="submitDocument('draft')" 
+            wire:click.prevent="submitDocument('Draft')" 
+            wire:loading.attr="disabled"
+            wire:target="submitDocument"
             variant="primary"
             icon="document-text" 
             class="bg-gray-700 hover:bg-gray-800 text-white border-transparent w-full sm:w-auto"
         >
-            Save as Draft
+            <span wire:loading.remove wire:target="submitDocument('Draft')">Save as Draft</span>
+            <span wire:loading wire:target="submitDocument('Draft')">Saving...</span>
         </flux:button>
 
         <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <flux:button 
                 wire:click.prevent="previewDocument()" 
+                wire:loading.attr="disabled"
+                wire:target="previewDocument"
                 variant="primary"
                 icon="eye" 
                 class="bg-gray-300 hover:bg-gray-400 text-gray-900 border-transparent w-full sm:w-auto"
             >
-                Preview
+                <span wire:loading.remove wire:target="previewDocument">Preview</span>
+                <span wire:loading wire:target="previewDocument">Loading...</span>
             </flux:button>
             
             <flux:button 
                 type="submit" 
                 wire:click.prevent="submitDocument('send')" 
+                wire:loading.attr="disabled"
+                wire:target="submitDocument"
                 variant="primary"
                 icon="paper-airplane" 
                 class="bg-indigo-700 hover:bg-indigo-800 text-white border-transparent w-full sm:w-auto"
             >
-                @if ($document_type != 'Intra') Send @else Save @endif
+                <span wire:loading.remove wire:target="submitDocument('send')">@if ($document_type != 'Intra') Send @else Save @endif</span>
+                <span wire:loading wire:target="submitDocument('send')">Processing...</span>
             </flux:button>
         </div>
     </div>

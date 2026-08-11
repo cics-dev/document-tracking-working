@@ -9,33 +9,16 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
-// class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = ['name', 'email', 'password', 'role_id', 'position', 'office_id', 'signature'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -44,9 +27,6 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the user's initials
-     */
     public function initials(): string
     {
         return Str::of($this->name)
@@ -75,8 +55,8 @@ class User extends Authenticatable
         return $this->hasMany(Document::class, 'created_by');
     }
 
-    public function signatories()
+    public function steps()
     {
-        return $this->hasMany(DocumentSignatory::class);
+        return $this->hasMany(DocumentStep::class);
     }
 }

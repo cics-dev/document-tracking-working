@@ -6,7 +6,7 @@
             <flux:subheading>Manage and track your office documents.</flux:subheading>
         </div>
 
-        @if($mode == 'sent')
+        @if($mode == 'Sent')
             <flux:button href="{{ route('documents.create-document') }}" variant="primary" icon="plus" class="w-full md:w-auto">
                 Create Document
             </flux:button>
@@ -20,7 +20,7 @@
                 <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or number..." />
             </div>
             
-            @if($mode == 'sent')
+            @if($mode == 'Sent')
                 <div class="w-full md:w-48">
                     <flux:select wire:model.live="statusFilter" placeholder="Filter Status">
                         <flux:select.option value="">All Statuses</flux:select.option>
@@ -46,7 +46,7 @@
             @endif
         </div>
 
-        @if($mode == 'sent')
+        @if($mode == 'Sent')
         <div class="flex bg-white rounded-md p-1 border border-gray-200 shadow-sm shrink-0">
             <button
                 wire:click="switchDocumentTypeTab('inter')"
@@ -78,7 +78,7 @@
                     <th class="px-6 py-3 w-1/3">Subject</th>
                     
                     @if($documentTypeTab != 'intra')
-                        <th class="px-6 py-3">{{ $mode == 'sent' ? 'To' : 'From' }}</th>
+                        <th class="px-6 py-3">{{ $mode == 'Sent' ? 'To' : 'From' }}</th>
                     @endif
                     
                     <th class="px-6 py-3 text-center">Type</th>
@@ -89,11 +89,11 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse ($documents as $document)
-                    <tr class="hover:bg-gray-50/50 transition-colors {{ $document->viewed_at || $mode == 'sent' ? '' : 'bg-blue-50/30' }}">
+                    <tr class="hover:bg-gray-50/50 transition-colors {{ $document->viewed_at || $mode == 'Sent' ? '' : 'bg-blue-50/30' }}">
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                @if(!$document->is_viewed_by_me && $mode != 'sent')
+                                @if(!$document->is_viewed_by_me && $mode != 'Sent')
                                     <span class="size-2 rounded-full bg-blue-600 animate-pulse"></span>
                                 @endif
                                 <span class="font-medium text-gray-900">{{ $document->document_number ?? '—' }}</span>
@@ -108,7 +108,7 @@
 
                         @if($documentTypeTab != 'intra')
                             <td class="px-6 py-4 text-gray-600">
-                                {{ $mode == 'sent' 
+                                {{ $mode == 'Sent' 
                                     ? ($document->toOffice->name ?? $document->to_text ?? '—') 
                                     : ($document->fromOffice->name ?? '—') }}
                             </td>
@@ -122,10 +122,10 @@
                             @php
                                 $status = strtolower($document->status);
                                 $color = match($status) {
-                                    'approved' => 'green',
-                                    'rejected' => 'red',
-                                    'draft' => 'zinc',
-                                    'sent' => 'blue',
+                                    'Approved' => 'green',
+                                    'Rejected' => 'red',
+                                    'Draft' => 'zinc',
+                                    'Sent' => 'blue',
                                     default => 'orange'
                                 };
                             @endphp
@@ -139,15 +139,15 @@
 
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
-                                @if($document->status == 'draft')
+                                @if($document->status == 'Draft')
                                     <flux:button href="{{ route('documents.edit-draft', $document->id) }}" size="sm" icon="pencil-square" variant="subtle" class="text-blue-600">Edit</flux:button>
                                 @endif
 
-                                @if($mode == 'sent' && $document->status == 'Rejected')
+                                @if($document->status == 'Rejected')
                                     <flux:button href="{{ route('documents.create-revision', $document->document_number) }}" size="sm" icon="arrow-path" variant="filled" class="bg-blue-600 hover:bg-blue-700 text-white">Revise</flux:button>
                                 @endif
 
-                                @if($mode == 'sent' && $document->status != 'draft')
+                                @if($document->status != 'Draft')
                                     <flux:button wire:click="trackDocument('{{ $document->document_number }}')" size="sm" icon="map" variant="primary" class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors">Track</flux:button>
                                 @endif
 

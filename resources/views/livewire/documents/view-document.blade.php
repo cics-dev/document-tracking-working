@@ -3,9 +3,9 @@
 
     @php
         $slips = collect();
-        if ($document && $document->routings) {
-            $slips = $document->routings
-                ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+        if ($document && $document->steps) {
+            $slips = $document->steps
+                ->filter(fn($step) => $step->step_type === 'routing' && !empty($step->processed_at))
                 ->sortByDesc('updated_at');
         }
     @endphp
@@ -15,7 +15,7 @@
         <div x-data="{ open: false }">
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[120px] relative">
                 <strong>Routing Slip from: {{ $slip->user->office->abbreviation }}</strong><br>
-                <strong>Status: {{ $slip->returned_at?'Returned with remarks':'Reviewed' }}</strong><br>
+                <strong>Status: {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}</strong><br>
                 <strong>Remarks:</strong>
                 <p class="truncate w-[260px]">
                     {{ $slip->comments }}
@@ -35,7 +35,7 @@
                         recipient="{{ $slip->user->office->name }}"
                         remarks="{{ $slip->comments }}"
                         head="{{ $slip->user->name }}"
-                        date="{{ $slip->reviewed_at }}"
+                        date="{{ $slip->processed_at }}"
                     />
                 </div>
             </div>
@@ -74,12 +74,17 @@
             in_array($document->documentType?->abbreviation, ['RLM', 'IL'])
         )
     )
-        {{-- @if($office_name != 'Administration' && $office_name != 'Records Section') --}}
         @if($office_name != 'Administration')
-            @if($canAct && is_null($signed) && is_null($rejected))
+            @if($canAct && empty($signed) && empty($rejected))
                 <div class="mt-4 flex gap-4">
-                    <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory ? 'Sign' : 'Set as reviewed' }}</button>
-                    <button wire:click="reject" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">{{ $mySignatory ? 'Reject' : 'Return with remarks' }}</button>
+                    <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <span wire:loading.remove wire:target="sign">{{ $myStep && $myStep->step_type === 'routing' ? 'Set as reviewed' : 'Sign' }}</span>
+                        <span wire:loading wire:target="sign">Processing...</span>
+                    </button>
+                    <button wire:click="reject" wire:loading.attr="disabled" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        <span wire:loading.remove wire:target="reject">{{ $myStep && $myStep->step_type === 'routing' ? 'Return with remarks' : 'Reject' }}</span>
+                        <span wire:loading wire:target="reject">Processing...</span>
+                    </button>
                 </div>
             @else
                 <div class="mt-4 text-lg font-semibold">
@@ -89,11 +94,16 @@
         @elseif ($office_name == 'Administration')
             @if ($document->status === 'Approved' && in_array($document->documentType?->abbreviation, ['RLM', 'IL']))
                 <div class="mt-4 flex gap-4">
-                    <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
+                    <button wire:click="generate" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <span wire:loading.remove wire:target="generate">Generate IOM</span>
+                        <span wire:loading wire:target="generate">Generating...</span>
+                    </button>
                     @if ($document->documentType?->abbreviation === 'IL')
-                        <button wire:click="generateSO" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate SO</button>
+                        <button wire:click="generateSO" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            <span wire:loading.remove wire:target="generateSO">Generate SO</span>
+                            <span wire:loading wire:target="generateSO">Generating...</span>
+                        </button>
                     @endif
-                    {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
                 </div>
             @else
                 @if ($document->documentType?->abbreviation === 'IL')
@@ -106,10 +116,6 @@
                     </div>
                 @endif
             @endif
-        {{-- @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
-            <div class="mt-4 flex gap-4">
-                <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send out IOM</button>
-            </div> --}}
         @endif
     @endif
 

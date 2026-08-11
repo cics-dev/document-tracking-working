@@ -134,42 +134,38 @@
             margin-top: 40px;
         }
 
-        /* Reset and general document styles */
         .document-container {
             font-family: Arial, sans-serif;
             font-size: 10pt;
             width: 100%;
-            max-width: 800px; /* Adjust as needed for A4/Letter size */
+            max-width: 800px;
             margin: 0 auto;
             line-height: 1.1;
         }
 
-        /* --- Document Header Table --- */
         .document-header {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed; /* Crucial for fixed PDF layout */
+            table-layout: fixed;
             line-height: 1.1;
         }
 
-        /* All cells get a border */
         .document-header td {
             border: 1px solid black;
             padding: 0 5px;
             vertical-align: top;
         }
 
-        /* Left Column Styling (Logo/Title Area) */
         .logo-area {
             vertical-align: middle !important;
             text-align: center;
         }
 
         .university-logo {
-            max-width: 1.15in; /* Adjust size as necessary */
+            max-width: 1.15in;
             height: auto;
             display: block;
-            margin: 0 auto 2px; /* Center the logo */
+            margin: 0 auto 2px;
         }
 
         .university-title {
@@ -180,7 +176,6 @@
             margin: 0;
         }
 
-        /* Office Title Area */
         .office-title-area {
             font-size: 12pt;
             font-weight: bold;
@@ -189,12 +184,11 @@
             margin: 0;
         }
 
-        /* Right Info Box Cells */
         .info-cell {
             font-weight: normal;
             text-align: left;
             padding-left: 10px !important;
-            width: 100px; /* Fixed width for labels */
+            width: 100px;
         }
 
         .data-cell {
@@ -202,12 +196,10 @@
             text-align: left;
         }
         
-        /* Ensure borders are single lines */
         .info-cell, .data-cell {
-            border-left: none; /* No vertical border between info and data columns */
+            border-left: none;
         }
         
-        /* --- Document Footer Section (Indorsement/Subject) --- */
         .header-footer-section {
             border-left: 1px solid black;
             border-right: 1px solid black;
@@ -231,6 +223,16 @@
     </style>
 </head>
 <body>
+    @php
+        $status = null;
+        if (isset($document)) {
+            if (is_array($document)) {
+                $status = $document['status'] ?? null;
+            } elseif (is_object($document)) {
+                $status = $document->status ?? null;
+            }
+        }
+    @endphp
     @if ($documentType == 'Indorsement Letter')
         <div class="document-container">
             <table class="document-header" cellspacing="0" cellpadding="0">
@@ -315,16 +317,13 @@
                 {{ $documentNumber }}</p>
             @else
                 <?php
-                    $code = 'SAO(ADMIN)-SO-4-2025';
-
-                    $parts = explode('-', $code); // ['SAO(ADMIN)', 'SO', '4', '2025']
-
+                    $parts = explode('-', $documentNumber ?? '');
                     if (count($parts) === 4) {
                         $number = $parts[2];
                         $year = $parts[3];
-                        $formatted = 'No. ' . $number . ', s. ' . $year;
-
-                        echo $formatted; // Output: No. 4, s. 2025
+                        echo 'No. ' . $number . ', s. ' . $year;
+                    } else {
+                        echo $documentNumber;
                     }
                 ?>
             @endif
@@ -345,12 +344,6 @@
                         </td>
                     </tr>
                 @endif
-                @php
-                    if (isset($document)) 
-                        $status = is_array($document) ? $document['status'] : ($document->status ?? null);
-                    else 
-                        $status = null;
-                @endphp
                 @if ($documentType != 'Special Order')
                     <tr>
                         <td class="label" style="{{ 
@@ -363,8 +356,11 @@
                                 ($fromPosition != 'University President')
                             )
                                 @if(isset($document))
+                                    @php
+                                        $fromHeadSig = is_array($document) ? ($document['from_office']['head']['signature'] ?? null) : ($document->fromOffice->head->signature ?? null);
+                                    @endphp
                                     <img 
-                                        src="{{ public_path('storage/'.($document['from_office']['head']['signature']?:'assets/img/fakesig1.png')) }}" 
+                                        src="{{ public_path('storage/'.($fromHeadSig ?: 'assets/img/fakesig1.png')) }}" 
                                         alt="Signature" 
                                         style="height: 30px; padding-left: 20px"
                                     ><br>
@@ -394,7 +390,6 @@
         {!! $content !!}
     </div>
 
-    
     @if(!empty($signatories) && $documentType != 'Inter-Office Memorandum')
     <div class="signatory">
         @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
@@ -411,7 +406,7 @@
                                 <div class="signatory-box">
                                     @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
                                         <img 
-                                            src="{{ public_path('storage/' . ($signatory['signature']?:'assets/img/fakesig1.png')) }}"
+                                            src="{{ public_path('storage/' . ($signatory['signature'] ?: 'assets/img/fakesig1.png')) }}"
                                             alt="Signature" 
                                             style="height: 50px; margin-bottom: 10px;"
                                         ><br>
@@ -423,14 +418,10 @@
                         </div>
                     </div>
                 @elseif($documentType === 'Request Letter Memorandum' || $documentType === 'Indorsement Letter')
-                @php if (!isset($status))$status = null; @endphp
                     <br><br>   
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
-                            <!-- Left empty cell, half width -->
                             <td style="width: 50%;"></td>
-
-                            <!-- Right cell, half width -->
                             <td style="width: 50%; vertical-align: middle;">
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <tr>
@@ -471,7 +462,6 @@
                                     <tr>
                                         <td style="width: 40%">
                                             <div class="signatory-row" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; width: 200px;">
-
                                                 @foreach($grouped as $signatory)
                                                     <div class="signatory-box" style="text-align: center; width: 200px; padding-left: 40px;">
                                                         @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
@@ -485,7 +475,6 @@
                                                         {{ $signatory['position'] }}
                                                     </div>
                                                 @endforeach
-
                                             </div>
                                         </td>
                                     </tr>
@@ -514,58 +503,5 @@
             {{ $documentNumber }}
         @endif
     </footer>
-
-    {{-- <div class="page-break"></div>  <!-- This forces a page break -->
-
-    <div style="text-align: center; margin-top: 50px;">
-        <h3>ATTACHMENT</h3>
-        
-        @if(isset($attachment) && $attachment) --}}
-            <!-- Option 1: Display as embedded PDF (if the PDF renderer supports it) -->
-            {{-- <embed 
-                src="{{ public_path('storage/' . $attachment) }}" 
-                type="application/pdf" 
-                width="80%" 
-                height="600px"
-                style="border: 1px solid #ccc; margin-top: 20px;"
-            > --}}
-            
-            <!-- Option 2: Display as image (if you've converted the first page to an image) -->
-            {{-- <img 
-                src="{{ public_path('storage/' . $attachment) }}" 
-                alt="PDF Attachment Preview" 
-                style="max-width: 80%; border: 1px solid #ccc; margin-top: 20px;"
-            >
-            
-            <p style="margin-top: 10px;">
-                <strong>Attachment:</strong> {{ basename($attachment) }}
-            </p>
-        @else
-            <p>No attachment available</p>
-        @endif
-    </div> --}}
-
-    {{-- @php
-        use Spatie\PdfToImage\Pdf;
-
-        $pdfPath = storage_path('app/public/' . $attachment);
-        $pdf = new Pdf($pdfPath);
-
-        $pages = $pdf->getNumberOfPages();
-        $imagePaths = [];
-
-        for ($i = 1; $i <= $pages; $i++) {
-            $imagePath = storage_path("app/public/pdf_images/attachment_page_$i.jpg");
-            $pdf->setPage($i)->saveImage($imagePath);
-            $imagePaths[] = 'storage/pdf_images/attachment_page_' . $i . '.jpg';
-        }
-        dd($imagePaths);
-    @endphp
-
-    @if ($imagePaths)
-        <div class="page-break"></div>
-        <h3>Attachment</h3>
-        <img src="{{ public_path('storage/' . $imagePaths) }}" style="max-width: 100%; height: auto;" alt="Attachment">
-    @endif --}}
 </body>
 </html>

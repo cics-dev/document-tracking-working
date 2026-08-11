@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('subject');
             $table->text('content');
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->string('status')->default('draft');
+            $table->string('status')->default('Draft');
             $table->date('date_sent')->nullable();
             $table->string('file_url')->nullable();
             $table->string('document_level')->default('Inter'); //Inter, Intra, External

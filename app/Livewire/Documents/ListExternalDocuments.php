@@ -46,7 +46,7 @@ class ListExternalDocuments extends Component
         
         $query->withExists(['accessLogs as is_viewed_by_me' => function ($q) use ($user) {
             $q->where('user_id', $user->id)
-            ->where('action', 'viewed');
+            ->where('action', 'Viewed');
         }]);
 
         $documents = $query->orderByDesc('created_at')->paginate(10);

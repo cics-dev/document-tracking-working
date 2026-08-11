@@ -16,15 +16,12 @@ class DocumentPreviewController extends Controller
         $key = array_key_first($request->all());
         $data = session()->get($key);
 
-        // dd($data);
-
         if (!$data) {
             abort(404, 'Preview session expired or not found.');
         }
 
         $data['date_sent'] = $data['date_sent'] ?? now();
 
-        // dd($data['document']);
         if (isset($data['document']) && is_string($data['document'])) {
             $data['document'] = json_decode($data['document'], true);
         }
@@ -38,7 +35,6 @@ class DocumentPreviewController extends Controller
             $data['cfs'] = json_decode($data['cfs'], true);
         }
 
-
         $tempGeneratedPdf = tempnam(sys_get_temp_dir(), 'generated_') . '.pdf';
         $tempMergedPdf = null;
 
@@ -47,6 +43,12 @@ class DocumentPreviewController extends Controller
             ->save($tempGeneratedPdf);
 
         $filesToMerge = [$tempGeneratedPdf];
+
+        if (!empty($data['attachments']) && is_array($data['attachments'])) {
+            foreach ($data['attachments'] as $attachment) {
+                $this->processAttachment($attachment, $filesToMerge);
+            }
+        }
 
         $pdfToShow = $tempGeneratedPdf;
 
@@ -70,15 +72,19 @@ class DocumentPreviewController extends Controller
 
         session()->forget($key);
 
-        register_shutdown_function(function () use ($tempGeneratedPdf, $tempMergedPdf) {
+        register_shutdown_function(function () use ($tempGeneratedPdf, $tempMergedPdf, $filesToMerge) {
             if (file_exists($tempGeneratedPdf)) {
                 unlink($tempGeneratedPdf);
             }
             if ($tempMergedPdf && file_exists($tempMergedPdf)) {
                 unlink($tempMergedPdf);
             }
+            foreach ($filesToMerge as $file) {
+                if ($file !== $tempGeneratedPdf && file_exists($file)) {
+                    unlink($file);
+                }
+            }
         });
-
 
         return $response;
     }
@@ -108,13 +114,9 @@ class DocumentPreviewController extends Controller
 
             $filesToMerge[] = $imagePdfPath;
         } elseif (in_array($extension, ['docx'])) {
-            // Future: Convert DOCX → PDF
-            // $docxPdfPath = tempnam(sys_get_temp_dir(), 'docx_') . '.pdf';
-            // $this->convertDocxToPdf($path, $docxPdfPath);
-            // $filesToMerge[] = $docxPdfPath;
+            // Future conversion hook
         }
     }
-
 
     function mergePdfs($files, $outputPath)
     {

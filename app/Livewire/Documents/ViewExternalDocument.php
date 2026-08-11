@@ -18,7 +18,7 @@ class ViewExternalDocument extends Component
 
         $this->document->accessLogs()->firstOrCreate([
             'user_id' => Auth::id(),
-            'action' => 'viewed',
+            'action' => 'Viewed',
         ]);
         $this->previewUrl = asset('storage/' . $this->document->file_url);
     }

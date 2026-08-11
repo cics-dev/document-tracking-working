@@ -72,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/view-external-document/{id}', ViewExternalDocument::class)->name('view-external-document');
         Route::get('/receive-external-document', ReceiveExternalDocument::class)->name('receive-external-document');
         Route::get('/list-external-documents', ListExternalDocuments::class)->name('list-external-documents');
-        Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['sent', 'received', 'all'])->name('list-documents');
+        Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['Sent', 'received', 'all'])->name('list-documents');
         Route::get('/create', CreateDocument::class)->name('create-document');
         Route::get('/create-revision/{number}', CreateDocument::class)->name('create-revision');
         Route::get('/edit-draft/{draft_id}', CreateDocument::class)->name('edit-draft');

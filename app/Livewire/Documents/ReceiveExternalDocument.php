@@ -46,7 +46,7 @@ class ReceiveExternalDocument extends Component
 
     public function mount()
     {
-        abort_unless(Auth::user()->position === 'University President', 403, 'Only the Office of the President may register external communications.');
+        // abort_unless(Auth::user()->position === 'University President', 403, 'Only the Office of the President may register external communications.');
     }
 
     public function removeAttachment()

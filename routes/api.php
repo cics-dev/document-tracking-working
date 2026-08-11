@@ -14,9 +14,9 @@ Route::get('/documents/{document}/tracking-status', function(Document $document)
         'assignedTo' => $document->currentOffice->name ?? $document->office->name ?? 'Unknown',
         'statusDates' => [
             'filed' => $document->getStatusDate('filed'),
-            'sent' => $document->getStatusDate('sent'),
-            'processing' => $document->getStatusDate('processing'),
-            'completed' => $document->getStatusDate('completed'),
+            'Sent' => $document->getStatusDate('Sent'),
+            'Processing' => $document->getStatusDate('Processing'),
+            'Completed' => $document->getStatusDate('Completed'),
         ],
         'timeline' => $document->buildTimelineData(),
         'activityLogs' => $document->getRecentLogs()
