@@ -488,7 +488,7 @@ class ViewDocument extends Component
 
     private function assertCanGenerate(string $target): void
     {
-        abort_unless(Auth::user()->office?->name === 'Administration', 403);
+        abort_unless(in_array(Auth::user()->office?->id, [18, 28], true), 403);
         abort_unless($this->document->status === 'Approved', 403, 'Only approved documents can produce an IOM or SO.');
         $source = $this->document->documentType?->abbreviation;
         $allowed = $target === 'IOM' ? in_array($source, ['RLM', 'IL'], true) : $source === 'IL';

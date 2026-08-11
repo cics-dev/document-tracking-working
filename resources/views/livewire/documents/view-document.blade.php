@@ -61,7 +61,6 @@
             </div>
         </div>
     @endif
-    
     @if(
         (
             $document->document_level != 'Intra' &&
@@ -74,7 +73,7 @@
             in_array($document->documentType?->abbreviation, ['RLM', 'IL'])
         )
     )
-        @if($office_name != 'Administration')
+        @if(!in_array(Auth::user()->office?->id, [18, 28], true))
             @if($canAct && empty($signed) && empty($rejected))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -91,7 +90,7 @@
                     {{ $display_text }}
                 </div>
             @endif
-        @elseif ($office_name == 'Administration')
+        @elseif (in_array(Auth::user()->office?->id, [18, 28], true))
             @if ($document->status === 'Approved' && in_array($document->documentType?->abbreviation, ['RLM', 'IL']))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="generate" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
