@@ -30,42 +30,7 @@
                     @if(auth()->user()?->hasAccess('manage_access_rights'))
                             <flux:navlist.item icon="key" :href="route('access-rights')" :current="request()->routeIs('access-rights')" wire:navigate>{{ __('Access Rights') }}</flux:navlist.item>
                     @endif
-                    @if(auth()->user()?->hasAccess('view_all_documents'))
-                            <flux:navlist.item 
-                                icon="inbox-arrow-down" 
-                                :href="route('documents.list-documents', 'all')" 
-                                :current="request()->is('documents/all')" 
-                                wire:navigate
-                                :badge="$unreadAllCount > 0 ? $unreadAllCount : null"
-                                :badge-color="$unreadAllCount > 0 ? 'red' : null" 
-                            >
-                                {{ __('All Documents') }}
-                            </flux:navlist.item>
-                    @endif
-                    @if(auth()->user()?->hasAccess('receive_documents'))
-                            <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate :badge="$unreadReceivedCount > 0 ? $unreadReceivedCount : null" :badge-color="$unreadReceivedCount > 0 ? 'red' : null">
-                                {{ __('Received Documents') }}
-                            </flux:navlist.item>
-                    @endif
-                    @if(auth()->user()?->hasAccess('send_documents'))
-                            <flux:navlist.item icon="inbox-stack" :href="route('documents.list-documents', 'Sent')" :current="request()->is('documents/sent')" wire:navigate>
-                                {{ __('Sent Documents') }}
-                            </flux:navlist.item>
-                            <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Document') }}</flux:navlist.item>
-                    @endif
-                    @if(auth()->user()?->hasAccess('receive_external_documents') || auth()->user()?->hasAccess('send_external_documents'))
-                        <flux:navlist.item 
-                            icon="inbox-arrow-down" 
-                            :href="route('documents.list-external-documents')" 
-                            :current="request()->is('documents/list-external-documents')" 
-                            wire:navigate
-                            {{-- Only show badge if count > 0 --}}
-                            :badge="$unreadExternalCount > 0 ? $unreadExternalCount : null"
-                            :badge-color="$unreadExternalCount > 0 ? 'red' : null" 
-                        >
-                            {{ __('External Documents') }}
-                        </flux:navlist.item>
-                    @endif
+                    <livewire:notifications.sidebar-notifications />
                 </flux:navlist.group>
             </flux:navlist>
 
