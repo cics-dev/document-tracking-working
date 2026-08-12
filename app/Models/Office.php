@@ -27,4 +27,9 @@ class Office extends Model
     {
         return $this->hasMany(Document::class, 'to_id');
     }
+
+    public function steps()
+    {
+        return $this->hasMany(DocumentStep::class);
+    }
 }

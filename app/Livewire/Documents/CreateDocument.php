@@ -504,6 +504,7 @@ class CreateDocument extends Component
                     if ($actionStep) {
                         $actionStep->update([
                             'processed_at' => now(),
+                            'user_id' => Auth::id(),
                             'status' => 'Approved',
                             'comments' => 'Generated downstream document: ' . $document->document_number,
                         ]);

@@ -79,9 +79,9 @@ class ViewDocument extends Component
         $signatories = $this->document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
-                'user_name' => $step->user->office->head->name ?? '',
-                'position' => $step->user->office->head->position ?? '',
-                'signature' => $step->user->signature ?? '',
+                'user_name' => $step->active_user->office->head->name ?? '',
+                'position' => $step->active_user->office->head->position ?? '',
+                'signature' => $step->active_user->signature ?? '',
                 'signed' => $step->processed_at,
             ];
         });
@@ -425,6 +425,7 @@ class ViewDocument extends Component
 
             $this->myStep->update([
                 'processed_at' => now(),
+                'user_id' => Auth::id(),
                 'comments' => $remarks,
                 'status' => $newStatus
             ]);
@@ -535,9 +536,9 @@ class ViewDocument extends Component
         $signatories = $attachment_document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
-                'user_name' => $step->user->office->head->name ?? '',
-                'position' => $step->user->office->head->position ?? '',
-                'signature' => $step->user->signature ?? '',
+                'user_name' => $step->active_user->office->head->name ?? '',
+                'position' => $step->active_user->office->head->position ?? '',
+                'signature' => $step->active_user->signature ?? '',
                 'signed' => $step->processed_at,
             ];
         });

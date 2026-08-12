@@ -132,7 +132,7 @@
                     <div class="status-icon {{ $stepStateClass }}">
                         <i class="fas {{ $iconClass }}"></i>
                     </div>
-                    <div class="status-label {{ $isActive ? 'active' : '' }}">{{ $step->user->office->abbreviation }}</div>
+                    <div class="status-label {{ $isActive ? 'active' : '' }}">{{ $step->active_user->office->abbreviation }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">{{ $step->step_label }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">
                         @if($isProcessed)
