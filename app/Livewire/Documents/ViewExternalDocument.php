@@ -15,6 +15,11 @@ class ViewExternalDocument extends Component
 
     public function mount($id)
     {
+        abort_unless(
+            Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
+            403,
+            'You do not have permission to access external documents.'
+        );
         $this->document = ExternalDocument::with('toOffice.head', 'toOffice.actingHead')->findOrFail($id);
 
         $this->document->accessLogs()->firstOrCreate([
@@ -26,6 +31,7 @@ class ViewExternalDocument extends Component
 
     public function generateRLM()
     {
+        abort_unless(Auth::user()->hasAccess('send_external_documents'), 403, 'You do not have permission to send external documents.');
         $this->assertAssignedRecipient();
         $redirectData = [
             'subject' => 'RE: '.$this->document->subject,
@@ -41,6 +47,7 @@ class ViewExternalDocument extends Component
 
     public function generateECLR()
     {
+        abort_unless(Auth::user()->hasAccess('send_external_documents'), 403, 'You do not have permission to send external documents.');
         $this->assertAssignedRecipient();
         $redirectData = [
             'to' => $this->document->from,

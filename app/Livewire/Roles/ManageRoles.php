@@ -2,7 +2,11 @@
 
 namespace App\Livewire\Roles;
 
+use App\Models\DocumentType;
+use App\Models\Permission;
 use App\Models\Role;
+use App\Services\RoleAccessService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,6 +19,8 @@ class ManageRoles extends Component
     public string $role = '';
     public string $description = '';
     public string $search = '';
+    public array $rights = [];
+    public array $documentTypes = [];
 
     public function mount(): void
     {
@@ -29,10 +35,13 @@ class ManageRoles extends Component
     public function edit(int $id): void
     {
         $this->authorizeAccess();
-        $record = Role::findOrFail($id);
+        $record = Role::with('permissions', 'role_document_types')->findOrFail($id);
         $this->roleId = $record->id;
         $this->role = $record->role;
         $this->description = $record->description;
+        $selections = app(RoleAccessService::class)->selections($record);
+        $this->rights = $selections['rights'];
+        $this->documentTypes = $selections['documentTypes'];
         $this->resetValidation();
     }
 
@@ -44,7 +53,10 @@ class ManageRoles extends Component
             'description' => ['required', 'string', 'max:255'],
         ]);
 
-        Role::updateOrCreate(['id' => $this->roleId], $data);
+        DB::transaction(function () use ($data): void {
+            $record = Role::updateOrCreate(['id' => $this->roleId], $data);
+            app(RoleAccessService::class)->save($record, $this->rights, $this->documentTypes, auth()->user(), 'rights', 'manage_roles');
+        });
         session()->flash('status', $this->roleId ? 'Role updated.' : 'Role created.');
         $this->resetForm();
     }
@@ -69,13 +81,13 @@ class ManageRoles extends Component
 
     public function resetForm(): void
     {
-        $this->reset('roleId', 'role', 'description');
+        $this->reset('roleId', 'role', 'description', 'rights', 'documentTypes');
         $this->resetValidation();
     }
 
     private function authorizeAccess(): void
     {
-        abort_unless(auth()->user()?->hasAccess('manage_access_rights'), 403);
+        abort_unless(auth()->user()?->hasAccess('manage_roles'), 403);
     }
 
     public function render()
@@ -88,6 +100,10 @@ class ManageRoles extends Component
             ->orderBy('description')
             ->paginate(10);
 
-        return view('livewire.roles.manage-roles', compact('roles'))->layout('layouts.app');
+        return view('livewire.roles.manage-roles', [
+            'roles' => $roles,
+            'permissions' => Permission::orderBy('label')->get(),
+            'types' => DocumentType::orderBy('name')->get(),
+        ])->layout('layouts.app');
     }
 }

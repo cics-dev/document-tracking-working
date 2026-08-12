@@ -5,7 +5,7 @@
     @else
         <p>Loading preview...</p>
     @endif
-    @if($document->toOffice?->workflow_assignee?->is(auth()->user()))
+    @if(auth()->user()->hasAccess('send_external_documents') && $document->toOffice?->workflow_assignee?->is(auth()->user()))
         @if($document->document_id == null)
             <div class="mt-4 flex gap-4">
                 <button wire:click="generateECLR" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate ECLR</button>

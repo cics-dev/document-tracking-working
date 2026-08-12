@@ -46,7 +46,7 @@ class ReceiveExternalDocument extends Component
 
     public function mount()
     {
-        // abort_unless(Auth::user()->position === 'University President', 403, 'Only the Office of the President may register external communications.');
+        abort_unless(Auth::user()->hasAccess('receive_external_documents'), 403, 'You do not have permission to receive external documents.');
     }
 
     public function removeAttachment()
@@ -61,6 +61,7 @@ class ReceiveExternalDocument extends Component
 
     public function submitDocument()
     {
+        abort_unless(Auth::user()->hasAccess('receive_external_documents'), 403);
         $this->validate();
 
         $path = null;

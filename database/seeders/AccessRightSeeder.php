@@ -11,12 +11,16 @@ class AccessRightSeeder extends Seeder
     public function run(): void
     {
         $rights = [
-            'manage_offices' => 'Manage offices and OIC assignments',
-            'manage_users' => 'Manage users',
-            'manage_access_rights' => 'Manage access rights',
-            'manage_document_flows' => 'Manage document flows',
-            'view_all_documents' => 'View all documents',
-            'receive_external_documents' => 'Receive external documents',
+            'manage_offices' => 'Manage Offices',
+            'manage_users' => 'Manage Users',
+            'manage_roles' => 'Manage Roles',
+            'manage_access_rights' => 'Manage Access Rights',
+            'manage_document_flows' => 'Manage Document Flows',
+            'receive_documents' => 'Receive Documents',
+            'send_documents' => 'Send Documents',
+            'view_all_documents' => 'View All Documents',
+            'receive_external_documents' => 'Receive External',
+            'send_external_documents' => 'Send External',
         ];
 
         foreach ($rights as $key => $label) {

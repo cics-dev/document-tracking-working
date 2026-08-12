@@ -95,6 +95,12 @@ class CreateDocument extends Component
 
     public function mount($number = null, $draft_id = null)
     {
+        $isExternalResponse = (bool) session('redirect_data.external_document_id');
+        abort_unless(
+            Auth::user()->hasAccess('send_documents') || ($isExternalResponse && Auth::user()->hasAccess('send_external_documents')),
+            403,
+            'You do not have permission to send documents.'
+        );
         $this->redirect_mode = $number ? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
 

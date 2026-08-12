@@ -5,6 +5,7 @@ namespace App\Livewire\AccessRights;
 use App\Models\DocumentType;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Services\RoleAccessService;
 use Livewire\Component;
 
 class ManageAccessRights extends Component
@@ -15,30 +16,23 @@ class ManageAccessRights extends Component
     public function mount(): void
     {
         abort_unless(auth()->user()?->hasAccess('manage_access_rights'), 403);
-        foreach (Role::with('permissions', 'role_document_types')->get() as $role) {
-            $this->rights[$role->id] = $role->permissions->pluck('id')->map(fn ($id) => (string) $id)->all();
-            $this->documentTypes[$role->id] = $role->role_document_types->where('is_allowed', true)->pluck('document_type_id')->map(fn ($id) => (string) $id)->all();
-        }
+        $this->loadRoles();
     }
 
-    public function save(): void
+    public function saveRole(int $roleId): void
     {
         abort_unless(auth()->user()?->hasAccess('manage_access_rights'), 403);
-        $manageAccessId = Permission::where('key', 'manage_access_rights')->value('id');
-        if ($manageAccessId && ! in_array((string) $manageAccessId, $this->rights[auth()->user()->role_id] ?? [], true)) {
-            $this->addError('rights', 'You cannot remove Manage Access Rights from your own role.');
-            return;
-        }
-        foreach (Role::all() as $role) {
-            $role->permissions()->sync($this->rights[$role->id] ?? []);
-            foreach (DocumentType::pluck('id') as $typeId) {
-                $role->role_document_types()->updateOrCreate(
-                    ['document_type_id' => $typeId],
-                    ['is_allowed' => in_array((string) $typeId, $this->documentTypes[$role->id] ?? [], true)]
-                );
-            }
-        }
-        session()->flash('status', 'Access rights updated.');
+        $role = Role::findOrFail($roleId);
+        app(RoleAccessService::class)->save(
+            $role,
+            $this->rights[$roleId] ?? [],
+            $this->documentTypes[$roleId] ?? [],
+            auth()->user(),
+            "rights.$roleId",
+        );
+
+        session()->flash('status', "Access rights for {$role->description} updated.");
+        $this->loadRoles();
     }
 
     public function render()
@@ -48,5 +42,14 @@ class ManageAccessRights extends Component
             'permissions' => Permission::orderBy('label')->get(),
             'types' => DocumentType::orderBy('name')->get(),
         ])->layout('layouts.app');
+    }
+
+    private function loadRoles(): void
+    {
+        foreach (Role::with('permissions', 'role_document_types')->get() as $role) {
+            $selections = app(RoleAccessService::class)->selections($role);
+            $this->rights[$role->id] = $selections['rights'];
+            $this->documentTypes[$role->id] = $selections['documentTypes'];
+        }
     }
 }

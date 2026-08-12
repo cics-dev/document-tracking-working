@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DocumentQueryService
 {
+    public function canView(User $user, string $number): bool
+    {
+        if ($user->hasAccess('view_all_documents')) {
+            return Document::where('document_number', $number)->exists();
+        }
+
+        return ($user->hasAccess('send_documents') && $this->listFor($user, 'Sent')->where('document_number', $number)->exists())
+            || ($user->hasAccess('receive_documents') && $this->receivedBy(Document::query(), $user)->where('document_number', $number)->exists());
+    }
+
     public function listFor(User $user, string $mode): Builder
     {
         $query = Document::query()->with([

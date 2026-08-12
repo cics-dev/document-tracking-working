@@ -4,20 +4,23 @@
             <flux:heading size="xl">Roles</flux:heading>
             <flux:subheading>Create and maintain the roles used by Access Rights.</flux:subheading>
         </div>
-        <flux:button :href="route('access-rights')" wire:navigate variant="subtle" icon="key">Access Rights</flux:button>
+        @if(auth()->user()->hasAccess('manage_access_rights'))
+            <flux:button :href="route('access-rights')" wire:navigate variant="subtle" icon="key">Access Rights</flux:button>
+        @endif
     </div>
 
     @if (session('status')) <div class="mb-4 rounded bg-green-100 p-3 text-green-800">{{ session('status') }}</div> @endif
     @error('delete') <div class="mb-4 rounded bg-red-100 p-3 text-red-800">{{ $message }}</div> @enderror
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <form wire:submit="save" class="h-fit rounded-lg border bg-white p-5 shadow-sm">
+    <div class="grid gap-6 lg:grid-cols-5">
+        <form wire:submit="save" class="h-fit rounded-lg border bg-white p-5 shadow-sm lg:col-span-2">
             <h2 class="mb-4 font-semibold">{{ $roleId ? 'Edit Role' : 'New Role' }}</h2>
             <div class="space-y-4">
                 <flux:input wire:model="role" label="Role key" placeholder="e.g. records-officer" />
                 <flux:error name="role" />
                 <flux:input wire:model="description" label="Display name" placeholder="e.g. Records Officer" />
                 <flux:error name="description" />
+                <x-role-access-editor :$permissions :$types />
                 <div class="flex gap-2">
                     <flux:button type="submit" variant="primary">{{ $roleId ? 'Update Role' : 'Create Role' }}</flux:button>
                     @if($roleId)<flux:button type="button" wire:click="resetForm" variant="subtle">Cancel</flux:button>@endif
@@ -25,7 +28,7 @@
             </div>
         </form>
 
-        <section class="lg:col-span-2">
+        <section class="lg:col-span-3">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search roles..." class="mb-4" />
             <div class="overflow-hidden rounded-lg border bg-white shadow-sm">
                 <table class="w-full text-left text-sm">

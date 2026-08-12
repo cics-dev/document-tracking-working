@@ -49,8 +49,8 @@
                 
                 @if($can_manage_details)<div class="md:col-span-6">
                     <flux:label>Head of Office</flux:label>
-                    <x-searchable-filter-select model="office_head" :live="false"
-                        :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->values()->all()"
+                    <x-searchable-filter-select model="office_head"
+                        :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->prepend(['value' => '__new_user__', 'label' => '+ New User Account'])->values()->all()"
                         placeholder="Choose office head..." search-placeholder="Search users..." />
                 </div>
                 @endif
@@ -58,8 +58,8 @@
                     <div class="flex items-end gap-3">
                         <div class="flex-1">
                             <flux:label>Officer-in-Charge (optional)</flux:label>
-                            <x-searchable-filter-select model="acting_head" :live="false"
-                                :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->values()->all()"
+                            <x-searchable-filter-select model="acting_head"
+                                :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->prepend(['value' => '__new_user__', 'label' => '+ New User Account'])->values()->all()"
                                 placeholder="Use the designated head when blank..." search-placeholder="Search users..." />
                         </div>
                         
@@ -79,6 +79,15 @@
                 </div>
             </div>
         </div>
+
+        @if($can_manage_details && ($office_head === '__new_user__' || $acting_head === '__new_user__'))
+            <div class="mb-8 rounded-lg border border-indigo-200 bg-indigo-50/40 p-5">
+                <flux:heading size="lg" class="mb-1">New {{ $office_head === '__new_user__' ? 'Head' : 'OIC' }} User Account</flux:heading>
+                <flux:subheading class="mb-6">This account will be assigned to the office when you save.</flux:subheading>
+                @error('newUser') <div class="mb-4 rounded bg-red-100 p-3 text-red-800">{{ $message }}</div> @enderror
+                <x-user-account-fields :$offices :$roles model-prefix="newUser." :show-office="false" :show-is-head="false" />
+            </div>
+        @endif
 
         @if($can_manage_details)<div class="mb-8">
             <flux:heading size="lg" class="mb-4">Office Branding</flux:heading>

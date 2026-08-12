@@ -11,6 +11,7 @@ use App\Models\DocumentType;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Services\DocumentWorkflowService;
+use App\Services\DocumentQueryService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
@@ -64,6 +65,7 @@ class ViewDocument extends Component
 
     public function mount($number)
     {
+        abort_unless(app(DocumentQueryService::class)->canView(Auth::user(), $number), 403, 'You do not have permission to view this document.');
         $response = app(DocumentController::class)->getDocument($number);
         $this->document = $response;
 

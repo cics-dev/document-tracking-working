@@ -24,6 +24,15 @@ class ListExternalDocuments extends Component
 
     public string $sortDirection = 'desc';
 
+    public function mount(): void
+    {
+        abort_unless(
+            Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
+            403,
+            'You do not have permission to access external documents.'
+        );
+    }
+
     // Reset pagination when searching to avoid empty pages
     public function updatedSearch()
     {

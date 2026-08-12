@@ -19,7 +19,7 @@ class DocumentFlowManagementTest extends TestCase
     public function test_signatory_stage_label_is_automatically_recommending_approval(): void
     {
         $role = Role::create(['role' => 'admin', 'description' => 'Administrator']);
-        $permission = Permission::create(['key' => 'manage_document_flows', 'label' => 'Manage document flows']);
+        $permission = Permission::firstOrCreate(['key' => 'manage_document_flows'], ['label' => 'Manage Document Flows']);
         $role->permissions()->attach($permission);
         $this->actingAs(User::factory()->create(['role_id' => $role->id]));
 
@@ -47,7 +47,7 @@ class DocumentFlowManagementTest extends TestCase
     public function test_signatory_stage_can_be_labeled_approved_by(): void
     {
         $role = Role::create(['role' => 'admin', 'description' => 'Administrator']);
-        $permission = Permission::create(['key' => 'manage_document_flows', 'label' => 'Manage document flows']);
+        $permission = Permission::firstOrCreate(['key' => 'manage_document_flows'], ['label' => 'Manage Document Flows']);
         $role->permissions()->attach($permission);
         $this->actingAs(User::factory()->create(['role_id' => $role->id]));
         $type = DocumentType::create(['name' => 'Special Order', 'abbreviation' => 'SO']);

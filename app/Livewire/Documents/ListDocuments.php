@@ -34,9 +34,13 @@ class ListDocuments extends Component
 
     public function mount($mode = 'received')
     {
-        if (Auth::user()->position === 'Administrator') {
-            abort(403, 'Access denied.');
-        }
+        $requiredPermission = match ($mode) {
+            'received' => 'receive_documents',
+            'Sent' => 'send_documents',
+            'all' => 'view_all_documents',
+            default => abort(404),
+        };
+        abort_unless(Auth::user()->hasAccess($requiredPermission), 403, 'You do not have permission to view these documents.');
         $this->office_name = Auth::user()->office->name;
         $this->mode = $mode;
     }
