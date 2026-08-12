@@ -65,7 +65,7 @@ class ListUsers extends Component
 
         return view('livewire.users.list-users', [
             'users' => $users,
-            'offices' => Office::orderBy('name')->get(['id', 'name']),
+            'offices' => Office::orderBy('name')->get(['id', 'name', 'abbreviation']),
             'roles' => Role::orderBy('role')->get(['id', 'role']),
         ])->layout('layouts.app');
     }

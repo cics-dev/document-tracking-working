@@ -12,4 +12,9 @@ class DocumentType extends Model
     {
         return $this->hasMany(Document::class);
     }
+
+    public function flowStages()
+    {
+        return $this->hasMany(DocumentFlowStage::class)->orderBy('sequence');
+    }
 }

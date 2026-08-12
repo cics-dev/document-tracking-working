@@ -14,6 +14,7 @@ class AccessRightSeeder extends Seeder
             'manage_offices' => 'Manage offices and OIC assignments',
             'manage_users' => 'Manage users',
             'manage_access_rights' => 'Manage access rights',
+            'manage_document_flows' => 'Manage document flows',
             'view_all_documents' => 'View all documents',
             'receive_external_documents' => 'Receive external documents',
         ];

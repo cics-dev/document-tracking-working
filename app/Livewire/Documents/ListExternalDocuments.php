@@ -91,7 +91,7 @@ class ListExternalDocuments extends Component
 
         return view('livewire.documents.list-external-documents', [
             'documents' => $documents,
-            'offices' => Office::orderBy('name')->get(['id', 'name']),
+            'offices' => Office::orderBy('name')->get(['id', 'name', 'abbreviation']),
         ])->layout('layouts.app');
     }
 }

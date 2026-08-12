@@ -21,7 +21,7 @@
             const query = this.search.trim().toLowerCase()
 
             return query
-                ? this.options.filter((option) => option.label.toLowerCase().includes(query))
+                ? this.options.filter((option) => `${option.label} ${option.search ?? ''}`.toLowerCase().includes(query))
                 : this.options
         },
         select(option) {

@@ -140,7 +140,7 @@
                         <flux:field>
                             <flux:label>{{ $document_type === 'RLM' ? 'For' : 'To' }} <span class="text-red-500">*</span></flux:label>
                             <x-searchable-filter-select model="document_to_id" :live="false" :disabled="true"
-                                :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                                :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                                 placeholder="Choose recipient..." search-placeholder="Search offices..." />
                         </flux:field>
                     </div>
@@ -168,7 +168,7 @@
         <div class="flex items-center gap-3">
             <div class="flex-1">
                 <x-searchable-filter-select model="selected_cf_office" :live="false"
-                    :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                    :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                     placeholder="Select office..." search-placeholder="Search offices..." />
             </div>
             <flux:button wire:click="addCfOffice" wire:loading.attr="disabled" icon="plus" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none" />
@@ -227,14 +227,34 @@
             <flux:label class="mb-3">Routing Requirements <span class="text-gray-500 font-normal">- select applicable review offices</span></flux:label>
             <div class="h-4"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-3">
-                    <flux:checkbox wire:model="routingRequirements.budget_office" label="Budget Office" value="1" />
-                    <flux:checkbox wire:model="routingRequirements.motor_pool" label="Motor Pool" value="2" />
-                </div>
-                <div class="space-y-3">
-                    <flux:checkbox wire:model="routingRequirements.legal_review" label="Legal/Compliance" value="3" />
-                    <flux:checkbox wire:model="routingRequirements.igp_review" label="IGP Review" value="4" />
-                </div>
+                @if(!empty($flowStages))
+                    @foreach(collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
+                        <div class="space-y-3">
+                            @foreach($routingColumn as $stage)
+                                <div class="flex items-center gap-1" x-data="{ showHelp: false }">
+                                    <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($stage['is_required'] ? ' (Required)' : '')" :disabled="$stage['is_required']" />
+                                    @if(!empty($stage['description']))
+                                        <div class="relative">
+                                            <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50" aria-label="About {{ $stage['label'] }}">?</button>
+                                            <div x-cloak x-show="showHelp" x-transition class="absolute left-0 z-30 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 shadow-lg">
+                                                <b>{{ $stage['label'] }}</b><br>{{ $stage['description'] }}
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endforeach
+                @else
+                    <div class="space-y-3">
+                        <flux:checkbox wire:model="routingRequirements.budget_office" label="Budget Office" value="1" />
+                        <flux:checkbox wire:model="routingRequirements.motor_pool" label="Motor Pool" value="2" />
+                    </div>
+                    <div class="space-y-3">
+                        <flux:checkbox wire:model="routingRequirements.legal_review" label="Legal/Compliance" value="3" />
+                        <flux:checkbox wire:model="routingRequirements.igp_review" label="IGP Review" value="4" />
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -260,7 +280,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                         <div class="md:col-span-4">
                             <flux:select 
-                                wire:model="signatories.{{ $index }}.role" 
+                                wire:model.live="signatories.{{ $index }}.role"
                                 placeholder="Select Role"
                                 :disabled="$isLocked" 
                             >
@@ -274,9 +294,32 @@
                         </div>
 
                         <div class="md:col-span-7">
-                            <x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="false" :disabled="$isLocked"
-                                :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
-                                placeholder="Select signatory office..." search-placeholder="Search offices..." />
+                            @php
+                                $controlledRole = in_array(strtolower($signatory['role'] ?? ''), ['recommending approval', 'approved by'], true);
+                                $configuredSignatoryIds = collect($flowStages)
+                                    ->where('stage_type', 'signatory')
+                                    ->filter(fn($stage) => strcasecmp($stage['label'], $signatory['role'] ?? '') === 0)
+                                    ->pluck('office_id');
+                                $signatoryOfficeOptions = $controlledRole
+                                    ? collect($allOffices)->whereIn('id', $configuredSignatoryIds)
+                                    : collect($allOffices);
+                                $selectedConfiguredStage = collect($flowStages)->first(fn($stage) =>
+                                    $stage['stage_type'] === 'signatory'
+                                    && (int) $stage['office_id'] === (int) ($signatory['office_id'] ?? 0)
+                                    && strcasecmp($stage['label'], $signatory['role'] ?? '') === 0
+                                );
+                            @endphp
+                            <div class="flex items-center gap-2" x-data="{ showHelp: false }">
+                                <div class="flex-1"><x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true" :disabled="$isLocked"
+                                    :options="$signatoryOfficeOptions->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
+                                    placeholder="Select signatory office..." search-placeholder="Search offices..." /></div>
+                                @if(!empty($selectedConfiguredStage['description']))
+                                    <div class="relative">
+                                        <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600" aria-label="About this signatory">?</button>
+                                        <div x-cloak x-show="showHelp" class="absolute right-0 z-30 mt-2 w-72 rounded-lg border bg-white p-3 text-sm shadow-lg"><b>{{ $selectedConfiguredStage['label'] }}</b><br>{{ $selectedConfiguredStage['description'] }}</div>
+                                    </div>
+                                @endif
+                            </div>
                             <flux:error name="signatories.{{ $index }}.office_id" />
                         </div>
 

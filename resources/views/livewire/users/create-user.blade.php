@@ -69,7 +69,7 @@
                     <flux:field>
                         <flux:label>Office <span class="text-red-500">*</span></flux:label>
                         <x-searchable-filter-select model="office_id" :live="false"
-                            :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                            :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                             placeholder="Choose office..." search-placeholder="Search offices..." />
                         <flux:error name="office_id" />
                     </flux:field>

@@ -78,4 +78,49 @@ class DocumentQueryServiceTest extends TestCase
 
         $this->assertFalse(app(DocumentQueryService::class)->receivedBy(Document::query(), $secondUser)->whereKey($document)->exists());
     }
+
+    public function test_president_can_see_an_il_when_the_president_step_is_ready(): void
+    {
+        $type = DocumentType::create(['name' => 'Indorsement Letter', 'abbreviation' => 'IL']);
+        $senderOffice = Office::create(['name' => 'Sender', 'abbreviation' => 'S', 'office_type' => 'ADMIN']);
+        $presidentOffice = Office::create(['name' => 'President', 'abbreviation' => 'OP', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['office_id' => $senderOffice->id]);
+        $president = User::factory()->create(['office_id' => $presidentOffice->id, 'position' => 'University President']);
+        $presidentOffice->update(['head_id' => $president->id]);
+        $document = Document::create([
+            'document_number' => 'S-IL-1-2026', 'from_id' => $senderOffice->id,
+            'document_type_id' => $type->id, 'subject' => 'IL', 'content' => 'Test',
+            'created_by' => $sender->id, 'status' => 'Sent',
+        ]);
+        DocumentStep::create([
+            'document_id' => $document->id, 'user_id' => $president->id, 'office_id' => $presidentOffice->id,
+            'step_type' => 'signatory', 'step_label' => 'Approved by', 'sequence' => 1,
+        ]);
+
+        $this->assertTrue(app(DocumentQueryService::class)->receivedBy(Document::query(), $president)->whereKey($document)->exists());
+    }
+
+    public function test_direct_recipient_cannot_bypass_earlier_pending_workflow_steps(): void
+    {
+        $type = DocumentType::create(['name' => 'Request Letter Memorandum', 'abbreviation' => 'RLM']);
+        $senderOffice = Office::create(['name' => 'Sender', 'abbreviation' => 'S', 'office_type' => 'ADMIN']);
+        $routingOffice = Office::create(['name' => 'Routing', 'abbreviation' => 'R', 'office_type' => 'ADMIN']);
+        $presidentOffice = Office::create(['name' => 'President', 'abbreviation' => 'OP', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['office_id' => $senderOffice->id]);
+        $reviewer = User::factory()->create(['office_id' => $routingOffice->id]);
+        $president = User::factory()->create(['office_id' => $presidentOffice->id, 'position' => 'University President']);
+        $document = Document::create([
+            'document_number' => 'S-RLM-1-2026', 'from_id' => $senderOffice->id, 'to_id' => $presidentOffice->id,
+            'document_type_id' => $type->id, 'subject' => 'RLM', 'content' => 'Test',
+            'created_by' => $sender->id, 'status' => 'Sent',
+        ]);
+        DocumentStep::create(['document_id' => $document->id, 'user_id' => $reviewer->id, 'office_id' => $routingOffice->id, 'step_type' => 'routing', 'step_label' => 'Review', 'sequence' => 1]);
+        DocumentStep::create(['document_id' => $document->id, 'user_id' => $president->id, 'office_id' => $presidentOffice->id, 'step_type' => 'signatory', 'step_label' => 'Approved by', 'sequence' => 2]);
+
+        $service = app(DocumentQueryService::class);
+        $this->assertFalse($service->receivedBy(Document::query(), $president)->whereKey($document)->exists());
+
+        $document->steps()->where('sequence', 1)->update(['status' => 'Reviewed', 'processed_at' => now()]);
+        $this->assertTrue($service->receivedBy(Document::query(), $president)->whereKey($document)->exists());
+    }
 }

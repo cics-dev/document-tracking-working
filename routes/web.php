@@ -19,6 +19,7 @@ use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use App\Livewire\AccessRights\ManageAccessRights;
 use App\Livewire\Roles\ManageRoles;
+use App\Livewire\DocumentFlows\ManageDocumentFlows;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentTrackingController;
 
@@ -59,6 +60,7 @@ Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.se
 Route::middleware(['auth'])->group(function () {
     Route::get('/access-rights', ManageAccessRights::class)->name('access-rights');
     Route::get('/roles', ManageRoles::class)->name('roles');
+    Route::get('/document-flows', ManageDocumentFlows::class)->name('document-flows');
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
         Route::get('/create', CreateOffice::class)->name('create-office');

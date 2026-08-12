@@ -16,7 +16,7 @@
         <div class="w-full md:w-56">
             <x-searchable-filter-select
                 model="officeFilter"
-                :options="$offices->map(fn ($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                :options="$offices->map(fn ($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                 placeholder="All Offices"
                 search-placeholder="Search offices..."
             />

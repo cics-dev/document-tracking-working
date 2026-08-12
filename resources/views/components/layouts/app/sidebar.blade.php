@@ -15,9 +15,12 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Navigation')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    @if (auth()->user()?->hasAccess('manage_offices') || auth()->user()?->hasAccess('manage_users') || auth()->user()?->hasAccess('manage_access_rights'))
+                    @if (auth()->user()?->hasAccess('manage_offices') || auth()->user()?->hasAccess('manage_users') || auth()->user()?->hasAccess('manage_access_rights') || auth()->user()?->hasAccess('manage_document_flows'))
                         @if(auth()->user()?->hasAccess('manage_offices'))
                             <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
+                        @endif
+                        @if(auth()->user()?->hasAccess('manage_document_flows'))
+                            <flux:navlist.item icon="arrow-path-rounded-square" :href="route('document-flows')" :current="request()->routeIs('document-flows')" wire:navigate>{{ __('Document Flows') }}</flux:navlist.item>
                         @endif
                         @if(auth()->user()?->hasAccess('manage_users'))
                             <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>

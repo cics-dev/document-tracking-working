@@ -9,6 +9,7 @@ use App\Models\Document;
 use App\Models\DocumentAttachment;
 use App\Models\ExternalDocument;
 use App\Models\Office;
+use App\Models\DocumentFlowStage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -65,6 +66,8 @@ class CreateDocument extends Component
 
     public $offices = [];
 
+    public $allOffices = [];
+
     public $cf_offices = [];
 
     public $selected_cf_office = '';
@@ -75,6 +78,12 @@ class CreateDocument extends Component
         'legal_review' => false,
         'igp_review' => false,
     ];
+
+    public array $flowStages = [];
+
+    public array $selectedFlowStages = [];
+
+    public bool $hasBudgetImplications = false;
 
     public $readyToLoad = false;
 
@@ -93,6 +102,7 @@ class CreateDocument extends Component
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
         $officesData = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
         $this->offices = collect($officesData)->keyBy('id');
+        $this->allOffices = Office::with('head', 'actingHead')->orderBy('name')->get()->keyBy('id');
 
         $this->handleSessionData() ?: $this->handlePassedData($number, $draft_id);
     }
@@ -117,13 +127,26 @@ class CreateDocument extends Component
         $this->document_type = $this->document_type == '' ? 'Intra' : $this->document_type;
 
         $this->signatories = [];
+        $this->flowStages = DocumentFlowStage::with('office')
+            ->where('document_type_id', $this->document_type_id)
+            ->orderBy('sequence')->orderBy('id')->get()->toArray();
+        $this->selectedFlowStages = collect($this->flowStages)
+            ->filter(fn ($stage) => $stage['is_required'])
+            ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
+        $this->hasBudgetImplications = false;
 
         if ($this->document_type === 'RLM') {
             $presidentOffice = $this->presidentOffice();
             $this->document_to_id = $presidentOffice?->id;
             $this->document_to_text = null;
 
-            if ($presidentOffice?->workflow_assignee) {
+            $requiredConfiguredSignatories = collect($this->flowStages)
+                ->where('stage_type', 'signatory')->where('is_required', true);
+            if ($requiredConfiguredSignatories->isNotEmpty()) {
+                $this->signatories = $requiredConfiguredSignatories->map(fn ($stage) => [
+                    'role' => $stage['label'], 'office_id' => $stage['office_id'], 'locked' => true,
+                ])->values()->all();
+            } elseif ($presidentOffice?->workflow_assignee) {
                 $this->signatories[] = [
                     'role' => 'Approved by',
                     'office_id' => $presidentOffice->id,
@@ -594,6 +617,20 @@ class CreateDocument extends Component
             return;
         }
 
+        $hasConfiguredFlow = DocumentFlowStage::where('document_type_id', $this->document_type_id)->exists();
+        if ($hasConfiguredFlow) {
+            $this->processConfiguredFlow($document);
+            $this->processCarbonCopies($document);
+            return;
+        }
+
+        // Once Document Flow is installed, IL and ECLR have no implicit President
+        // signatory. They receive only stages explicitly configured by an admin.
+        if (in_array($this->document_type, ['IL', 'ECLR'], true)) {
+            $this->processCarbonCopies($document);
+            return;
+        }
+
         $sequence = 1;
 
         if ($this->document_type === 'RLM') {
@@ -647,7 +684,7 @@ class CreateDocument extends Component
             }
         }
 
-        if (in_array($this->document_type, ['ECLR', 'SO', 'IL', 'IOM'])) {
+        if (in_array($this->document_type, ['SO', 'IOM'])) {
             $president = $this->presidentOffice();
             if (! $president?->workflow_assignee) {
                 throw ValidationException::withMessages(['signatories' => 'A University President must be assigned before this document can be sent.']);
@@ -701,6 +738,127 @@ class CreateDocument extends Component
             }
         }
 
+        $this->processCarbonCopies($document);
+    }
+
+    private function processConfiguredFlow(Document $document): void
+    {
+        $stages = DocumentFlowStage::with('office.head', 'office.actingHead')
+            ->where('document_type_id', $this->document_type_id)
+            ->orderBy('sequence')->orderBy('id')->get();
+        $budgetOfficeId = Office::where('workflow_key', 'budget')->value('id');
+        $budgetStage = $stages->where('stage_type', 'routing')->firstWhere('office_id', $budgetOfficeId);
+        $hasBudget = $budgetStage
+            ? $this->configuredStageSelected($budgetStage)
+            : (bool) ($this->routingRequirements['budget_office'] ?? false);
+        $sequence = 1;
+
+        // The creator's existing routing checkboxes are populated exclusively by
+        // configured routing stages.
+        foreach ($stages->where('stage_type', 'routing') as $stage) {
+            if ($this->configuredStageSelected($stage) && $this->flowConditionMatches($stage, $hasBudget)) {
+                $this->createConfiguredStep($document, $stage, $sequence++);
+            }
+        }
+
+        $configuredSignatories = $stages->where('stage_type', 'signatory');
+        $signatories = collect($this->signatories);
+        foreach ($configuredSignatories->where('is_required', true) as $required) {
+            if (! $signatories->contains(fn ($item) => (int) ($item['office_id'] ?? 0) === $required->office_id && strcasecmp($item['role'] ?? '', $required->label) === 0)) {
+                $signatories->push(['role' => $required->label, 'office_id' => $required->office_id]);
+            }
+        }
+
+        foreach ($signatories as $signatory) {
+            $role = $signatory['role'] ?? '';
+            $officeId = (int) ($signatory['office_id'] ?? 0);
+            $controlled = in_array(strtolower($role), ['recommending approval', 'approved by'], true);
+            $configured = $configuredSignatories->first(fn ($stage) => $stage->office_id === $officeId && strcasecmp($stage->label, $role) === 0);
+
+            if ($controlled && ! $configured) {
+                throw ValidationException::withMessages(['signatories' => "{$role} may only use an office allowed in Document Flow."]);
+            }
+
+            if ($configured) {
+                $this->createConfiguredStep($document, $configured, $sequence++);
+                continue;
+            }
+
+            // Reviewed by, Noted by, Concurred by, and other roles are deliberately
+            // unrestricted and do not need a Document Flow entry.
+            $office = Office::with('head', 'actingHead')->find($officeId);
+            if (! $office?->workflow_assignee) {
+                throw ValidationException::withMessages(['signatories' => "{$role} has no assigned office head or OIC."]);
+            }
+            $document->steps()->create([
+                'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
+                'step_type' => 'signatory', 'step_label' => $role,
+                'signatory_name' => $office->head?->name ?? $office->workflow_assignee->name,
+                'signatory_position' => $office->head?->position ?? $office->workflow_assignee->position,
+                'sequence' => $sequence++, 'status' => 'Pending',
+            ]);
+        }
+
+        foreach ($stages->where('stage_type', 'action') as $stage) {
+            if ($this->configuredStageSelected($stage) && $this->flowConditionMatches($stage, $hasBudget)) {
+                $this->createConfiguredStep($document, $stage, $sequence++);
+            }
+        }
+
+        if ($this->document_type === 'RLM' && $this->external_document_id) {
+            ExternalDocument::where('id', $this->external_document_id)->update(['document_id' => $document->id]);
+        }
+    }
+
+    private function flowConditionMatches(DocumentFlowStage $stage, bool $hasBudget): bool
+    {
+        return $stage->condition === 'always'
+            || ($stage->condition === 'with_budget' && $hasBudget)
+            || ($stage->condition === 'without_budget' && ! $hasBudget);
+    }
+
+    private function createConfiguredStep(Document $document, DocumentFlowStage $stage, int $sequence): void
+    {
+        $office = $stage->office;
+        if (! $office?->workflow_assignee) {
+            throw ValidationException::withMessages(['document_type_id' => "{$stage->label} has no assigned office head or OIC."]);
+        }
+        $document->steps()->create([
+            'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
+            'step_type' => $stage->stage_type, 'step_label' => $stage->label,
+            'signatory_name' => $stage->stage_type === 'signatory' ? ($office->head?->name ?? $office->workflow_assignee->name) : null,
+            'signatory_position' => $stage->stage_type === 'signatory' ? ($office->head?->position ?? $office->workflow_assignee->position) : null,
+            'sequence' => $sequence, 'status' => 'Pending',
+        ]);
+    }
+
+    private function configuredStageSelected(DocumentFlowStage $stage): bool
+    {
+        if ($stage->is_required || ! $stage->is_selectable) return true;
+
+        if ($stage->stage_type === 'routing') {
+            if (array_key_exists((string) $stage->id, $this->selectedFlowStages)) {
+                return (bool) $this->selectedFlowStages[(string) $stage->id];
+            }
+            $key = match ($stage->office?->workflow_key) {
+                'budget' => 'budget_office',
+                'motor_pool' => 'motor_pool',
+                'legal' => 'legal_review',
+                'igp' => 'igp_review',
+                default => null,
+            };
+            return $key ? (bool) ($this->routingRequirements[$key] ?? false) : false;
+        }
+
+        if ($stage->stage_type === 'signatory') {
+            return collect($this->signatories)->contains(fn ($signatory) => (int) ($signatory['office_id'] ?? 0) === $stage->office_id);
+        }
+
+        return (bool) ($this->selectedFlowStages[(string) $stage->id] ?? false);
+    }
+
+    private function processCarbonCopies(Document $document): void
+    {
         foreach ($this->cf_offices as $cfId) {
             $office = $this->offices[$cfId] ?? null;
             if ($office && $office->workflow_assignee) {

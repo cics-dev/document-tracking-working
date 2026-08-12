@@ -38,7 +38,13 @@ class DocumentQueryService
         return $query
             ->where('status', '!=', 'Draft')
             ->where(function (Builder $query) use ($user, $officeIds) {
-                $query->whereIn('to_id', $officeIds)
+                $query->where(function (Builder $direct) use ($officeIds) {
+                    // A direct recipient may immediately see documents that have no
+                    // workflow. When workflow steps exist, visibility must respect
+                    // their order instead of bypassing them through documents.to_id.
+                    $direct->whereIn('to_id', $officeIds)
+                        ->whereDoesntHave('steps');
+                })
                     ->orWhereHas('steps', fn (Builder $steps) => $steps
                         ->where(function (Builder $steps) use ($user, $officeIds) {
                             $steps->where('user_id', $user->id)
@@ -66,8 +72,7 @@ class DocumentQueryService
                                 });
                         }))
                     ->orWhereHas('cfs', fn (Builder $copies) => $copies->where('user_id', $user->id));
-            })
-            ->when($user->position === 'University President', fn (Builder $query) => $query->whereNotIn('document_type_id', [1, 3]));
+            });
     }
 
     public function findByNumber(string $number): Document
