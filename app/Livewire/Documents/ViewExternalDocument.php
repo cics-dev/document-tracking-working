@@ -4,14 +4,19 @@ namespace App\Livewire\Documents;
 
 use App\Models\DocumentType;
 use App\Models\ExternalDocument;
+use App\Models\DocumentGenerationRule;
+use App\Services\DocumentGenerationService;
+use App\Services\AttachmentPreviewService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class ViewExternalDocument extends Component
 {
     public $previewUrl;
+    public ?string $previewType = null;
 
     public $document;
+    public array $generationRules = [];
 
     public function mount($id)
     {
@@ -26,7 +31,11 @@ class ViewExternalDocument extends Component
             'user_id' => Auth::id(),
             'action' => 'Viewed',
         ]);
-        $this->previewUrl = asset('storage/'.$this->document->file_url);
+        $this->previewType = app(AttachmentPreviewService::class)->previewType($this->document->file_url);
+        $this->previewUrl = $this->previewType
+            ? route('documents.external-document-preview', $this->document)
+            : null;
+        $this->generationRules = app(DocumentGenerationService::class)->availableForExternal($this->document, Auth::user())->toArray();
     }
 
     public function generateRLM()
@@ -42,6 +51,13 @@ class ViewExternalDocument extends Component
 
         session()->flash('redirect_data', $redirectData);
 
+        return redirect()->route('documents.create-document');
+    }
+
+    public function generateDocument(int $ruleId)
+    {
+        $rule = DocumentGenerationRule::with('targetType', 'roles')->findOrFail($ruleId);
+        session()->flash('redirect_data', app(DocumentGenerationService::class)->redirectData($rule, $this->document, Auth::user()));
         return redirect()->route('documents.create-document');
     }
 

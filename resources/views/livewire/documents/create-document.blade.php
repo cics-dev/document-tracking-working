@@ -221,6 +221,34 @@
         </div>
     </div>
 
+    @php
+        $flowConditions = collect($flowStages)
+            ->pluck('workflow_condition')
+            ->filter(fn ($condition) => $condition['is_active'] ?? false)
+            ->unique('id')
+            ->values();
+    @endphp
+    @if($flowConditions->isNotEmpty())
+        <div class="mb-8 rounded-lg border border-indigo-100 bg-indigo-50/40 p-5">
+            <flux:label class="mb-3">Document Conditions</flux:label>
+            <div class="grid gap-4 md:grid-cols-2">
+                @foreach($flowConditions as $condition)
+                    @if($condition['input_type'] === 'boolean')
+                        <flux:checkbox wire:model.live="conditionValues.{{ $condition['id'] }}" :label="$condition['label']" />
+                    @elseif($condition['input_type'] === 'select')
+                        <flux:select wire:model="conditionValues.{{ $condition['id'] }}" :label="$condition['label']">
+                            @foreach($condition['options'] ?? [] as $option)
+                                <flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @else
+                        <flux:input wire:model="conditionValues.{{ $condition['id'] }}" :type="$condition['input_type'] === 'number' ? 'number' : 'text'" :label="$condition['label']" />
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @if ($document_type != 'IOM')
         @if ($document_type == 'RLM')
         <div class="mb-8 bg-gray-50/80 p-5 rounded-lg border border-gray-100">
@@ -232,7 +260,10 @@
                         <div class="space-y-3">
                             @foreach($routingColumn as $stage)
                                 <div class="flex items-center gap-1" x-data="{ showHelp: false }">
-                                    <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($stage['is_required'] ? ' (Required)' : '')" :disabled="$stage['is_required']" />
+                                    @php
+                                        $conditionLocked = $this->conditionLocksStage($stage);
+                                    @endphp
+                                    <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($conditionLocked ? ' (Required)' : '')" :disabled="$conditionLocked || ($stage['is_required'] && empty($stage['workflow_condition_id']))" />
                                     @if(!empty($stage['description']))
                                         <div class="relative">
                                             <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50" aria-label="About {{ $stage['label'] }}">?</button>
@@ -348,7 +379,7 @@
                             <flux:icon icon="cloud-arrow-up" class="size-6 text-gray-500 mb-2" />
                             <p class="text-xs text-gray-700 mb-1">Click to upload or drag and drop</p>
                             <p class="text-xs text-gray-500">
-                                PDF, DOCX, XLSX, CSV, IMAGES<br>(MAX. 100MB each)
+                                PDF, DOCX, IMAGES<br>(MAX. 100MB each)
                             </p>
                         </div>
                         <input 
@@ -356,7 +387,7 @@
                             type="file" 
                             wire:model="attachments" 
                             multiple 
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*,.jpg,.jpeg,.png,.gif"
+                            accept=".pdf,.doc,.docx,image/*,.jpg,.jpeg,.png,.gif,.webp"
                             class="hidden"
                         />
                     </label>

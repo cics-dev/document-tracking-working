@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\DocumentPreviewController;
+use App\Http\Controllers\ExternalDocumentPreviewController;
+use App\Http\Controllers\DocumentAttachmentPreviewController;
 use App\Http\Controllers\ChatBotController;
 use App\Livewire\Documents\ReceiveExternalDocument;
 use App\Livewire\Documents\ViewExternalDocument;
@@ -76,6 +78,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('documents')->name('documents.')->group(function () {
         // Route::get('/received', ListDocuments::class)->name('recieved-documents');
         // Route::get('/sent', ListDocuments::class)->name('sent-documents');
+        Route::get('/external-document/{externalDocument}/preview', ExternalDocumentPreviewController::class)->name('external-document-preview');
+        Route::get('/attachment/{documentAttachment}/preview', DocumentAttachmentPreviewController::class)->name('attachment-preview');
         Route::get('/view-external-document/{id}', ViewExternalDocument::class)->name('view-external-document');
         Route::get('/receive-external-document', ReceiveExternalDocument::class)->name('receive-external-document');
         Route::get('/list-external-documents', ListExternalDocuments::class)->name('list-external-documents');

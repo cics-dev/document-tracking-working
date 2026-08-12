@@ -113,14 +113,14 @@
                         <flux:icon icon="cloud-arrow-up" class="size-6 text-gray-500 mb-2" />
                         <p class="text-xs text-gray-700 mb-1">Click to upload or drag and drop</p>
                         <p class="text-xs text-gray-500">
-                            PDF, IMAGES (MAX. 100MB)
+                            PDF, DOCX, IMAGES (MAX. 100MB)
                         </p>
                     </div>
                     <input 
                         id="dropzone-file" 
                         type="file" 
                         wire:model="attachment" 
-                        accept=".pdf,image/*,.jpg,.jpeg,.png"
+                        accept=".pdf,.doc,.docx,image/*,.jpg,.jpeg,.png,.gif,.webp"
                         class="hidden"
                     />
                 </label>

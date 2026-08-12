@@ -12,6 +12,9 @@ use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Services\DocumentWorkflowService;
 use App\Services\DocumentQueryService;
+use App\Models\DocumentGenerationRule;
+use App\Services\DocumentGenerationService;
+use App\Services\AttachmentPreviewService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
@@ -39,6 +42,7 @@ class ViewDocument extends Component
     public $selectedAttachment;
 
     public $attachmentPreviewUrl;
+    public ?string $attachmentPreviewType = null;
 
     public $isSignatory;
 
@@ -51,6 +55,7 @@ class ViewDocument extends Component
     public bool $canAct = false;
 
     public bool $canGenerate = false;
+    public array $generationRules = [];
 
     protected $listeners = ['documentSigned', 'documentRejected', 'lastStep'];
 
@@ -185,9 +190,8 @@ class ViewDocument extends Component
         $this->canAct = in_array($this->document->status, ['Sent', 'In Process']) && $nextStep?->isAssignedTo(Auth::user());
         $generationStep = $this->document->steps
             ->first(fn ($step) => $step->step_type === 'action' && $step->status === 'Pending');
-        $this->canGenerate = $this->document->status === 'Approved'
-            && in_array($this->document->documentType?->abbreviation, ['RLM', 'IL'], true)
-            && $generationStep?->isAssignedTo(Auth::user());
+        $this->generationRules = app(DocumentGenerationService::class)->availableForInternal($this->document, Auth::user())->toArray();
+        $this->canGenerate = $this->generationRules !== [];
 
         if (! $this->canAct && $this->myStep?->status === 'Pending' && $this->myStep->office?->acting_head_id) {
             $this->display_text = 'This step is currently assigned to the office OIC.';
@@ -317,54 +321,20 @@ class ViewDocument extends Component
 
     public function generate()
     {
-        $this->assertCanGenerate('IOM');
-
-        $redirectData = [
-            'to' => $this->document->fromOffice->id,
-            'from' => $this->document->toOffice->id ?? 1,
-            'subject' => 'RE: '.$this->document->subject,
-            'original_document_id' => $this->document->id,
-            'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
-            'document_type' => 'IOM',
-            'content' => '<p>Pursuant to the approved-request letter memorandum (<b>'.$this->document->document_number.'</b>)',
-            'thru' => null,
-        ];
-
-        $signatorySteps = $this->document->steps->where('step_type', 'signatory');
-        if ($signatorySteps->isNotEmpty()) {
-            $recordsSectionId = Office::where('workflow_key', 'records')->value('id');
-
-            $redirectData['cf'] = $signatorySteps
-                ->pluck('user.office.id')
-                ->push($this->document->from_id)
-                ->push($recordsSectionId)
-                ->push(Auth::user()->office?->id)
-                ->flatten()
-                ->filter()
-                ->unique()
-                ->values()
-                ->toArray();
-        }
-
-        session()->flash('redirect_data', $redirectData);
-
-        return redirect()->route('documents.create-document');
+        $rule = DocumentGenerationRule::whereHas('targetType', fn ($query) => $query->where('abbreviation', 'IOM'))->where('source_document_type_id', $this->document->document_type_id)->firstOrFail();
+        return $this->generateDocument($rule->id);
     }
 
     public function generateSO()
     {
-        $this->assertCanGenerate('SO');
-        $redirectData = [
-            'to' => $this->document->from_id,
-            'from' => $this->document->toOffice->id ?? 1,
-            'subject' => 'RE: '.$this->document->subject,
-            'original_document_id' => $this->document->id,
-            'document_type_id' => DocumentType::where('abbreviation', 'SO')->value('id'),
-            'document_type' => 'SO',
-        ];
+        $rule = DocumentGenerationRule::whereHas('targetType', fn ($query) => $query->where('abbreviation', 'SO'))->where('source_document_type_id', $this->document->document_type_id)->firstOrFail();
+        return $this->generateDocument($rule->id);
+    }
 
-        session()->flash('redirect_data', $redirectData);
-
+    public function generateDocument(int $ruleId)
+    {
+        $rule = DocumentGenerationRule::with('targetType', 'roles')->findOrFail($ruleId);
+        session()->flash('redirect_data', app(DocumentGenerationService::class)->redirectData($rule, $this->document, Auth::user()));
         return redirect()->route('documents.create-document');
     }
 
@@ -467,8 +437,12 @@ class ViewDocument extends Component
             $key = uniqid();
             session([$key => $attachment_query]);
             $this->attachmentPreviewUrl = '/document/preview?'.$key;
+            $this->attachmentPreviewType = 'pdf';
         } else {
-            $this->attachmentPreviewUrl = asset('storage/'.$this->selectedAttachment->file_url);
+            $this->attachmentPreviewType = app(AttachmentPreviewService::class)->previewType($this->selectedAttachment->file_url);
+            $this->attachmentPreviewUrl = $type === 'external'
+                ? route('documents.external-document-preview', $this->selectedAttachment)
+                : route('documents.attachment-preview', $this->selectedAttachment);
         }
 
         $this->modal('view-attachment-modal')->show();

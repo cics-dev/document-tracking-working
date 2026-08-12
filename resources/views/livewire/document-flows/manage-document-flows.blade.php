@@ -27,17 +27,58 @@
             <flux:textarea wire:model="description" label="Help Description" placeholder="e.g. For gymnasium or any school facility usage" rows="3" />
             <flux:description>This appears behind a question-mark in Create Document.</flux:description>
             <flux:error name="description" />
-            <flux:select wire:model="condition" label="Condition"><flux:select.option value="always">Always</flux:select.option><flux:select.option value="with_budget">With budget implications</flux:select.option><flux:select.option value="without_budget">Without budget implications</flux:select.option></flux:select>
-            <flux:checkbox wire:model="isSelectable" label="Show as a checkbox when creating the document" />
-            <flux:checkbox wire:model="isRequired" label="MUST complete (automatically included)" />
-            <flux:description>Selectable + optional stages may be unchecked. Required stages are always included.</flux:description>
+            <flux:select wire:model.live="workflowConditionId" label="Condition"><flux:select.option value="">Always</flux:select.option>@foreach($conditions->where('is_active', true) as $item)<flux:select.option value="{{ $item->id }}">{{ $item->label }}</flux:select.option>@endforeach</flux:select>
+            @if($workflowConditionId)
+                <flux:select wire:model="conditionOperator" label="Operator"><flux:select.option value="equals">Equals</flux:select.option><flux:select.option value="not_equals">Does not equal</flux:select.option><flux:select.option value="greater_than">Greater than</flux:select.option><flux:select.option value="less_than">Less than</flux:select.option><flux:select.option value="contains">Contains</flux:select.option></flux:select>
+                @php
+                    $selectedCondition = $conditions->firstWhere('id', (int) $workflowConditionId);
+                @endphp
+                @if($selectedCondition?->input_type === 'boolean')
+                    <flux:select wire:model="conditionValue" label="Expected Value" placeholder="Choose Yes or No"><flux:select.option value="1">Yes</flux:select.option><flux:select.option value="0">No</flux:select.option></flux:select>
+                @elseif($selectedCondition?->input_type === 'select')
+                    <flux:select wire:model="conditionValue" label="Expected Value">@foreach($selectedCondition->options ?? [] as $option)<flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>@endforeach</flux:select>
+                @else
+                    <flux:input wire:model="conditionValue" :type="$selectedCondition?->input_type === 'number' ? 'number' : 'text'" label="Expected Value" />
+                @endif
+                <flux:error name="conditionValue" />
+            @endif
+            <flux:checkbox wire:model="isSelectable" label="Show checkbox" />
+            <flux:checkbox wire:model="isRequired" label="Required" />
+            <flux:description>Required checkboxes are automatically selected and locked when the condition applies.</flux:description>
             <div class="flex gap-2"><flux:button type="submit" variant="primary">{{ $stageId ? 'Update' : 'Add' }} Stage</flux:button>@if($stageId)<flux:button type="button" wire:click="resetStage">Cancel</flux:button>@endif</div>
         </form>
 
         <section class="lg:col-span-2 overflow-hidden rounded-lg border bg-white shadow-sm">
             <table class="w-full text-left text-sm"><thead class="bg-gray-100 text-xs uppercase"><tr><th class="p-3">Stage</th><th class="p-3">Office</th><th class="p-3">Rules</th><th class="p-3 text-right">Actions</th></tr></thead>
-                <tbody>@forelse($stages as $stage)<tr class="border-t"><td class="p-3"><b>{{ ucfirst($stage->stage_type) }}</b><br>{{ $stage->label }}@if($stage->description)<br><span class="text-xs text-gray-500">{{ $stage->description }}</span>@endif</td><td class="p-3">{{ $stage->office?->name }}</td><td class="p-3">{{ str_replace('_',' ',ucfirst($stage->condition)) }}<br>{{ $stage->is_required ? 'Must complete' : 'Optional' }} · {{ $stage->is_selectable ? 'Shown to creator' : 'Automatic' }}</td><td class="p-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $stage->id }})">Edit</flux:button><flux:button size="sm" variant="danger" wire:click="delete({{ $stage->id }})" wire:confirm="Delete this flow stage?">Delete</flux:button></div></td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-500">No configured flow. The legacy behavior will be used until stages are added.</td></tr>@endforelse</tbody>
+                <tbody>@forelse($stages as $stage)<tr class="border-t"><td class="p-3"><b>{{ ucfirst($stage->stage_type) }}</b><br>{{ $stage->label }}@if($stage->description)<br><span class="text-xs text-gray-500">{{ $stage->description }}</span>@endif</td><td class="p-3">{{ $stage->office?->name }}</td><td class="p-3">{{ $stage->workflowCondition?->label ?? 'Always' }}@if($stage->workflowCondition) · {{ str_replace('_', ' ', $stage->condition_operator) }} {{ $stage->workflowCondition->input_type === 'boolean' ? ($stage->condition_value ? 'Yes' : 'No') : $stage->condition_value }}@endif<br>{{ $stage->is_required ? 'Must complete' : 'Optional' }} · {{ $stage->is_selectable ? 'Shown to creator' : 'Automatic' }}</td><td class="p-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $stage->id }})">Edit</flux:button><flux:button size="sm" variant="danger" wire:click="delete({{ $stage->id }})" wire:confirm="Delete this flow stage?">Delete</flux:button></div></td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-500">No configured flow.</td></tr>@endforelse</tbody>
             </table>
         </section>
     </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <form wire:submit="addCondition" class="space-y-4 rounded-lg border bg-white p-5 shadow-sm">
+            <h2 class="font-semibold">Add Workflow Condition</h2>
+            <flux:input wire:model="newConditionKey" label="Key" placeholder="e.g. uses_external_funding" />
+            <flux:input wire:model="newConditionLabel" label="Question / Label" />
+            <flux:select wire:model="newConditionType" label="Input Type"><flux:select.option value="boolean">Yes / No</flux:select.option><flux:select.option value="select">Dropdown</flux:select.option><flux:select.option value="text">Text</flux:select.option><flux:select.option value="number">Number</flux:select.option></flux:select>
+            @if($newConditionType === 'select')<flux:input wire:model="newConditionOptions" label="Options (comma separated)" />@endif
+            <flux:button type="submit" variant="primary">Add Condition</flux:button>
+            @if($conditions->isNotEmpty())<div class="border-t pt-3">@foreach($conditions as $item)<div class="flex items-center justify-between py-1 text-sm"><span>{{ $item->label }} <span class="text-gray-500">({{ $item->input_type }})</span></span><flux:button type="button" size="sm" wire:click="toggleCondition({{ $item->id }})">{{ $item->is_active ? 'Disable' : 'Enable' }}</flux:button></div>@endforeach</div>@endif
+        </form>
+        <form wire:submit="addGenerationRule" class="space-y-4 rounded-lg border bg-white p-5 shadow-sm">
+            <h2 class="font-semibold">Add Document Generation Rule</h2>
+            <flux:select wire:model.live="generationContext" label="Source Context"><flux:select.option value="internal">Internal document</flux:select.option><flux:select.option value="external">External document</flux:select.option></flux:select>
+            @if($generationContext === 'internal')<flux:select wire:model="generationSourceTypeId" label="Source Document Type">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select>@endif
+            <flux:select wire:model="generationTargetTypeId" label="Generated Document Type">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select>
+            <flux:input wire:model="generationLabel" label="Button Label" placeholder="Generate ECLR" />
+            <flux:input wire:model="generationStatus" label="Required Source Status" placeholder="Approved (blank for any)" />
+            <flux:checkbox wire:model="generationRequiresAssignment" label="Only the assigned action/recipient office can generate" />
+            <div><flux:label>Allowed Roles</flux:label><div class="mt-2 grid gap-2 sm:grid-cols-2">@foreach($roles as $role)<flux:checkbox wire:model="generationRoles" value="{{ $role->id }}" label="{{ $role->description }}" />@endforeach</div><flux:error name="generationRoles" /></div>
+            <flux:button type="submit" variant="primary">Add Generation Rule</flux:button>
+        </form>
+    </div>
+    <section class="overflow-hidden rounded-lg border bg-white shadow-sm">
+        <h2 class="p-4 font-semibold">Generation Rules</h2>
+        <table class="w-full text-left text-sm"><thead class="bg-gray-100"><tr><th class="p-3">Source</th><th class="p-3">Button / Target</th><th class="p-3">Roles</th><th></th></tr></thead><tbody>@foreach($generationRules as $rule)<tr class="border-t {{ $rule->is_active ? '' : 'opacity-50' }}"><td class="p-3">{{ ucfirst($rule->source_context) }}{{ $rule->sourceType ? ': '.$rule->sourceType->name : '' }}</td><td class="p-3">{{ $rule->button_label }} → {{ $rule->targetType?->name }}</td><td class="p-3">{{ $rule->roles->pluck('description')->join(', ') }}</td><td class="p-3 text-right"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="toggleGenerationRule({{ $rule->id }})">{{ $rule->is_active ? 'Disable' : 'Enable' }}</flux:button><flux:button size="sm" variant="danger" wire:click="deleteGenerationRule({{ $rule->id }})" wire:confirm="Delete this generation rule?">Delete</flux:button></div></td></tr>@endforeach</tbody></table>
+    </section>
 </div>

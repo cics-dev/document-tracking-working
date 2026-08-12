@@ -12,7 +12,7 @@ class DocumentFlowSeeder extends Seeder
     public function run(): void
     {
         $this->seedFlow('RLM', [
-            ['budget', 'routing', 'Budget Office Review', 10, false, true, 'always'],
+            ['budget', 'routing', 'Budget Office Review', 10, true, true, 'with_budget'],
             ['motor_pool', 'routing', 'Motor Pool Review', 20, false, true, 'always'],
             ['legal', 'routing', 'Legal/Compliance Review', 30, false, true, 'always'],
             ['igp', 'routing', 'IGP Review', 40, false, true, 'always', 'For gymnasium or any school facility usage.'],

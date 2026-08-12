@@ -90,30 +90,11 @@
                 </div>
             @endif
         @elseif ($canGenerate)
-            @if ($document->status === 'Approved' && in_array($document->documentType?->abbreviation, ['RLM', 'IL']))
-                <div class="mt-4 flex gap-4">
-                    <button wire:click="generate" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        <span wire:loading.remove wire:target="generate">Generate IOM</span>
-                        <span wire:loading wire:target="generate">Generating...</span>
-                    </button>
-                    @if ($document->documentType?->abbreviation === 'IL')
-                        <button wire:click="generateSO" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                            <span wire:loading.remove wire:target="generateSO">Generate SO</span>
-                            <span wire:loading wire:target="generateSO">Generating...</span>
-                        </button>
-                    @endif
-                </div>
-            @else
-                @if ($document->documentType?->abbreviation === 'IL')
-                    <div class="mt-4 text-lg font-semibold">
-                        You've already generated document
-                    </div>
-                @else
-                    <div class="mt-4 text-lg font-semibold">
-                        You've already generated IOM
-                    </div>
-                @endif
-            @endif
+            <div class="mt-4 flex flex-wrap gap-4">
+                @foreach($generationRules as $rule)
+                    <button wire:click="generateDocument({{ $rule['id'] }})" wire:loading.attr="disabled" class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">{{ $rule['button_label'] }}</button>
+                @endforeach
+            </div>
         @endif
     @endif
 
@@ -124,14 +105,16 @@
             </div>
             @if ($selectedAttachment)
                 <div class="border rounded-lg overflow-hidden">
-                    @if ($selectedAttachment->file_type == 'pdf')
+                    @if ($attachmentPreviewType === 'pdf')
                         @if ($attachmentPreviewUrl)
                             <iframe src="{{ $attachmentPreviewUrl }}" class="w-full h-[600px] border rounded" frameborder="0"></iframe>
                         @else
                             <p>Loading preview...</p>
                         @endif
-                    @else
+                    @elseif($attachmentPreviewType === 'image')
                         <img src="{{ $attachmentPreviewUrl }}" class="w-full max-h-[700px] object-contain" alt="Attachment Preview">
+                    @else
+                        <p class="p-4 text-amber-700">This file type cannot be previewed.</p>
                     @endif
                 </div>
             @endif

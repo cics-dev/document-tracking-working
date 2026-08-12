@@ -21,7 +21,7 @@ class CreateDocument extends Component
 {
     use WithFileUploads;
 
-    #[Validate(['attachments.*' => 'file|max:102400'])]
+    #[Validate(['attachments.*' => 'file|max:102400|mimes:pdf,doc,docx,jpg,jpeg,png,gif,webp'])]
     public $attachments = [];
 
     public $existingAttachments = [];
@@ -84,6 +84,7 @@ class CreateDocument extends Component
     public array $selectedFlowStages = [];
 
     public bool $hasBudgetImplications = false;
+    public array $conditionValues = [];
 
     public $readyToLoad = false;
 
@@ -106,6 +107,11 @@ class CreateDocument extends Component
 
         $this->users = app(UserController::class)->index(false);
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
+        $generatedTypeId = session('redirect_data.document_type_id');
+        if ($generatedTypeId && ! collect($this->types)->contains('id', (int) $generatedTypeId)) {
+            $generatedType = DocumentType::find($generatedTypeId);
+            if ($generatedType) $this->types->push($generatedType);
+        }
         $officesData = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
         $this->offices = collect($officesData)->keyBy('id');
         $this->allOffices = Office::with('head', 'actingHead')->orderBy('name')->get()->keyBy('id');
@@ -133,13 +139,14 @@ class CreateDocument extends Component
         $this->document_type = $this->document_type == '' ? 'Intra' : $this->document_type;
 
         $this->signatories = [];
-        $this->flowStages = DocumentFlowStage::with('office')
+        $this->flowStages = DocumentFlowStage::with('office', 'workflowCondition')
             ->where('document_type_id', $this->document_type_id)
             ->orderBy('sequence')->orderBy('id')->get()->toArray();
-        $this->selectedFlowStages = collect($this->flowStages)
-            ->filter(fn ($stage) => $stage['is_required'])
-            ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
         $this->hasBudgetImplications = false;
+        $this->conditionValues = collect($this->flowStages)->pluck('workflow_condition')->filter(fn ($condition) => $condition['is_active'] ?? false)->unique('id')->mapWithKeys(fn ($condition) => [(string) $condition['id'] => $condition['input_type'] === 'boolean' ? false : ''])->all();
+        $this->selectedFlowStages = collect($this->flowStages)
+            ->filter(fn ($stage) => $stage['is_required'] && (empty($stage['workflow_condition_id']) || $this->flowConditionArrayMatches($stage)))
+            ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
 
         if ($this->document_type === 'RLM') {
             $presidentOffice = $this->presidentOffice();
@@ -165,6 +172,22 @@ class CreateDocument extends Component
             $this->document_to_id = null;
             $this->document_to_text = null;
         }
+    }
+
+    public function updatedConditionValues(): void
+    {
+        foreach ($this->flowStages as $stage) {
+            if (($stage['is_required'] ?? false) && ! empty($stage['workflow_condition_id'])) {
+                $this->selectedFlowStages[(string) $stage['id']] = $this->flowConditionArrayMatches($stage);
+            }
+        }
+    }
+
+    public function conditionLocksStage(array $stage): bool
+    {
+        return (bool) ($stage['is_required'] ?? false)
+            && ! empty($stage['workflow_condition_id'])
+            && $this->flowConditionArrayMatches($stage);
     }
 
     private function presidentOffice(): ?Office
@@ -749,20 +772,17 @@ class CreateDocument extends Component
 
     private function processConfiguredFlow(Document $document): void
     {
-        $stages = DocumentFlowStage::with('office.head', 'office.actingHead')
+        $stages = DocumentFlowStage::with('office.head', 'office.actingHead', 'workflowCondition')
             ->where('document_type_id', $this->document_type_id)
             ->orderBy('sequence')->orderBy('id')->get();
-        $budgetOfficeId = Office::where('workflow_key', 'budget')->value('id');
-        $budgetStage = $stages->where('stage_type', 'routing')->firstWhere('office_id', $budgetOfficeId);
-        $hasBudget = $budgetStage
-            ? $this->configuredStageSelected($budgetStage)
-            : (bool) ($this->routingRequirements['budget_office'] ?? false);
         $sequence = 1;
 
         // The creator's existing routing checkboxes are populated exclusively by
         // configured routing stages.
         foreach ($stages->where('stage_type', 'routing') as $stage) {
-            if ($this->configuredStageSelected($stage) && $this->flowConditionMatches($stage, $hasBudget)) {
+            $manuallySelectedConditionalStage = $stage->is_selectable && $stage->workflow_condition_id
+                && (bool) ($this->selectedFlowStages[(string) $stage->id] ?? false);
+            if ($this->configuredStageSelected($stage) && ($this->flowConditionMatches($stage) || $manuallySelectedConditionalStage)) {
                 $this->createConfiguredStep($document, $stage, $sequence++);
             }
         }
@@ -806,7 +826,7 @@ class CreateDocument extends Component
         }
 
         foreach ($stages->where('stage_type', 'action') as $stage) {
-            if ($this->configuredStageSelected($stage) && $this->flowConditionMatches($stage, $hasBudget)) {
+            if ($this->configuredStageSelected($stage) && $this->flowConditionMatches($stage)) {
                 $this->createConfiguredStep($document, $stage, $sequence++);
             }
         }
@@ -816,11 +836,37 @@ class CreateDocument extends Component
         }
     }
 
-    private function flowConditionMatches(DocumentFlowStage $stage, bool $hasBudget): bool
+    private function flowConditionMatches(DocumentFlowStage $stage): bool
     {
-        return $stage->condition === 'always'
-            || ($stage->condition === 'with_budget' && $hasBudget)
-            || ($stage->condition === 'without_budget' && ! $hasBudget);
+        if (! $stage->workflow_condition_id) {
+            return $stage->condition === 'always'
+                || ($stage->condition === 'with_budget' && $this->hasBudgetImplications)
+                || ($stage->condition === 'without_budget' && ! $this->hasBudgetImplications);
+        }
+        if (! $stage->workflowCondition?->is_active) return true;
+        $actual = $this->conditionValues[(string) $stage->workflow_condition_id] ?? null;
+        $expected = $stage->condition_value;
+        return match ($stage->condition_operator) {
+            'not_equals' => (string) $actual !== (string) $expected,
+            'greater_than' => is_numeric($actual) && (float) $actual > (float) $expected,
+            'less_than' => is_numeric($actual) && (float) $actual < (float) $expected,
+            'contains' => str_contains(mb_strtolower((string) $actual), mb_strtolower((string) $expected)),
+            default => (string) (int) ($actual === true) === $expected || (string) $actual === (string) $expected,
+        };
+    }
+
+    private function flowConditionArrayMatches(array $stage): bool
+    {
+        if (empty($stage['workflow_condition_id']) || ! ($stage['workflow_condition']['is_active'] ?? false)) return false;
+        $actual = $this->conditionValues[(string) $stage['workflow_condition_id']] ?? null;
+        $expected = $stage['condition_value'] ?? null;
+        return match ($stage['condition_operator'] ?? 'equals') {
+            'not_equals' => (string) $actual !== (string) $expected,
+            'greater_than' => is_numeric($actual) && (float) $actual > (float) $expected,
+            'less_than' => is_numeric($actual) && (float) $actual < (float) $expected,
+            'contains' => str_contains(mb_strtolower((string) $actual), mb_strtolower((string) $expected)),
+            default => (string) (int) ($actual === true) === (string) $expected || (string) $actual === (string) $expected,
+        };
     }
 
     private function createConfiguredStep(Document $document, DocumentFlowStage $stage, int $sequence): void
@@ -840,6 +886,10 @@ class CreateDocument extends Component
 
     private function configuredStageSelected(DocumentFlowStage $stage): bool
     {
+        if ($stage->is_required && $stage->workflow_condition_id) {
+            return $this->flowConditionMatches($stage)
+                || ($stage->is_selectable && (bool) ($this->selectedFlowStages[(string) $stage->id] ?? false));
+        }
         if ($stage->is_required || ! $stage->is_selectable) return true;
 
         if ($stage->stage_type === 'routing') {

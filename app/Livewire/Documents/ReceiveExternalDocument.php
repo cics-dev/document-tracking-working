@@ -16,7 +16,7 @@ class ReceiveExternalDocument extends Component
 {
     use WithFileUploads;
 
-    #[Validate('required|file|max:102400')] // Max 100MB
+    #[Validate('required|file|max:102400|mimes:pdf,doc,docx,jpg,jpeg,png,gif,webp')] // Max 100MB
     public $attachment;
 
     #[Validate('required|string|max:255')]
