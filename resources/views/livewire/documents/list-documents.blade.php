@@ -20,30 +20,48 @@
                 <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or number..." />
             </div>
             
+            <div class="w-full md:w-48">
+                <flux:select wire:model.live="statusFilter" placeholder="Filter status">
+                    <flux:select.option value="">All Statuses</flux:select.option>
+                    <flux:select.option value="Draft">Draft</flux:select.option>
+                    <flux:select.option value="Sent">Sent</flux:select.option>
+                    <flux:select.option value="In Process">In Process</flux:select.option>
+                    <flux:select.option value="Approved">Approved</flux:select.option>
+                    <flux:select.option value="Returned">Returned</flux:select.option>
+                    <flux:select.option value="Rejected">Rejected</flux:select.option>
+                </flux:select>
+            </div>
+
+            <div class="w-full md:w-52">
+                <flux:input.group>
+                    <flux:input.group.prefix>From</flux:input.group.prefix>
+                    <flux:input wire:model.live="dateFrom" type="date" aria-label="From date" />
+                </flux:input.group>
+            </div>
+            <div class="w-full md:w-52">
+                <flux:input.group>
+                    <flux:input.group.prefix>To</flux:input.group.prefix>
+                    <flux:input wire:model.live="dateTo" type="date" aria-label="To date" />
+                </flux:input.group>
+            </div>
+
             @if($mode == 'Sent')
-                <div class="w-full md:w-48">
-                    <flux:select wire:model.live="statusFilter" placeholder="Filter Status">
-                        <flux:select.option value="">All Statuses</flux:select.option>
-                        <flux:select.option value="draft">Draft</flux:select.option>
-                        <flux:select.option value="sent">Sent</flux:select.option>
-                        <flux:select.option value="approved">Approved</flux:select.option>
-                        <flux:select.option value="rejected">Rejected</flux:select.option>
-                    </flux:select>
-                </div>
             @endif
 
             @if($documentTypeTab == 'inter')
-                <div class="w-full md:w-48">
-                    <flux:select wire:model.live="typeFilter" placeholder="Filter Doc Type">
-                        <flux:select.option value="">All Types</flux:select.option>
-                        @foreach($documentTypes as $type)
-                            @if (isset($type->abbreviation) && $type->abbreviation != '')
-                                <flux:select.option value="{{ $type->id }}">{{ $type->abbreviation }}</flux:select.option>
-                            @endif
-                        @endforeach
-                    </flux:select>
+                <div class="w-full md:w-56">
+                    <x-searchable-filter-select
+                        model="typeFilter"
+                        :options="$documentTypes->filter(fn ($type) => filled($type->abbreviation))->map(fn ($type) => ['value' => (string) $type->id, 'label' => $type->abbreviation])->values()->all()"
+                        placeholder="All Types"
+                        search-placeholder="Search document types..."
+                    />
                 </div>
             @endif
+
+            <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+                Reset filters
+            </flux:button>
         </div>
 
         @if($mode == 'Sent')
@@ -74,16 +92,16 @@
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
-                    <th class="px-6 py-3">Document Number</th>
-                    <th class="px-6 py-3 w-1/3">Subject</th>
+                    <th class="px-6 py-3"><button wire:click="sort('document_number')">Document Number</button></th>
+                    <th class="px-6 py-3 w-1/3"><button wire:click="sort('subject')">Subject</button></th>
                     
                     @if($documentTypeTab != 'intra')
                         <th class="px-6 py-3">{{ $mode == 'Sent' ? 'To' : 'From' }}</th>
                     @endif
                     
                     <th class="px-6 py-3 text-center">Type</th>
-                    <th class="px-6 py-3 text-center">Status</th>
-                    <th class="px-6 py-3">Date</th>
+                    <th class="px-6 py-3 text-center"><button wire:click="sort('status')">Status</button></th>
+                    <th class="px-6 py-3"><button wire:click="sort('created_at')">Date</button></th>
                     <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
             </thead>

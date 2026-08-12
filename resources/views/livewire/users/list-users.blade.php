@@ -9,14 +9,39 @@
         </a>
     </div>
 
+    <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
+        <div class="w-full md:w-80">
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search name, email, or position..." />
+        </div>
+        <div class="w-full md:w-56">
+            <x-searchable-filter-select
+                model="officeFilter"
+                :options="$offices->map(fn ($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                placeholder="All Offices"
+                search-placeholder="Search offices..."
+            />
+        </div>
+        <div class="w-full md:w-48">
+            <x-searchable-filter-select
+                model="roleFilter"
+                :options="$roles->map(fn ($role) => ['value' => (string) $role->id, 'label' => $role->role])->values()->all()"
+                placeholder="All Roles"
+                search-placeholder="Search roles..."
+            />
+        </div>
+        <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+            Reset filters
+        </flux:button>
+    </div>
+
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <!-- Desktop Table -->
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200 hidden md:table">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Name</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Email</th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Position</th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('name')">Name</button></th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('email')">Email</button></th>
+                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('position')">Position</button></th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Office</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Is&nbsp;Head</th>
                     <th class="px-4 py-2 text-center border-r border-gray-300 dark:border-gray-600">Actions</th>

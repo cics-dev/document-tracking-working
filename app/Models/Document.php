@@ -53,9 +53,7 @@ class Document extends Model
             if ($pendingStep) {
                 return [
                     'type' => $pendingStep->step_type,
-                    'user' => $pendingStep->relationLoaded('user')
-                        ? $pendingStep->user
-                        : $pendingStep->user()->first(),
+                    'user' => $pendingStep->active_user,
                     'model' => $pendingStep,
                 ];
             }

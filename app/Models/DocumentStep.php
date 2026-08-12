@@ -44,14 +44,20 @@ class DocumentStep extends Model
         return $this->belongsTo(Office::class);
     }
 
-    public function getActiveUserAttribute()
+    public function getActiveUserAttribute(): ?User
     {
-    // If the step is already processed/approved, lock it to the historical user_id
-    if ($this->status !== 'Pending') {
-        return $this->user;
+        // Completed steps keep the historical user who acted. Pending steps follow
+        // the office's current OIC first, then its designated head.
+        if ($this->status !== 'Pending') {
+            return $this->user;
+        }
+
+        return $this->office?->workflow_assignee ?? $this->user;
     }
 
-    // For pending steps, if the office head has changed, this automatically pulls the new head
-    return $this->office?->head ?? $this->user;
+    public function isAssignedTo(User $user): bool
+    {
+        return $this->status === 'Pending'
+            && ($this->office?->workflow_assignee?->is($user) ?? $this->user?->is($user));
     }
 }

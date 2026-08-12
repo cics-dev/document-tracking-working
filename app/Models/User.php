@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -39,15 +38,49 @@ class User extends Authenticatable
     {
         return ($this->office && $this->id === $this->office->head_id) ? 'Yes' : 'No';
     }
-    
+
     public function profile()
     {
         return $this->hasOne(UserProfile::class);
     }
-    
+
     public function office()
     {
         return $this->belongsTo(Office::class);
+    }
+
+    public function actingHeadOf()
+    {
+        return $this->hasMany(Office::class, 'acting_head_id');
+    }
+
+    /**
+     * The OIC temporarily uses the designated head's role for that office's
+     * workflow permissions. The user's stored role is never changed.
+     */
+    public function effectiveRoleId(): ?int
+    {
+        return $this->actingOffice()?->head?->role_id ?? $this->role_id;
+    }
+
+    public function isActingHead(): bool
+    {
+        return $this->actingOffice() !== null;
+    }
+
+    public function workflowOfficeIds(): array
+    {
+        return collect([$this->office_id])
+            ->merge($this->actingHeadOf()->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function actingOffice(): ?Office
+    {
+        return $this->actingHeadOf()->with('head')->first();
     }
 
     public function documents()

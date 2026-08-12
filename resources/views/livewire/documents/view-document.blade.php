@@ -69,11 +69,10 @@
         )
         ||
         (
-            in_array(Auth::user()->office?->id, [18, 28], true) &&
-            in_array($document->documentType?->abbreviation, ['RLM', 'IL'])
+            $canGenerate
         )
     )
-        @if(!in_array(Auth::user()->office?->id, [18, 28], true))
+        @if(!$canGenerate)
             @if($canAct && empty($signed) && empty($rejected))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -90,7 +89,7 @@
                     {{ $display_text }}
                 </div>
             @endif
-        @elseif (in_array(Auth::user()->office?->id, [18, 28], true))
+        @elseif ($canGenerate)
             @if ($document->status === 'Approved' && in_array($document->documentType?->abbreviation, ['RLM', 'IL']))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="generate" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">

@@ -51,6 +51,30 @@
                         @endforeach
                     </flux:select>
                 </div>
+                <div class="md:col-span-6">
+                    <div class="flex items-end gap-3">
+                        <div class="flex-1">
+                            <flux:select wire:model="acting_head" label="Officer-in-Charge (optional)" placeholder="Use the designated head when blank...">
+                                @foreach ($users as $user)
+                                    <flux:select.option value="{{ $user->id }}">{{ $user->name }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                        </div>
+                        
+                        @if ($edit_mode && $acting_head)
+                            <flux:button
+                                type="button"
+                                wire:click="removeActingHead"
+                                wire:confirm="Remove this OIC? Pending office steps will immediately return to the designated head."
+                                variant="danger"
+                                icon="x-mark"
+                                size="sm"
+                            >
+                            </flux:button>
+                        @endif
+                    </div>
+                    <flux:description>Pending workflow steps are assigned to the OIC while set. Completed steps retain the person who acted.</flux:description>
+                </div>
             </div>
         </div>
 

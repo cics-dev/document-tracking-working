@@ -734,7 +734,7 @@
                     <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 @endif
                 @if(Route::has('documents'))
-                    <li><a href="{{ route('documents') }}">Documents</a></li>
+                    <li><a href="{{ route('documents.list-documents', 'received') }}">Documents</a></li>
                 @endif
             </ul>
             

@@ -5,12 +5,12 @@
     <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Edit Office</h1>
-            <a href="{{ route('offices.index') }}" class="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition">
+            <a href="{{ route('offices.list-offices') }}" class="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition">
                 ← Back to Offices
             </a>
         </div>
 
-        <form action="{{ route('offices.update', $office->id) }}" method="POST" class="space-y-6">
+        <form action="{{ route('offices.edit-office', $office->id) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
             
@@ -47,7 +47,7 @@
             </div>
 
             <div class="flex items-center justify-end space-x-3 pt-4">
-                <button type="button" onclick="window.location='{{ route('offices.index') }}'" 
+                <button type="button" onclick="window.location='{{ route('offices.list-offices') }}'"
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                     Cancel
                 </button>

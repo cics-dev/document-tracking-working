@@ -2,15 +2,67 @@
 
 namespace App\Livewire\Users;
 
-use App\Http\Controllers\UserController;
-use Livewire\Component;
+use App\Models\Office;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class ListUsers extends Component
 {
+    use WithPagination;
+
+    public string $search = '';
+
+    public string $officeFilter = '';
+
+    public string $roleFilter = '';
+
+    public string $sortBy = 'name';
+
+    public string $sortDirection = 'asc';
+
+    public function updated($property): void
+    {
+        if (in_array($property, ['search', 'officeFilter', 'roleFilter'], true)) {
+            $this->resetPage();
+        }
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'officeFilter', 'roleFilter');
+        $this->resetPage();
+    }
+
+    public function sort(string $column): void
+    {
+        if (! in_array($column, ['name', 'email', 'position', 'created_at'], true)) {
+            return;
+        }
+        $this->sortDirection = $this->sortBy === $column && $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortBy = $column;
+        $this->resetPage();
+    }
+
     public function render()
     {
-        return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)])->layout('layouts.app');
+        $users = User::query()->with('profile', 'office')
+            ->when($this->search !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
+                ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('email', 'like', "%{$this->search}%")
+                ->orWhere('position', 'like', "%{$this->search}%")))
+            ->when($this->officeFilter !== '', fn (Builder $query) => $query->where('office_id', $this->officeFilter))
+            ->when($this->roleFilter !== '', fn (Builder $query) => $query->where('role_id', $this->roleFilter))
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate(10);
+
+        return view('livewire.users.list-users', [
+            'users' => $users,
+            'offices' => Office::orderBy('name')->get(['id', 'name']),
+            'roles' => Role::orderBy('role')->get(['id', 'role']),
+        ])->layout('layouts.app');
     }
 
     public function editUser($id)

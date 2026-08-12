@@ -34,7 +34,7 @@
                             <flux:navlist.item icon="inbox-stack" :href="route('documents.list-documents', 'Sent')" :current="request()->is('documents/sent')" wire:navigate>
                                 {{ __('Sent Documents') }}
                             </flux:navlist.item>
-                        @elseif (auth()->user()?->position != 'Staff')
+                        @elseif (auth()->user()?->position != 'Staff' || auth()->user()?->isActingHead())
                             <flux:navlist.item 
                                 icon="inbox-arrow-down" 
                                 :href="route('documents.list-documents', 'received')" 

@@ -3,10 +3,10 @@
 namespace App\Livewire\Offices;
 
 use App\Http\Controllers\OfficeController;
-use App\Models\User;
 use App\Models\Office;
-use Livewire\Component;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Livewire\Component;
 use Livewire\WithFileUploads;
 
 class CreateOffice extends Component
@@ -14,12 +14,21 @@ class CreateOffice extends Component
     use WithFileUploads;
 
     public $users = [];
+
     public $name = '';
+
     public $office_logo;
+
     public $abbreviation = '';
+
     public $office_type = '';
+
     public $office_head = '';
+
+    public $acting_head = '';
+
     public $office_id = null;
+
     public $edit_mode = false;
 
     public function mount($id = null)
@@ -34,6 +43,7 @@ class CreateOffice extends Component
             $this->abbreviation = $office->abbreviation;
             $this->office_type = $office->office_type;
             $this->office_head = $office->head_id;
+            $this->acting_head = $office->acting_head_id??'';
 
             $this->edit_mode = true;
         }
@@ -42,6 +52,18 @@ class CreateOffice extends Component
     public function cancel()
     {
         return redirect()->route('offices.list-offices');
+    }
+
+    public function removeActingHead(): void
+    {
+        // if (! $this->edit_mode || ! $this->office_id) {
+        //     $this->acting_head = '';
+
+        //     return;
+        // }
+
+        // Office::findOrFail($this->office_id)->update(['acting_head_id' => null]);
+        $this->acting_head = '';
     }
 
     public function render()
@@ -61,6 +83,7 @@ class CreateOffice extends Component
             'abbreviation' => $this->abbreviation,
             'office_type' => $this->office_type ?? '',
             'head_id' => $this->office_head ?: null,
+            'acting_head_id' => $this->acting_head ?: null,
         ];
 
         if ($imagePath) {

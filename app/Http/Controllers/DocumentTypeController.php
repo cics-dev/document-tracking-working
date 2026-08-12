@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentType;
-use Illuminate\Http\Request;
 
 class DocumentTypeController extends Controller
 {
@@ -19,7 +18,7 @@ class DocumentTypeController extends Controller
     {
         // Get the IDs of allowed document types for the user's role
         $allowedIds = \DB::table('role_document_types')
-            ->where('role_id', $user->role_id)
+            ->where('role_id', $user->effectiveRoleId())
             ->where('is_allowed', true)
             ->pluck('document_type_id');
 

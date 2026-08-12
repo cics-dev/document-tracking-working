@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Documents;
 
+use App\Models\ExternalDocument;
+use App\Models\Office;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\ExternalDocument;
-use Illuminate\Support\Facades\Auth;
 
 class ListExternalDocuments extends Component
 {
@@ -13,10 +14,43 @@ class ListExternalDocuments extends Component
 
     public $search = '';
 
+    public $officeFilter = '';
+
+    public $dateFrom = '';
+
+    public $dateTo = '';
+
+    public string $sortBy = 'created_at';
+
+    public string $sortDirection = 'desc';
+
     // Reset pagination when searching to avoid empty pages
-    public function updatedSearch() 
-    { 
-        $this->resetPage(); 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updated($property): void
+    {
+        if (in_array($property, ['officeFilter', 'dateFrom', 'dateTo'], true)) {
+            $this->resetPage();
+        }
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'officeFilter', 'dateFrom', 'dateTo');
+        $this->resetPage();
+    }
+
+    public function sort(string $column): void
+    {
+        if (! in_array($column, ['document_number', 'from', 'subject', 'received_date', 'created_at'], true)) {
+            return;
+        }
+        $this->sortDirection = $this->sortBy === $column && $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortBy = $column;
+        $this->resetPage();
     }
 
     public function viewDocument($id)
@@ -29,30 +63,35 @@ class ListExternalDocuments extends Component
         $user = Auth::user();
         $query = ExternalDocument::query();
 
-        $isPrivileged = $user->position == 'Staff' 
-                     || $user->position == 'University President' 
+        $isPrivileged = $user->position == 'Staff'
+                     || $user->position == 'University President'
                      || optional($user->office)->name == 'Records Section';
 
-        if (!$isPrivileged) {
+        if (! $isPrivileged) {
             $query->where('to_id', $user->office_id);
         }
 
-        if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->where('subject', 'like', '%' . $this->search . '%')
-                  ->orWhere('from', 'like', '%' . $this->search . '%');
+        if (! empty($this->search)) {
+            $query->where(function ($q) {
+                $q->where('subject', 'like', '%'.$this->search.'%')
+                    ->orWhere('from', 'like', '%'.$this->search.'%');
             });
         }
-        
+
+        $query->when($this->officeFilter !== '', fn ($query) => $query->where('to_id', $this->officeFilter))
+            ->when($this->dateFrom !== '', fn ($query) => $query->whereDate('received_date', '>=', $this->dateFrom))
+            ->when($this->dateTo !== '', fn ($query) => $query->whereDate('received_date', '<=', $this->dateTo));
+
         $query->withExists(['accessLogs as is_viewed_by_me' => function ($q) use ($user) {
             $q->where('user_id', $user->id)
-            ->where('action', 'Viewed');
+                ->where('action', 'Viewed');
         }]);
 
-        $documents = $query->orderByDesc('created_at')->paginate(10);
+        $documents = $query->orderBy($this->sortBy, $this->sortDirection)->paginate(10);
 
         return view('livewire.documents.list-external-documents', [
-            'documents' => $documents
+            'documents' => $documents,
+            'offices' => Office::orderBy('name')->get(['id', 'name']),
         ])->layout('layouts.app');
     }
 }

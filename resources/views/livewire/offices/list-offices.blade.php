@@ -9,13 +9,29 @@
         </a>
     </div>
 
+    <div class="mb-4 flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
+        <div class="w-full md:w-80">
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search office or abbreviation..." />
+        </div>
+        <div class="w-full md:w-48">
+            <flux:select wire:model.live="typeFilter" placeholder="Filter office type">
+                <flux:select.option value="">All Types</flux:select.option>
+                <flux:select.option value="ACAD">Academic</flux:select.option>
+                <flux:select.option value="ADMIN">Administration</flux:select.option>
+            </flux:select>
+        </div>
+        <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+            Reset filters
+        </flux:button>
+    </div>
+
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <table class="border-spacing-y-2 text-sm text-left text-gray-700 dark:text-gray-200 w-full hidden md:table">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>  
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Name</th>
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Abbreviation</th>
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Type</th>
+                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('name')">Name</button></th>
+                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('abbreviation')">Abbreviation</button></th>
+                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('office_type')">Type</button></th>
                     <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Office Head</th>
                     <th class="px-4 py-3 text-center border-r border-gray-300 dark:border-gray-600">Actions</th>
                 </tr>

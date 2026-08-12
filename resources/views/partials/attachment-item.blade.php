@@ -2,9 +2,9 @@
     @php
         $attachmentSlips = collect();
         if ($attachment->type =='internal') {
-            if ($attachment->attachmentDocument && $attachment->attachmentDocument->routings) {
-                $attachmentSlips = $attachment->attachmentDocument->routings
-                    ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
+            if ($attachment->attachmentDocument && $attachment->attachmentDocument->steps) {
+                $attachmentSlips = $attachment->attachmentDocument->steps
+                    ->filter(fn($step) => $step->step_type === 'routing' && $step->processed_at !== null)
                     ->sortByDesc('updated_at');
             }
         }
@@ -45,7 +45,7 @@
                         <div
                             class="bg-blue-100 border-l-4 border-blue-500 text-blue-900 p-4 rounded shadow text-sm w-[280px] h-[120px] relative">
                             <strong>From:</strong> {{ $slip->user->office->abbreviation }}<br>
-                            <strong>Status:</strong> {{ $slip->returned_at ? 'Returned with remarks' : 'Reviewed' }}<br>
+                            <strong>Status:</strong> {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}<br>
                             <strong>Remarks:</strong> 
                             <p class="truncate w-[260px]">
                                 {{ $slip->comments }}
@@ -72,7 +72,7 @@
                                     recipient="{{ $slip->user->office->name }}"
                                     remarks="{{ $slip->comments }}"
                                     head="{{ $slip->user->name }}"
-                                    date="{{ $slip->reviewed_at ?? $slip->returned_at }}"
+                                    date="{{ $slip->processed_at }}"
                                 />
                             </div>
                         </div>

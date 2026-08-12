@@ -2,26 +2,35 @@
 
 namespace App\Livewire\Documents;
 
+use App\Models\DocumentType;
+use App\Services\DocumentQueryService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Document;
-use App\Models\DocumentType;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
-use App\Http\Controllers\DocumentController;
 
 class ListDocuments extends Component
 {
     use WithPagination;
 
     public $office_name;
+
     public $documentTypeTab = 'inter';
+
     public string $mode = 'received';
-    
+
     public $search = '';
+
     public $statusFilter = '';
+
     public $typeFilter = '';
+
+    public $dateFrom = '';
+
+    public $dateTo = '';
+
+    public string $sortBy = 'updated_at';
+
+    public string $sortDirection = 'desc';
 
     public function mount($mode = 'received')
     {
@@ -39,71 +48,80 @@ class ListDocuments extends Component
         $this->resetPage();
     }
 
-    public function updatedSearch() { $this->resetPage(); }
-    public function updatedStatusFilter() { $this->resetPage(); }
-    public function updatedTypeFilter() { $this->resetPage(); }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset('search', 'statusFilter', 'typeFilter', 'dateFrom', 'dateTo');
+        $this->resetPage();
+    }
+
+    public function sort(string $column): void
+    {
+        if (! in_array($column, ['document_number', 'subject', 'status', 'created_at', 'updated_at'], true)) {
+            return;
+        }
+
+        $this->sortDirection = $this->sortBy === $column && $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortBy = $column;
+        $this->resetPage();
+    }
 
     public function render()
     {
-        $rawDocuments = app(DocumentController::class)->index($this->mode);
-
-        $documents = collect($rawDocuments);
-
-        if ($this->documentTypeTab === 'intra') {
-            $documents = $documents->where('document_level', 'Intra');
-        } else {
-            $documents = $documents->where('document_level', '!=', 'Intra');
-        }
-
-        if (!empty($this->search)) {
-            $documents = $documents->filter(function ($doc) {
-                return stripos($doc->subject, $this->search) !== false 
-                    || stripos($doc->document_number, $this->search) !== false;
-            });
-        }
-
-        if (!empty($this->statusFilter)) {
-            $documents = $documents->where('status', $this->statusFilter);
-        }
-
-        if (!empty($this->typeFilter)) {
-            $documents = $documents->where('document_type_id', $this->typeFilter);
-        }
-
-        $documents = $documents->sortByDesc('updated_at');
-
-        $perPage = 10;
-        $currentPage = Paginator::resolveCurrentPage();
-        
-        $currentPageItems = $documents->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-        if ($currentPageItems->isNotEmpty()) {
-            \Illuminate\Database\Eloquent\Collection::make($currentPageItems)
-                ->load(['accessLogs' => function ($q) {
-                    $q->where('user_id', Auth::id())
-                    ->where('action', 'Viewed');
-                }]);
-        }
-
-        $paginatedDocuments = new LengthAwarePaginator(
-            $currentPageItems,
-            $documents->count(), 
-            $perPage,
-            $currentPage,
-            [
-                'path' => Paginator::resolveCurrentPath(),
-                'pageName' => 'page',
-            ]
-        );
+        $documents = app(DocumentQueryService::class)->listFor(Auth::user(), $this->mode)
+            ->when($this->documentTypeTab === 'intra', fn ($query) => $query->where('document_level', 'Intra'))
+            ->when($this->documentTypeTab !== 'intra', fn ($query) => $query->where('document_level', '!=', 'Intra'))
+            ->when($this->search !== '', fn ($query) => $query->where(function ($query) {
+                $query->where('subject', 'like', "%{$this->search}%")
+                    ->orWhere('document_number', 'like', "%{$this->search}%");
+            }))
+            ->when($this->statusFilter !== '', fn ($query) => $query->where('status', $this->statusFilter))
+            ->when($this->typeFilter !== '', fn ($query) => $query->where('document_type_id', $this->typeFilter))
+            ->when($this->dateFrom !== '', fn ($query) => $query->whereDate('created_at', '>=', $this->dateFrom))
+            ->when($this->dateTo !== '', fn ($query) => $query->whereDate('created_at', '<=', $this->dateTo))
+            ->withExists(['accessLogs as is_viewed_by_me' => fn ($query) => $query->where('user_id', Auth::id())->where('action', 'Viewed')])
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate(10);
 
         $documentTypes = DocumentType::where('abbreviation', '!=', 'Intra')->get();
 
         return view('livewire.documents.list-documents', [
-            'documents' => $paginatedDocuments,
+            'documents' => $documents,
             'documentTypes' => $documentTypes,
         ])->layout('layouts.app');
     }
-    
-    public function viewDocument($number) { return redirect()->route('documents.view-document', ['number' => $number]); }
-    public function trackDocument($number) { return redirect()->route('documents.track-document', ['number' => $number]); }
+
+    public function viewDocument($number)
+    {
+        return redirect()->route('documents.view-document', ['number' => $number]);
+    }
+
+    public function trackDocument($number)
+    {
+        return redirect()->route('documents.track-document', ['number' => $number]);
+    }
 }

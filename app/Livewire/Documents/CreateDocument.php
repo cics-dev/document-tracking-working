@@ -6,14 +6,15 @@ use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
 use App\Models\Document;
-use App\Models\Office;
 use App\Models\DocumentAttachment;
 use App\Models\ExternalDocument;
+use App\Models\Office;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Livewire\Attributes\Validate;
-use Illuminate\Support\Facades\DB;
 
 class CreateDocument extends Component
 {
@@ -21,34 +22,53 @@ class CreateDocument extends Component
 
     #[Validate(['attachments.*' => 'file|max:102400'])]
     public $attachments = [];
+
     public $existingAttachments = [];
 
     public $selectedAttachment;
+
     public $attachmentPreviewUrl;
-    
+
     public $original_document_number;
+
     public $revision_document_number;
+
     public $original_document_id = null;
+
     public $external_document_id = null;
+
     public $office_type = '';
+
     public $document_type = '';
-    
+
     public $document_type_id = '';
+
     public $document_to_id = '';
+
     public $document_to_text = '';
+
     public $document_from_id = '';
+
     public $thru = '';
+
     public $subject = '';
+
     public $content = '';
+
     public $attachment = '';
-    
+
     public $signatories = [];
+
     public $users = [];
+
     public $types = [];
+
     public $offices = [];
+
     public $cf_offices = [];
+
     public $selected_cf_office = '';
-    
+
     public $routingRequirements = [
         'budget_office' => false,
         'motor_pool' => false,
@@ -57,16 +77,18 @@ class CreateDocument extends Component
     ];
 
     public $readyToLoad = false;
+
     public $redirect_mode = null;
 
-    public $manual_document_number = null; 
+    public $manual_document_number = null;
+
     public $is_manual_document_number = false;
 
     public function mount($number = null, $draft_id = null)
     {
         $this->redirect_mode = $number ? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
-        
+
         $this->users = app(UserController::class)->index(false);
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
         $officesData = app(OfficeController::class)->index(Auth::user()->office->office_type, false);
@@ -79,7 +101,7 @@ class CreateDocument extends Component
     {
         $this->readyToLoad = true;
         if ($this->document_type === 'ECLR') {
-            $this->updateContentWithSubject(); 
+            $this->updateContentWithSubject();
         }
     }
 
@@ -101,18 +123,16 @@ class CreateDocument extends Component
             $this->document_to_id = $presidentOffice?->id;
             $this->document_to_text = null;
 
-            if ($presidentOffice?->head_id) {
+            if ($presidentOffice?->workflow_assignee) {
                 $this->signatories[] = [
                     'role' => 'Approved by',
                     'office_id' => $presidentOffice->id,
                     'locked' => true,
                 ];
             }
-        } 
-        elseif (in_array($this->document_type, ['ECLR', 'Intra'])) {
+        } elseif (in_array($this->document_type, ['ECLR', 'Intra'])) {
             $this->document_to_id = null;
-        } 
-        elseif (!in_array($this->document_type, ['IOM', 'SO'], true)) {
+        } elseif (! in_array($this->document_type, ['IOM', 'SO'], true)) {
             $this->document_to_id = null;
             $this->document_to_text = null;
         }
@@ -120,24 +140,22 @@ class CreateDocument extends Component
 
     private function presidentOffice(): ?Office
     {
-        return Office::whereHas('users', fn ($query) => $query->where('position', 'University President'))
-            ->with('head')
-            ->first();
+        return Office::with('head', 'actingHead')->where('workflow_key', 'university_president')->first();
     }
 
     private function requiredReviewOfficeIds(): array
     {
         return [
-            'budget_office' => Office::where('name', 'Budget Office')->value('id'),
-            'motor_pool' => Office::where('name', 'Motorpool Office')->value('id'),
-            'legal_review' => Office::where('name', 'Legal Office')->value('id'),
-            'igp_review' => Office::where('name', 'Income Generating Program Office')->value('id'),
+            'budget_office' => Office::where('workflow_key', 'budget')->value('id'),
+            'motor_pool' => Office::where('workflow_key', 'motor_pool')->value('id'),
+            'legal_review' => Office::where('workflow_key', 'legal')->value('id'),
+            'igp_review' => Office::where('workflow_key', 'igp')->value('id'),
         ];
     }
 
     public function addCfOffice()
     {
-        if ($this->selected_cf_office && !in_array($this->selected_cf_office, $this->cf_offices)) {
+        if ($this->selected_cf_office && ! in_array($this->selected_cf_office, $this->cf_offices)) {
             $this->cf_offices[] = $this->selected_cf_office;
             $this->selected_cf_office = null;
         }
@@ -186,7 +204,7 @@ class CreateDocument extends Component
 
     private function formatECLRContent()
     {
-        $html = '<strong>' . strtoupper($this->document_to_text) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . strtoupper($this->subject) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]';
+        $html = '<strong>'.strtoupper($this->document_to_text).'</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>'.strtoupper($this->subject).'</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]';
         $this->dispatch('update-quill', ['content' => $html]);
     }
 
@@ -195,7 +213,7 @@ class CreateDocument extends Component
         $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
         $toName = 'N/A';
         $toPosition = 'N/A';
-        
+
         if ($this->document_type != 'Intra' && $this->document_to_id) {
             $toOffice = $this->offices[$this->document_to_id] ?? null;
             if ($toOffice) {
@@ -207,10 +225,10 @@ class CreateDocument extends Component
             $toName = $this->document_to_text;
         }
 
-        $fromName = $fromUser->name . ($fromUser->profile->title ? ', ' . $fromUser->profile->title : '');
+        $fromName = $fromUser->name.($fromUser->profile->title ? ', '.$fromUser->profile->title : '');
         $fromPosition = $fromUser->position ?? 'N/A';
         if ($fromUser->position != 'University President' && $fromPosition != 'N/A') {
-            $fromPosition .= ', ' . $fromUser->office->name;
+            $fromPosition .= ', '.$fromUser->office->name;
         }
 
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
@@ -218,15 +236,16 @@ class CreateDocument extends Component
         $officePart = Auth::user()->office->abbreviation;
 
         if (Auth::user()->office->office_type) {
-            $officePart .= '(' . Auth::user()->office->office_type . ')';
+            $officePart .= '('.Auth::user()->office->office_type.')';
         }
 
         $docNumber = ($this->document_type != 'Intra')
-            ? $officePart . '-' . $docTypeAbbr . '-_____-' . date('Y')
-            : 'CM-' . Auth::user()->office->abbreviation . '-_____-' . date('Y');
+            ? $officePart.'-'.$docTypeAbbr.'-_____-'.date('Y')
+            : 'CM-'.Auth::user()->office->abbreviation.'-_____-'.date('Y');
 
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
             $office = $this->offices[$sig['office_id']] ?? null;
+
             return [
                 'role' => $sig['role'],
                 'user_name' => $office['head']['name'] ?? '',
@@ -256,13 +275,13 @@ class CreateDocument extends Component
             'unit' => Auth::user()->office->abbreviation,
             'signatories' => $signatoriesData->toJson(),
             'cfs' => $cfsData->toJson(),
-            'attachment' => $this->attachment
+            'attachment' => $this->attachment,
         ];
 
         $key = uniqid();
         session([$key => $query]);
 
-        $this->dispatch('open-preview-tab', ['url' => '/document/preview?' . $key]);
+        $this->dispatch('open-preview-tab', ['url' => '/document/preview?'.$key]);
     }
 
     public function submitDocument($action)
@@ -282,8 +301,8 @@ class CreateDocument extends Component
 
         $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
         $docNumber = null;
-        
-        if ($isSend && !$this->is_manual_document_number && empty($this->document_number)) {
+
+        if ($isSend && ! $this->is_manual_document_number && empty($this->document_number)) {
             $docNumber = $this->generateDocumentNumber($fromUser->office->id);
         } else {
             $docNumber = $this->manual_document_number;
@@ -291,8 +310,8 @@ class CreateDocument extends Component
 
         $this->ensureGenerationIsAllowed();
 
-        $isRevision = !empty($this->revision_document_number);
-        $isGenerated = in_array($this->document_type, ['IOM', 'SO'], true) && !empty($this->original_document_id) && !$isRevision;
+        $isRevision = ! empty($this->revision_document_number);
+        $isGenerated = in_array($this->document_type, ['IOM', 'SO'], true) && ! empty($this->original_document_id) && ! $isRevision;
 
         $data = [
             'from_id' => $fromUser->office->id,
@@ -314,7 +333,7 @@ class CreateDocument extends Component
         $existingDraft = Document::where('id', $this->original_document_id)->where('status', 'Draft')->first();
 
         $document = DB::transaction(function () use ($existingDraft, $data, $isSend) {
-            $document = $existingDraft ?: new Document();
+            $document = $existingDraft ?: new Document;
             $document->fill($data)->save();
 
             if ($isSend) {
@@ -333,23 +352,24 @@ class CreateDocument extends Component
             $document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'Sent',
-                'description' => 'Document Sent'
+                'description' => 'Document Sent',
             ]);
         }
 
         session()->flash('message', $isSend ? 'Document successfully sent.' : 'Document saved as draft.');
+
         return redirect()->route('documents.list-documents', ['mode' => 'Sent']);
     }
 
     private function ensureGenerationIsAllowed(): void
     {
-        if (!in_array($this->document_type, ['IOM', 'SO'], true)) {
+        if (! in_array($this->document_type, ['IOM', 'SO'], true)) {
             return;
         }
 
         $source = $this->original_document_id ? Document::find($this->original_document_id) : null;
-        if (!$source || $source->status !== 'Approved') {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+        if (! $source || $source->status !== 'Approved') {
+            throw ValidationException::withMessages([
                 'document_type_id' => 'An IOM or SO may only be created from an approved source document.',
             ]);
         }
@@ -359,14 +379,21 @@ class CreateDocument extends Component
             ? in_array($sourceType, ['RLM', 'IL'], true)
             : $sourceType === 'IL';
 
-        if (!$allowed) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+        if (! $allowed) {
+            throw ValidationException::withMessages([
                 'document_type_id' => 'This document type is not a permitted outcome of the selected source document.',
             ]);
         }
 
-        if (!in_array(Auth::user()->office?->id, [18, 28], true)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+        $generationStep = $source->steps()
+            ->with('office.actingHead', 'office.head')
+            ->where('step_type', 'action')
+            ->where('status', 'Pending')
+            ->first();
+        $canGenerate = $generationStep?->isAssignedTo(Auth::user());
+
+        if (! $canGenerate) {
+            throw ValidationException::withMessages([
                 'document_type_id' => 'Only the SAO for Administration/Finance may prepare an IOM or SO.',
             ]);
         }
@@ -381,7 +408,7 @@ class CreateDocument extends Component
             'manual_document_number' => $this->is_manual_document_number ? 'required|unique:documents,document_number' : 'nullable',
         ];
 
-        if (!in_array($this->document_type, ['Intra', 'ECLR', 'IL', 'IOM', 'SO'])) {
+        if (! in_array($this->document_type, ['Intra', 'ECLR', 'IL', 'IOM', 'SO'])) {
             $rules['document_to_id'] = 'required';
         } elseif ($this->document_type === 'ECLR' || $this->document_type === 'Intra') {
             $rules['document_to_text'] = 'required';
@@ -399,14 +426,14 @@ class CreateDocument extends Component
             'signatories.*.role.required' => 'Role is required.',
             'signatories.*.office_id.required' => 'Signatory is required.',
         ]);
-        
+
         if ($this->document_type == 'RLM') {
             $hasApprovedBy = collect($this->signatories)->contains('role', 'Approved by');
 
-            if (!$hasApprovedBy) {
+            if (! $hasApprovedBy) {
                 $this->addError('signatories', 'You must include a signatory with the role "Approved by".');
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'signatories' => 'You must include a signatory with the role "Approved by".'
+                throw ValidationException::withMessages([
+                    'signatories' => 'You must include a signatory with the role "Approved by".',
                 ]);
             }
         }
@@ -416,13 +443,13 @@ class CreateDocument extends Component
     {
         $isRlm = $this->document_type === 'RLM';
         $allowed = DB::table('role_document_types')
-            ->where('role_id', Auth::user()->role_id)
+            ->where('role_id', Auth::user()->effectiveRoleId())
             ->where('document_type_id', $this->document_type_id)
             ->where('is_allowed', true)
             ->exists();
 
-        if (!$isRlm && !$allowed) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+        if (! $isRlm && ! $allowed) {
+            throw ValidationException::withMessages([
                 'document_type_id' => 'You are not authorized to create this document type.',
             ]);
         }
@@ -431,7 +458,7 @@ class CreateDocument extends Component
     private function generateDocumentNumber($from_id)
     {
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
-        
+
         $documents = Document::where('from_id', $from_id)
             ->where('document_type_id', $this->document_type_id)
             ->where('status', '!=', 'Draft')
@@ -441,7 +468,9 @@ class CreateDocument extends Component
         $lastNumber = 0;
 
         foreach ($documents as $docNumber) {
-            if (empty($docNumber)) continue;
+            if (empty($docNumber)) {
+                continue;
+            }
 
             $parts = explode('-', trim($docNumber));
             $count = count($parts);
@@ -461,17 +490,17 @@ class CreateDocument extends Component
 
         $officePart = Auth::user()->office->abbreviation;
         if (Auth::user()->office->office_type) {
-            $officePart .= '(' . Auth::user()->office->office_type . ')';
+            $officePart .= '('.Auth::user()->office->office_type.')';
         }
 
         if ($this->document_type != 'Intra') {
-            $num = $officePart . '-' . $typeObj['abbreviation'] . '-' . ($lastNumber + 1) . '-' . date('Y');
+            $num = $officePart.'-'.$typeObj['abbreviation'].'-'.($lastNumber + 1).'-'.date('Y');
         } else {
-            $num = 'CM-' . $officePart . '-' . ($lastNumber + 1) . '-' . date('Y');
+            $num = 'CM-'.$officePart.'-'.($lastNumber + 1).'-'.date('Y');
         }
 
         if ($this->document_type === 'ECLR') {
-            $num = 'ZPPSU-' . $num;
+            $num = 'ZPPSU-'.$num;
         }
 
         return $num;
@@ -485,56 +514,41 @@ class CreateDocument extends Component
                 $document->attachments()->create([
                     'attachment_document_id' => $this->original_document_id,
                     'name' => $originalDoc->document_number,
-                    'status' => 'Generated ' . $this->document_type,
+                    'status' => 'Generated '.$this->document_type,
                     'file_type' => 'pdf',
-                    'is_upload' => false
+                    'is_upload' => false,
                 ]);
                 $originalDoc->update([
-                    'status' => 'Generated ' . $this->document_type
+                    'status' => 'Generated '.$this->document_type,
                 ]);
 
-                // Update original document step and status if generated by SAO-A (10) or SAO-F (16) for RLM (1) or IL (3)
                 $userId = Auth::id();
-                if (in_array($userId, [10, 16], true) && in_array($originalDoc->document_type_id, [1, 3], true)) {
+                if (in_array($originalDoc->documentType?->abbreviation, ['RLM', 'IL'], true)) {
                     $actionStep = $originalDoc->steps()
-                        ->where('user_id', $userId)
+                        ->with('office.actingHead', 'office.head')
                         ->where('step_type', 'action')
+                        ->where('status', 'Pending')
                         ->first();
 
-                    if ($actionStep) {
+                    if ($actionStep?->isAssignedTo(Auth::user())) {
                         $actionStep->update([
                             'processed_at' => now(),
                             'user_id' => Auth::id(),
                             'status' => 'Approved',
-                            'comments' => 'Generated downstream document: ' . $document->document_number,
+                            'comments' => 'Generated downstream document: '.$document->document_number,
                         ]);
                     }
-
-                    // Check if all routing, signatory, and action steps are complete
-                    $isComplete = $originalDoc->fresh()->steps()
-                        ->whereIn('step_type', ['routing', 'signatory', 'action'])
-                        ->where(function ($query) {
-                            $query->whereNull('processed_at')
-                                  ->orWhereNotIn('status', ['Approved', 'Reviewed']);
-                        })
-                        ->doesntExist();
-
-                    // if ($isComplete) {
-                    //     $originalDoc->update(['status' => 'Approved']);
-                    // } else {
-                    //     $originalDoc->update(['status' => 'In Process']);
-                    // }
 
                     $originalDoc->logs()->create([
                         'user_id' => $userId,
                         'action' => 'Generated Downstream Document',
-                        'description' => Auth::user()->office->name . ' generated ' . $this->document_type . ' (' . $document->document_number . ') from this document.',
+                        'description' => Auth::user()->office->name.' generated '.$this->document_type.' ('.$document->document_number.') from this document.',
                     ]);
                 }
             }
-        } 
+        }
 
-        if (!empty($this->existingAttachments)) {
+        if (! empty($this->existingAttachments)) {
             foreach ($this->existingAttachments as $existing) {
                 $document->attachments()->create([
                     'name' => $existing['name'],
@@ -554,7 +568,7 @@ class CreateDocument extends Component
                 'status' => 'Sent',
                 'file_url' => $path,
                 'file_type' => $file->getClientOriginalExtension(),
-                'is_upload' => true
+                'is_upload' => true,
             ]);
         }
     }
@@ -562,7 +576,7 @@ class CreateDocument extends Component
     public function removeAttachment($filename)
     {
         $this->attachments = collect($this->attachments)
-            ->reject(fn($file) => $file->getClientOriginalName() === $filename)
+            ->reject(fn ($file) => $file->getClientOriginalName() === $filename)
             ->values()
             ->all();
     }
@@ -576,23 +590,27 @@ class CreateDocument extends Component
 
     private function processDocumentSteps(Document $document)
     {
-        if ($this->document_type === 'Intra') return;
+        if ($this->document_type === 'Intra') {
+            return;
+        }
 
         $sequence = 1;
 
         if ($this->document_type === 'RLM') {
             $routeIds = $this->requiredReviewOfficeIds();
             foreach ($this->routingRequirements as $key => $isActive) {
-                if ($isActive && !empty($routeIds[$key])) {
+                if ($isActive && ! empty($routeIds[$key])) {
                     $officeId = $routeIds[$key];
-                    $userId = $this->offices[$officeId]['head']['id'] ?? Office::find($officeId)?->head->id;
+                    $userId = $this->offices[$officeId]['workflow_assignee']['id']
+                        ?? Office::with('actingHead', 'head')->find($officeId)?->workflow_assignee?->id;
                     if ($userId) {
                         $document->steps()->create([
                             'user_id' => $userId,
+                            'office_id' => $officeId,
                             'step_type' => 'routing',
                             'step_label' => ucwords(str_replace('_', ' ', $key)),
                             'sequence' => $sequence++,
-                            'status' => 'Pending'
+                            'status' => 'Pending',
                         ]);
                     }
                 }
@@ -604,64 +622,65 @@ class CreateDocument extends Component
         }
 
         if ($this->document_type === 'SO') {
-            // 1. Chief Administrative Officer (CAO) step
-            $caoUser = \App\Models\User::where('position', 'Chief Administrative Officer')->first();
-            if ($caoUser) {
+            $caoOffice = Office::with('actingHead', 'head')->where('workflow_key', 'cao')->first();
+            if ($caoOffice?->workflow_assignee) {
                 $document->steps()->create([
-                    'user_id' => $caoUser->id,
+                    'user_id' => $caoOffice->workflow_assignee->id,
+                    'office_id' => $caoOffice->id,
                     'step_type' => 'routing',
                     'step_label' => 'Chief Administrative Officer Review',
                     'sequence' => $sequence++,
-                    'status' => 'Pending'
+                    'status' => 'Pending',
                 ]);
             }
 
-            // 2. VPAF (Vice President for Administration and Finance) step
-            $vpafUser = \App\Models\User::where('position', 'Vice President for Administration and Finance')->first();
-            if ($vpafUser) {
+            $vpafOffice = Office::with('actingHead', 'head')->where('workflow_key', 'vpaf')->first();
+            if ($vpafOffice?->workflow_assignee) {
                 $document->steps()->create([
-                    'user_id' => $vpafUser->id,
+                    'user_id' => $vpafOffice->workflow_assignee->id,
+                    'office_id' => $vpafOffice->id,
                     'step_type' => 'routing',
                     'step_label' => 'VPAF Review',
                     'sequence' => $sequence++,
-                    'status' => 'Pending'
+                    'status' => 'Pending',
                 ]);
             }
         }
-        
+
         if (in_array($this->document_type, ['ECLR', 'SO', 'IL', 'IOM'])) {
             $president = $this->presidentOffice();
-            if (!$president?->head_id) {
-                throw \Illuminate\Validation\ValidationException::withMessages(['signatories' => 'A University President must be assigned before this document can be sent.']);
+            if (! $president?->workflow_assignee) {
+                throw ValidationException::withMessages(['signatories' => 'A University President must be assigned before this document can be sent.']);
             }
-            
-            $alreadyAdded = collect($this->signatories)->contains(fn($s) => $s['office_id'] === $president->id);
-            if (!$alreadyAdded && $this->document_type !== 'RLM') {
+
+            $alreadyAdded = collect($this->signatories)->contains(fn ($s) => $s['office_id'] === $president->id);
+            if (! $alreadyAdded && $this->document_type !== 'RLM') {
                 $this->signatories[] = ['role' => 'Approved by', 'office_id' => $president->id];
             }
         }
 
         foreach ($this->signatories as $signatory) {
             $office = $this->offices[$signatory['office_id']] ?? null;
-            if ($office && isset($office['head']['id'])) {
+            if ($office && $office->workflow_assignee) {
                 $document->steps()->create([
-                    'user_id' => $office['head']['id'],
+                    'user_id' => $office->workflow_assignee->id,
+                    'office_id' => $office['id'],
                     'step_type' => 'signatory',
                     'step_label' => $signatory['role'],
                     'sequence' => $sequence++,
-                    'status' => 'Pending'
+                    'status' => 'Pending',
                 ]);
             }
         }
 
         if (in_array($this->document_type, ['RLM', 'IL'])) {
             $hasBudgetRouting = $this->document_type === 'RLM' && ($this->routingRequirements['budget_office'] ?? false);
-            
-            $targetSaoRole = $hasBudgetRouting ? 'Supervising Administrative Officer for Finance' : 'Supervising Administrative Officer for Administration';
-            
-            $saoUser = \App\Models\User::where('position', $targetSaoRole)->first();
 
-            if ($saoUser) {
+            $saoOffice = Office::with('actingHead', 'head')
+                ->where('workflow_key', $hasBudgetRouting ? 'sao_finance' : 'sao_admin')
+                ->first();
+
+            if ($saoOffice?->workflow_assignee) {
                 if ($this->document_type === 'RLM') {
                     $actionLabel = 'Generation of IOM';
                 } else {
@@ -670,20 +689,21 @@ class CreateDocument extends Component
                 }
 
                 $document->steps()->create([
-                    'user_id' => $saoUser->id,
+                    'user_id' => $saoOffice->workflow_assignee->id,
+                    'office_id' => $saoOffice->id,
                     'step_type' => 'action',
                     'step_label' => $actionLabel,
                     'sequence' => $sequence++,
-                    'status' => 'Pending'
+                    'status' => 'Pending',
                 ]);
             }
         }
 
         foreach ($this->cf_offices as $cfId) {
             $office = $this->offices[$cfId] ?? null;
-            if ($office && isset($office['head']['id'])) {
+            if ($office && $office->workflow_assignee) {
                 $document->cfs()->create([
-                    'user_id' => $office['head']['id']
+                    'user_id' => $office->workflow_assignee->id,
                 ]);
             }
         }
@@ -693,7 +713,9 @@ class CreateDocument extends Component
     {
         $data = session()->pull('redirect_data') ?? session()->pull('document_query');
 
-        if (!$data) return false;
+        if (! $data) {
+            return false;
+        }
 
         $this->original_document_id = $data['original_document_id'] ?? $data['id'] ?? null;
         $this->external_document_id = $data['external_document_id'] ?? $data['id'] ?? null;
@@ -707,14 +729,17 @@ class CreateDocument extends Component
         $this->content = $data['content'] ?? null;
         $this->thru = $data['thru'] ?? null;
         $this->cf_offices = $data['cf'] ?? [];
-        
+
         $this->handleUpdateDocumentType();
+
         return true;
     }
 
     private function handlePassedData($number, $draft_id)
     {
-        if ($this->redirect_mode == null) return;
+        if ($this->redirect_mode == null) {
+            return;
+        }
 
         $document = null;
 
@@ -724,7 +749,9 @@ class CreateDocument extends Component
             $document = Document::find($draft_id);
         }
 
-        if (!$document) return;
+        if (! $document) {
+            return;
+        }
 
         $this->original_document_id = $document->id;
         $this->document_to_id = $document->to_id;
@@ -732,10 +759,11 @@ class CreateDocument extends Component
         $this->thru = $document->thru;
         $this->subject = $document->subject;
         $this->content = $document->content;
-        $this->existingAttachments = $document->all_attachments->map(function($attachment) {
+        $this->existingAttachments = $document->all_attachments->map(function ($attachment) {
             $data = $attachment->toArray();
-            $data['type'] = $attachment->type; 
+            $data['type'] = $attachment->type;
             $data['name'] = $attachment->name ?? $attachment->document_number;
+
             return $data;
         })->toArray();
 
@@ -749,13 +777,13 @@ class CreateDocument extends Component
             ];
         }
 
-        if (!empty($incomingSignatories)) {
+        if (! empty($incomingSignatories)) {
             foreach ($incomingSignatories as $newSig) {
                 $isDuplicate = collect($this->signatories)->contains(function ($existing) use ($newSig) {
                     return $existing['office_id'] == $newSig['office_id'] && $existing['role'] === $newSig['role'];
                 });
 
-                if (!$isDuplicate) {
+                if (! $isDuplicate) {
                     $this->addSignatory($newSig);
                 }
             }
@@ -790,30 +818,31 @@ class CreateDocument extends Component
 
     private function nextRevisionNumber(Document $root): string
     {
-        if (!preg_match('/^(.*-)(\d+)[a-z]*(-\d{4})$/i', $root->document_number, $matches)) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['document_number' => 'This document number cannot be revised automatically.']);
+        if (! preg_match('/^(.*-)(\d+)[a-z]*(-\d{4})$/i', $root->document_number, $matches)) {
+            throw ValidationException::withMessages(['document_number' => 'This document number cannot be revised automatically.']);
         }
 
         $count = $root->revisions()->count();
-        return $matches[1] . $matches[2] . chr(ord('a') + $count) . $matches[3];
+
+        return $matches[1].$matches[2].chr(ord('a') + $count).$matches[3];
     }
 
     public function viewAttachment($id, $type)
     {
         if ($type == 'internal') {
             $this->selectedAttachment = DocumentAttachment::find($id);
-        } else if ($type == 'external') {
+        } elseif ($type == 'external') {
             $this->selectedAttachment = ExternalDocument::find($id);
         }
-        
-        if (!$this->selectedAttachment->is_upload && $type == 'internal') {
+
+        if (! $this->selectedAttachment->is_upload && $type == 'internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
             $key = uniqid();
             session([$key => $attachment_query]);
-            $this->attachmentPreviewUrl = '/document/preview?' . $key;
+            $this->attachmentPreviewUrl = '/document/preview?'.$key;
         } else {
-            $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);
+            $this->attachmentPreviewUrl = asset('storage/'.$this->selectedAttachment->file_url);
         }
 
         $this->modal('view-attachment-modal')->show();

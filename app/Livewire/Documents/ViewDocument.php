@@ -3,41 +3,58 @@
 namespace App\Livewire\Documents;
 
 use App\Http\Controllers\DocumentController;
-use App\Models\DocumentType;
-use App\Models\DocumentAttachment;
-use App\Models\Document;
-use App\Models\ExternalDocument;
-use App\Models\Office;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\DocumentForReview;
 use App\Mail\DocumentStatusUpdate;
+use App\Models\Document;
+use App\Models\DocumentAttachment;
+use App\Models\DocumentType;
+use App\Models\ExternalDocument;
+use App\Models\Office;
+use App\Services\DocumentWorkflowService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Livewire\Component;
 
 class ViewDocument extends Component
 {
     public $office_name;
+
     public $document;
+
     public $myStep;
+
     public $signatories;
+
     public $previewUrl;
+
     public $signed;
+
     public $rejected;
+
     public $display_text;
+
     public $document_query;
+
     public $selectedAttachment;
+
     public $attachmentPreviewUrl;
+
     public $isSignatory;
+
     public $isCf;
+
     public $isRecipient;
+
     public $isRouting;
+
     public bool $canAct = false;
+
+    public bool $canGenerate = false;
 
     protected $listeners = ['documentSigned', 'documentRejected', 'lastStep'];
 
     public $showRemarks = true;
+
     public $remarksExpanded = false;
 
     public function minimizeRemarks()
@@ -62,7 +79,7 @@ class ViewDocument extends Component
                 ->whereNull('viewed_at')
                 ->update(['viewed_at' => now()]);
         }
-        
+
         $updated = $this->document->cfs()
             ->where('user_id', Auth::id())
             ->whereNull('viewed_at')
@@ -72,10 +89,10 @@ class ViewDocument extends Component
             $this->document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'Viewed',
-                'description' => Auth::user()->office->name . ' viewed the document'
+                'description' => Auth::user()->office->name.' viewed the document',
             ]);
         }
-        
+
         $signatories = $this->document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
@@ -101,19 +118,20 @@ class ViewDocument extends Component
 
         if ($this->office_name != 'Records Section') {
             if ($this->document->steps->isNotEmpty() || $this->document->cfs->isNotEmpty()) {
-                $this->myStep = $this->document->steps->firstWhere('user_id', Auth::user()->id);
+                $this->myStep = $this->document->steps->first(fn ($step) => $step->isAssignedTo(Auth::user()))
+                    ?? $this->document->steps->firstWhere('user_id', Auth::id());
                 if ($this->myStep) {
-                    $this->signed = !empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Approved', 'Reviewed']);
-                    $this->rejected = !empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Rejected', 'Returned']);
+                    $this->signed = ! empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Approved', 'Reviewed']);
+                    $this->rejected = ! empty($this->myStep->processed_at) && in_array($this->myStep->status, ['Rejected', 'Returned']);
 
                     if ($this->signed) {
-                        $this->display_text = match($this->myStep->step_type) {
+                        $this->display_text = match ($this->myStep->step_type) {
                             'signatory' => 'You have already signed this document.',
                             'action' => 'You have already processed/generated this document.',
                             default => 'You have already reviewed this document.',
                         };
                     } elseif ($this->rejected) {
-                        $this->display_text = match($this->myStep->step_type) {
+                        $this->display_text = match ($this->myStep->step_type) {
                             'signatory' => 'You have rejected this document.',
                             'action' => 'You have rejected/returned this document.',
                             default => 'You have returned this document.',
@@ -126,15 +144,15 @@ class ViewDocument extends Component
                         $this->document->logs()->create([
                             'user_id' => Auth::id(),
                             'action' => 'Viewed',
-                            'description' => $this->myStep->user->office->name . ' viewed the document'
+                            'description' => $this->myStep->user->office->name.' viewed the document',
                         ]);
                     }
                 }
             } else {
-                if (!$this->document->viewed_at) {
+                if (! $this->document->viewed_at) {
                     $this->document->logs()->create([
                         'user_id' => Auth::id(),
-                        'action' => 'Viewed'
+                        'action' => 'Viewed',
                     ]);
                 }
             }
@@ -142,22 +160,35 @@ class ViewDocument extends Component
 
         $toPosition = $this->document->toOffice?->head?->position ?? 'N/A';
         if ($toPosition !== 'University President' && $toPosition != 'N/A') {
-            $toPosition .= ', ' . $this->document->toOffice?->name;
+            $toPosition .= ', '.$this->document->toOffice?->name;
         }
 
         $fromPosition = $this->document->fromOffice->head->position ?? 'N/A';
         $fromLogo = $this->document->fromOffice->office_logo;
         if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
-            $fromPosition .= ', ' . $this->document->fromOffice->name;
+            $fromPosition .= ', '.$this->document->fromOffice->name;
         }
 
-        $this->isSignatory = $this->document->steps->where('step_type', 'signatory')->contains('user_id', Auth::id());
-        $this->isRouting = $this->document->steps->where('step_type', 'routing')->contains('user_id', Auth::id());
+        $this->isSignatory = $this->document->steps
+            ->where('step_type', 'signatory')
+            ->contains(fn ($step) => $step->isAssignedTo(Auth::user()) || $step->user_id === Auth::id());
+        $this->isRouting = $this->document->steps
+            ->where('step_type', 'routing')
+            ->contains(fn ($step) => $step->isAssignedTo(Auth::user()) || $step->user_id === Auth::id());
         $this->isCf = $this->document->cfs->contains('user_id', Auth::id()) || $this->isRouting;
-        $this->isRecipient = $this->document->toOffice?->head_id == Auth::id();
+        $this->isRecipient = $this->document->toOffice?->workflow_assignee?->is(Auth::user());
 
         $nextStep = $this->document->nextPendingStep();
-        $this->canAct = in_array($this->document->status, ['Sent', 'In Process']) && $nextStep && $nextStep->user_id === Auth::id();
+        $this->canAct = in_array($this->document->status, ['Sent', 'In Process']) && $nextStep?->isAssignedTo(Auth::user());
+        $generationStep = $this->document->steps
+            ->first(fn ($step) => $step->step_type === 'action' && $step->status === 'Pending');
+        $this->canGenerate = $this->document->status === 'Approved'
+            && in_array($this->document->documentType?->abbreviation, ['RLM', 'IL'], true)
+            && $generationStep?->isAssignedTo(Auth::user());
+
+        if (! $this->canAct && $this->myStep?->status === 'Pending' && $this->myStep->office?->acting_head_id) {
+            $this->display_text = 'This step is currently assigned to the office OIC.';
+        }
 
         $this->document_query = [
             'document' => $this->document->toJson(),
@@ -181,16 +212,16 @@ class ViewDocument extends Component
 
         $key = uniqid();
         session([$key => $this->document_query]);
-        $this->previewUrl = '/document/preview?' . $key;
+        $this->previewUrl = '/document/preview?'.$key;
     }
 
     public function sign()
-    {        
+    {
         $this->assertCurrentActorCanAct();
-        
+
         $stepType = $this->myStep->step_type ?? 'signatory';
 
-        $confirmText = match($stepType) {
+        $confirmText = match ($stepType) {
             'routing' => 'Set as reviewed',
             'action' => 'Complete Action',
             default => 'Sign!',
@@ -212,63 +243,16 @@ class ViewDocument extends Component
             'event' => 'documentSigned',
             'withId' => false,
         ];
-        
+
         $this->dispatch('fireSwal', $data);
     }
 
     public function documentSigned($remarks = null)
     {
-        $this->assertCurrentActorCanAct();
-        $mail_desc = '';
-
-        if ($this->myStep) {
-            $stepType = $this->myStep->step_type;
-            
-            $statusMap = [
-                'routing' => 'Reviewed',
-                'action' => 'Approved',
-                'signatory' => 'Approved',
-            ];
-
-            $this->myStep->processed_at = now();
-            $this->myStep->comments = $remarks;
-            $this->myStep->status = $statusMap[$stepType] ?? 'Approved';
-            $this->myStep->save();
-
-            // Check if all steps with type 'routing' or 'signatory' are completed
-            $isComplete = $this->document->fresh()->steps()
-                ->whereIn('step_type', ['routing', 'signatory'])
-                ->where(function ($query) {
-                    $query->whereNull('processed_at')
-                          ->orWhereNotIn('status', ['Approved', 'Reviewed']);
-                })
-                ->doesntExist();
-
-            if ($isComplete) {
-                $this->document->update(['status' => 'Approved']);
-                $event = 'lastStep';
-            } else {
-                if ($this->document->status === 'Sent') {
-                    $this->document->update(['status' => 'In Process']);
-                }
-                $event = 'redirect';
-            }
-
-            $actionDescMap = [
-                'routing' => ' reviewed the document',
-                'action' => ' completed action on the document',
-                'signatory' => ' signed the document',
-            ];
-            $mail_desc = $this->myStep->user->office->name . ($actionDescMap[$stepType] ?? ' signed the document');
-            
-            $this->document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'signed',
-                'description' => $mail_desc
-            ]);
-        } else {
-            $event = 'redirect';
-        }
+        $result = app(DocumentWorkflowService::class)->approve($this->document, Auth::user(), $remarks);
+        $this->document = $result['document']->fresh();
+        $event = $result['completed'] ? 'lastStep' : 'redirect';
+        $mail_desc = $result['description'];
 
         if ($event != 'lastStep') {
             $recipientEmail = null;
@@ -280,14 +264,14 @@ class ViewDocument extends Component
                 $recipientName = $nextStep->user->name;
             }
 
-            if (!empty($recipientEmail)) {
+            if (! empty($recipientEmail)) {
                 // Mail::to($recipientEmail)->send(new DocumentForReview($this->document, $recipientName ?? 'User'));
             }
         }
 
         $fromUser = optional($this->document->fromOffice->head);
 
-        if (!empty($fromUser->email)) {
+        if (! empty($fromUser->email)) {
             // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name ?? 'User', 'signed', $mail_desc));
         }
 
@@ -301,28 +285,28 @@ class ViewDocument extends Component
             'confirmButtonText' => 'Okay',
             'event' => $event,
             'withId' => false,
-            'url' => url('/documents/received')
+            'url' => url('/documents/received'),
         ];
-        
+
         $this->dispatch('fireSwal', $data);
     }
 
     public function lastStep()
     {
         $this->document->refresh();
-        
+
         $isComplete = $this->document->steps()
             ->whereIn('step_type', ['routing', 'signatory'])
             ->where(function ($query) {
                 $query->whereNull('processed_at')
-                      ->orWhereNotIn('status', ['Approved', 'Reviewed']);
+                    ->orWhereNotIn('status', ['Approved', 'Reviewed']);
             })
             ->doesntExist();
 
         abort_unless($isComplete, 403, 'This document is not ready for final approval.');
 
         $this->document->update([
-            'status' => 'Approved'
+            'status' => 'Approved',
         ]);
 
         return redirect()->route('documents.list-documents', ['mode' => 'received']);
@@ -335,31 +319,32 @@ class ViewDocument extends Component
         $redirectData = [
             'to' => $this->document->fromOffice->id,
             'from' => $this->document->toOffice->id ?? 1,
-            'subject' => 'RE: ' . $this->document->subject,
+            'subject' => 'RE: '.$this->document->subject,
             'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'IOM')->value('id'),
             'document_type' => 'IOM',
-            'content' => '<p>Pursuant to the approved-request letter memorandum (<b>' . $this->document->document_number . '</b>)',
+            'content' => '<p>Pursuant to the approved-request letter memorandum (<b>'.$this->document->document_number.'</b>)',
             'thru' => null,
         ];
 
         $signatorySteps = $this->document->steps->where('step_type', 'signatory');
         if ($signatorySteps->isNotEmpty()) {
-            $recordsSectionId = Office::where('name', 'Records Section')->value('id');
-            
+            $recordsSectionId = Office::where('workflow_key', 'records')->value('id');
+
             $redirectData['cf'] = $signatorySteps
                 ->pluck('user.office.id')
                 ->push($this->document->from_id)
                 ->push($recordsSectionId)
                 ->push(Auth::user()->office?->id)
                 ->flatten()
-                ->filter() 
-                ->unique() 
-                ->values() 
+                ->filter()
+                ->unique()
+                ->values()
                 ->toArray();
         }
 
         session()->flash('redirect_data', $redirectData);
+
         return redirect()->route('documents.create-document');
     }
 
@@ -369,13 +354,14 @@ class ViewDocument extends Component
         $redirectData = [
             'to' => $this->document->from_id,
             'from' => $this->document->toOffice->id ?? 1,
-            'subject' => 'RE: ' . $this->document->subject,
+            'subject' => 'RE: '.$this->document->subject,
             'original_document_id' => $this->document->id,
             'document_type_id' => DocumentType::where('abbreviation', 'SO')->value('id'),
             'document_type' => 'SO',
         ];
 
         session()->flash('redirect_data', $redirectData);
+
         return redirect()->route('documents.create-document');
     }
 
@@ -384,7 +370,7 @@ class ViewDocument extends Component
         $this->assertCurrentActorCanAct();
         $stepType = $this->myStep->step_type ?? 'signatory';
 
-        $confirmText = match($stepType) {
+        $confirmText = match ($stepType) {
             'routing' => 'Return with remarks',
             'action' => 'Reject Action',
             default => 'Reject',
@@ -392,7 +378,7 @@ class ViewDocument extends Component
 
         $data = [
             'title' => 'Are you sure?',
-            'text' => "Please confirm and optionally leave a remark.",
+            'text' => 'Please confirm and optionally leave a remark.',
             'icon' => 'warning',
             'input' => 'text',
             'inputLabel' => 'Remarks',
@@ -409,54 +395,13 @@ class ViewDocument extends Component
 
     public function documentRejected($remarks)
     {
-        $this->assertCurrentActorCanAct();
-        $mail_desc = '';
-
-        if ($this->myStep) {
-            $stepType = $this->myStep->step_type;
-            
-            $statusMap = [
-                'routing' => 'Returned',
-                'action' => 'Rejected',
-                'signatory' => 'Rejected',
-            ];
-
-            $newStatus = $statusMap[$stepType] ?? 'Rejected';
-
-            $this->myStep->update([
-                'processed_at' => now(),
-                'user_id' => Auth::id(),
-                'comments' => $remarks,
-                'status' => $newStatus
-            ]);
-
-            $actionDescMap = [
-                'routing' => ' returned the document with remarks: ',
-                'action' => ' rejected action on the document with remarks: ',
-                'signatory' => ' rejected the document with remarks: ',
-            ];
-
-            $mail_desc = $this->myStep->user->office->name . ($actionDescMap[$stepType] ?? ' rejected the document with remarks: ') . $remarks;
-            
-            $this->document->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => $newStatus,
-                'description' => $mail_desc
-            ]);
-
-            $documentStatusMap = [
-                'routing' => 'Returned',
-                'action' => 'Rejected',
-                'signatory' => 'Rejected',
-            ];
-            
-            $this->document->status = $documentStatusMap[$stepType] ?? 'Rejected';
-            $this->document->save();
-        }
+        $result = app(DocumentWorkflowService::class)->reject($this->document, Auth::user(), $remarks);
+        $this->document = $result['document']->fresh();
+        $mail_desc = $result['description'];
 
         $fromUser = optional($this->document->fromOffice->head);
 
-        if (!empty($fromUser->email)) {
+        if (! empty($fromUser->email)) {
             // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name ?? 'User', 'Rejected', $mail_desc));
         }
 
@@ -470,53 +415,64 @@ class ViewDocument extends Component
             'confirmButtonText' => 'Okay',
             'event' => 'redirect',
             'withId' => false,
-            'url' => url('/documents/received')
+            'url' => url('/documents/received'),
         ];
-        
+
         $this->dispatch('fireSwal', $data);
     }
 
     private function assertCurrentActorCanAct(): void
     {
         $document = $this->document->fresh(['steps']);
-        if (!in_array($document->status, ['Sent', 'In Process'])) {
+        if (! in_array($document->status, ['Sent', 'In Process'])) {
             abort(403, 'This document is no longer awaiting action.');
         }
 
         $nextStep = $document->nextPendingStep();
-        abort_unless($nextStep && $nextStep->user_id === Auth::id(), 403, 'It is not your turn to act on this document.');
+        abort_unless($nextStep?->isAssignedTo(Auth::user()), 403, 'It is not your turn to act on this document.');
     }
 
     private function assertCanGenerate(string $target): void
     {
-        abort_unless(in_array(Auth::user()->office?->id, [18, 28], true), 403);
         abort_unless($this->document->status === 'Approved', 403, 'Only approved documents can produce an IOM or SO.');
         $source = $this->document->documentType?->abbreviation;
         $allowed = $target === 'IOM' ? in_array($source, ['RLM', 'IL'], true) : $source === 'IL';
         abort_unless($allowed, 403, 'This outcome is not allowed for this document type.');
+        $generationStep = $this->document->steps()
+            ->with('office.actingHead', 'office.head')
+            ->where('step_type', 'action')
+            ->where('status', 'Pending')
+            ->first();
+        abort_unless(
+            $generationStep?->isAssignedTo(Auth::user()),
+            403,
+            'Only the office assigned to the generation step may create this document.',
+        );
     }
 
-    public function viewAttachment($id, $type) {
+    public function viewAttachment($id, $type)
+    {
         if ($type == 'internal') {
             $this->selectedAttachment = DocumentAttachment::find($id);
-        } else if ($type == 'external') {
+        } elseif ($type == 'external') {
             $this->selectedAttachment = ExternalDocument::find($id);
         }
-        
-        if (!$this->selectedAttachment->is_upload && $type == 'internal') {
+
+        if (! $this->selectedAttachment->is_upload && $type == 'internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
             $attachment_query = $this->processPDF($attachment_document);
             $key = uniqid();
             session([$key => $attachment_query]);
-            $this->attachmentPreviewUrl = '/document/preview?' . $key;
+            $this->attachmentPreviewUrl = '/document/preview?'.$key;
         } else {
-            $this->attachmentPreviewUrl = asset('storage/' . $this->selectedAttachment->file_url);
+            $this->attachmentPreviewUrl = asset('storage/'.$this->selectedAttachment->file_url);
         }
 
         $this->modal('view-attachment-modal')->show();
     }
 
-    public function processPDF($attachment_document) {
+    public function processPDF($attachment_document)
+    {
         $response = app(DocumentController::class)->getDocument($attachment_document->document_number);
         $attachment_document = $response;
 
@@ -529,10 +485,10 @@ class ViewDocument extends Component
             $attachment_document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'Viewed',
-                'description' => Auth::user()->office->name . ' viewed the document'
+                'description' => Auth::user()->office->name.' viewed the document',
             ]);
         }
-        
+
         $signatories = $attachment_document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
@@ -545,13 +501,13 @@ class ViewDocument extends Component
 
         $toPosition = $attachment_document->toOffice?->head?->position ?? 'N/A';
         if ($toPosition !== 'University President' && $toPosition != 'N/A') {
-            $toPosition .= ', ' . $attachment_document->toOffice?->name;
+            $toPosition .= ', '.$attachment_document->toOffice?->name;
         }
 
         $fromPosition = $attachment_document->fromOffice->head->position ?? 'N/A';
         $fromLogo = $attachment_document->fromOffice->office_logo;
         if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
-            $fromPosition .= ', ' . $attachment_document->fromOffice->name;
+            $fromPosition .= ', '.$attachment_document->fromOffice->name;
         }
 
         $attachment_query = [
@@ -572,7 +528,7 @@ class ViewDocument extends Component
             'signatories' => $signatories->toJson(),
             'attachments' => $attachment_document->attachments->toJson(),
         ];
-        
+
         return $attachment_query;
     }
 

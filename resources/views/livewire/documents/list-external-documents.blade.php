@@ -13,20 +13,43 @@
         {{-- @endif --}}
     </div>
 
-    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
+    <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
         <div class="w-full md:w-80">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or sender..." />
         </div>
+        <div class="w-full md:w-56">
+            <x-searchable-filter-select
+                model="officeFilter"
+                :options="$offices->map(fn ($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                placeholder="All Offices"
+                search-placeholder="Search offices..."
+            />
+        </div>
+        <div class="w-full md:w-52">
+            <flux:input.group>
+                <flux:input.group.prefix>From</flux:input.group.prefix>
+                <flux:input wire:model.live="dateFrom" type="date" aria-label="From date" />
+            </flux:input.group>
+        </div>
+        <div class="w-full md:w-52">
+            <flux:input.group>
+                <flux:input.group.prefix>To</flux:input.group.prefix>
+                <flux:input wire:model.live="dateTo" type="date" aria-label="To date" />
+            </flux:input.group>
+        </div>
+        <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+            Reset filters
+        </flux:button>
     </div>
 
     <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200 bg-white">
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
-                    <th class="px-6 py-3">Document Number</th>
-                    <th class="px-6 py-3">From</th>
-                    <th class="px-6 py-3 w-1/3">Subject</th>
-                    <th class="px-6 py-3">Received Date</th>
+                    <th class="px-6 py-3"><button wire:click="sort('document_number')">Document Number</button></th>
+                    <th class="px-6 py-3"><button wire:click="sort('from')">From</button></th>
+                    <th class="px-6 py-3 w-1/3"><button wire:click="sort('subject')">Subject</button></th>
+                    <th class="px-6 py-3"><button wire:click="sort('received_date')">Received Date</button></th>
                     <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
             </thead>
