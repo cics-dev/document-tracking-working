@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class Document extends Model
@@ -29,6 +29,10 @@ class Document extends Model
     protected function viewedAt(): Attribute
     {
         return Attribute::get(function () {
+            if (! Auth::check()) {
+                return null;
+            }
+
             $log = $this->logs()
                 ->where('user_id', Auth::id())
                 ->where('action', 'Viewed')
@@ -38,20 +42,21 @@ class Document extends Model
             return $log ? $log->created_at : null;
         });
     }
-    
+
     protected function currentRecipient(): Attribute
     {
         return Attribute::get(function () {
-            $pendingStep = $this->steps()
-                ->where('status', 'Pending')
-                ->orderBy('sequence')
-                ->first();
+            $pendingStep = $this->relationLoaded('steps')
+                ? $this->steps->firstWhere('status', 'Pending')
+                : $this->nextPendingStep();
 
             if ($pendingStep) {
                 return [
                     'type' => $pendingStep->step_type,
-                    'user' => $pendingStep->user,
-                    'model' => $pendingStep
+                    'user' => $pendingStep->relationLoaded('user')
+                        ? $pendingStep->user
+                        : $pendingStep->user()->first(),
+                    'model' => $pendingStep,
                 ];
             }
 
@@ -81,7 +86,7 @@ class Document extends Model
     public function allStepsCompleted(): bool
     {
         return $this->steps()->exists()
-            && !$this->steps()->where('status', 'Pending')->exists();
+            && ! $this->steps()->where('status', 'Pending')->exists();
     }
 
     public function originalRevisedDocument()
@@ -124,10 +129,12 @@ class Document extends Model
         return collect($this->externalDocuments)->values()->map(function ($doc) {
             $doc->setAttribute('name', $doc->document_number);
             $doc->setAttribute('type', 'external');
+
             return $doc;
         })->merge(
             collect($this->attachments)->values()->map(function ($doc) {
                 $doc->setAttribute('type', 'internal');
+
                 return $doc;
             })
         );
@@ -165,7 +172,7 @@ class Document extends Model
                     return $this->accessLogs->isNotEmpty();
                 }
 
-                return false; 
+                return false;
             }
         );
     }

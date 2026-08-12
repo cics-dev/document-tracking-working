@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 
 class DocumentAttachment extends Model
 {
@@ -13,12 +13,17 @@ class DocumentAttachment extends Model
         'name',
         'status',
         'file_url',
-        'is_upload', 'file_type'
+        'is_upload', 'file_type',
     ];
 
     public function attachmentDocument()
     {
         return $this->belongsTo(Document::class, 'attachment_document_id');
+    }
+
+    public function document()
+    {
+        return $this->belongsTo(Document::class);
     }
 
     // This accessor overrides file_url transparently
@@ -29,7 +34,7 @@ class DocumentAttachment extends Model
                 return $this->attributes['file_url'];
             }
 
-            return $this->attachmentDocument->file_url;
+            return $this->attachmentDocument?->file_url;
         });
     }
 }
