@@ -365,7 +365,7 @@ class CreateDocument extends Component
             ]);
         }
 
-        if (Auth::user()->office?->name !== 'Administration') {
+        if (!in_array(Auth::user()->office?->id, [18, 28], true)) {
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'document_type_id' => 'Only the SAO for Administration/Finance may prepare an IOM or SO.',
             ]);
@@ -602,6 +602,32 @@ class CreateDocument extends Component
             }
         }
 
+        if ($this->document_type === 'SO') {
+            // 1. Chief Administrative Officer (CAO) step
+            $caoUser = \App\Models\User::where('position', 'Chief Administrative Officer')->first();
+            if ($caoUser) {
+                $document->steps()->create([
+                    'user_id' => $caoUser->id,
+                    'step_type' => 'routing',
+                    'step_label' => 'Chief Administrative Officer Review',
+                    'sequence' => $sequence++,
+                    'status' => 'Pending'
+                ]);
+            }
+
+            // 2. VPAF (Vice President for Administration and Finance) step
+            $vpafUser = \App\Models\User::where('position', 'Vice President for Administration and Finance')->first();
+            if ($vpafUser) {
+                $document->steps()->create([
+                    'user_id' => $vpafUser->id,
+                    'step_type' => 'routing',
+                    'step_label' => 'VPAF Review',
+                    'sequence' => $sequence++,
+                    'status' => 'Pending'
+                ]);
+            }
+        }
+        
         if (in_array($this->document_type, ['ECLR', 'SO', 'IL', 'IOM'])) {
             $president = $this->presidentOffice();
             if (!$president?->head_id) {

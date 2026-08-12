@@ -69,7 +69,7 @@
         )
         ||
         (
-            auth()->user()->office->name == 'Administration' &&
+            in_array(Auth::user()->office?->id, [18, 28], true) &&
             in_array($document->documentType?->abbreviation, ['RLM', 'IL'])
         )
     )

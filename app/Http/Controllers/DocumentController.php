@@ -20,28 +20,24 @@ class DocumentController extends Controller
         }
 
         else if ($mode === 'Sent') {
-            if ($userOffice->name === 'Administration') {
-                $ownDocs = Document::where('from_id', $userOffice->id)
-                    ->with(['documentType', 'fromOffice', 'steps'])
-                    ->get();
+            $userId = auth()->id();
 
-                $presidentOfficeId = Office::whereHas('users', function ($query) {
-                    $query->where('position', 'University President');
-                })->value('id');
+            // 1. Get documents officially sent by the user's office
+            $officialDocs = $userOffice->sentDocuments()
+                ->with(['documentType', 'toOffice', 'fromOffice', 'steps']);
 
-                if ($presidentOfficeId) {
-                    $presidentDocs = Document::where('from_id', $presidentOfficeId)
-                        ->with(['documentType', 'fromOffice', 'steps'])
-                        ->get();
-                    $ownDocs = $ownDocs->merge($presidentDocs);
-                }
+            // 2. Get documents created/prepared by the specific logged-in user 
+            // (even if the official from_id belongs to a higher office like the President)
+            $createdDocs = Document::where('created_by', $userId)
+                ->with(['documentType', 'toOffice', 'fromOffice', 'steps']);
 
-                return $ownDocs;
-            }
+            // Merge both query results, combine them, and filter by unique document ID
+            $sentDocuments = $officialDocs->get()
+                ->merge($createdDocs->get())
+                ->unique('id')
+                ->values(); // Reset collection keys
 
-            return $userOffice->sentDocuments()
-                ->with('documentType', 'toOffice')
-                ->get();
+            return $sentDocuments;
         }
 
         else if ($mode === 'received') {

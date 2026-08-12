@@ -89,30 +89,30 @@ class AppServiceProvider extends ServiceProvider
                     ->unique('id')
                     ->values();
 
-                if ($userOffice && $userOffice->name === 'Administration') {
-                    $presidentOfficeId = Office::whereRelation('users', 'position', 'University President')->value('id');
-                    $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
+                // if ($userOffice && $userOffice->name === 'Administration') {
+                //     $presidentOfficeId = Office::whereRelation('users', 'position', 'University President')->value('id');
+                //     $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
                     
-                    if ($presidentOfficeId) {
-                        $presidentDocs = Document::where(function ($q) {
-                                $q->where('document_type_id', 3)
-                                ->orWhere(function ($subQuery) {
-                                    $subQuery->where('document_type_id', 1)
-                                            ->where('status', '!=', 'Draft'); 
-                                });
-                            })
-                            ->when($user->role_id == 4, function ($query) {
-                                $query->whereDoesntHave('steps', fn($q) => $q->where('step_type', 'routing')->whereHas('user', fn($sub) => $sub->where('office_id', 19)));
-                            }, function ($query) {
-                                $query->whereHas('steps', fn($q) => $q->where('step_type', 'routing')->whereHas('user', fn($sub) => $sub->where('office_id', 19)));
-                            })
-                            ->with(['documentType', 'fromOffice', 'steps.user.office', 'accessLogs' => $logConstraint])
-                            ->get();
+                //     if ($presidentOfficeId) {
+                //         $presidentDocs = Document::where(function ($q) {
+                //                 $q->where('document_type_id', 3)
+                //                 ->orWhere(function ($subQuery) {
+                //                     $subQuery->where('document_type_id', 1)
+                //                             ->where('status', '!=', 'Draft'); 
+                //                 });
+                //             })
+                //             ->when($user->role_id == 4, function ($query) {
+                //                 $query->whereDoesntHave('steps', fn($q) => $q->where('step_type', 'routing')->whereHas('user', fn($sub) => $sub->where('office_id', 19)));
+                //             }, function ($query) {
+                //                 $query->whereHas('steps', fn($q) => $q->where('step_type', 'routing')->whereHas('user', fn($sub) => $sub->where('office_id', 19)));
+                //             })
+                //             ->with(['documentType', 'fromOffice', 'steps.user.office', 'accessLogs' => $logConstraint])
+                //             ->get();
 
-                        $presidentDocs = $filterPendingDocuments($presidentDocs, $presidentUserId);
-                        $docs = $docs->merge($presidentDocs)->unique('id')->values();
-                    }
-                }
+                //         $presidentDocs = $filterPendingDocuments($presidentDocs, $presidentUserId);
+                //         $docs = $docs->merge($presidentDocs)->unique('id')->values();
+                //     }
+                // }
 
                 if ($user->position == 'University President') {
                     $docs = $docs->reject(fn($doc) => in_array($doc->document_type_id, [1, 3]));

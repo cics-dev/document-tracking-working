@@ -99,7 +99,7 @@ class ViewDocument extends Component
 
         $this->office_name = Auth::user()->office->name;
 
-        if ($this->office_name != 'Administration' && $this->office_name != 'Records Section') {
+        if ($this->office_name != 'Records Section') {
             if ($this->document->steps->isNotEmpty() || $this->document->cfs->isNotEmpty()) {
                 $this->myStep = $this->document->steps->firstWhere('user_id', Auth::user()->id);
                 if ($this->myStep) {

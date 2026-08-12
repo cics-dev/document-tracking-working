@@ -318,7 +318,7 @@ class UserSeeder extends Seeder
             'name' => 'Unknown',
             'email' => 'cao@example.com',
             'password' => Hash::make('password'),
-            'position' => 'Supervising Administrative Officer for Administration',
+            'position' => 'Chief Administrative Officer',
             'role_id' => 4,
             'office_id' => 23, // set if needed
         ]);
