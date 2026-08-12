@@ -22,8 +22,10 @@ use App\Livewire\Users\ListUsers;
 use App\Livewire\AccessRights\ManageAccessRights;
 use App\Livewire\Roles\ManageRoles;
 use App\Livewire\DocumentFlows\ManageDocumentFlows;
+use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentTrackingController;
+use App\Http\Controllers\DashboardController;
 
 
  Route::get('/offline', function () {
@@ -52,7 +54,7 @@ Route::get('/home', function () {
     return view('welcome'); // shows welcome.blade.php
 })->middleware('auth')->name('home');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', DashboardController::class)
 ->middleware(['auth', 'verified'])
 ->name('dashboard');
 
@@ -63,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/access-rights', ManageAccessRights::class)->name('access-rights');
     Route::get('/roles', ManageRoles::class)->name('roles');
     Route::get('/document-flows', ManageDocumentFlows::class)->name('document-flows');
+    Route::get('/document-types', ManageDocumentTypes::class)->name('document-types');
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
         Route::get('/create', CreateOffice::class)->name('create-office');
