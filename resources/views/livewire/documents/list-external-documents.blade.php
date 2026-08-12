@@ -1,4 +1,4 @@
-<section class="w-full space-y-6">
+<section class="w-full min-w-0 space-y-6">
     
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -13,11 +13,11 @@
         @endif
     </div>
 
-    <div class="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
-        <div class="w-full md:w-80">
+    <div class="grid min-w-0 grid-cols-1 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 [&>*]:min-w-0">
+        <div class="w-full min-w-0">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or sender..." />
         </div>
-        <div class="w-full md:w-56">
+        <div class="w-full min-w-0">
             <x-searchable-filter-select
                 model="officeFilter"
                 :options="$offices->map(fn ($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
@@ -25,19 +25,19 @@
                 search-placeholder="Search offices..."
             />
         </div>
-        <div class="w-full md:w-52">
-            <flux:input.group>
+        <div class="w-full min-w-0">
+            <flux:input.group class="min-w-0 max-w-full">
                 <flux:input.group.prefix>From</flux:input.group.prefix>
                 <flux:input wire:model.live="dateFrom" type="date" aria-label="From date" />
             </flux:input.group>
         </div>
-        <div class="w-full md:w-52">
-            <flux:input.group>
+        <div class="w-full min-w-0">
+            <flux:input.group class="min-w-0 max-w-full">
                 <flux:input.group.prefix>To</flux:input.group.prefix>
                 <flux:input wire:model.live="dateTo" type="date" aria-label="To date" />
             </flux:input.group>
         </div>
-        <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+        <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="w-full sm:w-auto">
             Reset filters
         </flux:button>
     </div>

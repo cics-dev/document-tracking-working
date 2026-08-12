@@ -1,4 +1,4 @@
-<section class="w-full space-y-6">
+<section class="w-full min-w-0 space-y-6">
     
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -13,14 +13,13 @@
         @endif
     </div>
     
-    <div class="flex flex-col md:flex-row gap-4 justify-between items-end md:items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
-        
-        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto flex-1">
-            <div class="w-full md:w-64">
+    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 [&>*]:min-w-0">
+            <div class="w-full min-w-0">
                 <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or number..." />
             </div>
             
-            <div class="w-full md:w-48">
+            <div class="w-full min-w-0">
                 <flux:select wire:model.live="statusFilter" placeholder="Filter status">
                     <flux:select.option value="">All Statuses</flux:select.option>
                     <flux:select.option value="Draft">Draft</flux:select.option>
@@ -32,24 +31,21 @@
                 </flux:select>
             </div>
 
-            <div class="w-full md:w-52">
-                <flux:input.group>
+            <div class="w-full min-w-0">
+                <flux:input.group class="min-w-0 max-w-full">
                     <flux:input.group.prefix>From</flux:input.group.prefix>
                     <flux:input wire:model.live="dateFrom" type="date" aria-label="From date" />
                 </flux:input.group>
             </div>
-            <div class="w-full md:w-52">
-                <flux:input.group>
+            <div class="w-full min-w-0">
+                <flux:input.group class="min-w-0 max-w-full">
                     <flux:input.group.prefix>To</flux:input.group.prefix>
                     <flux:input wire:model.live="dateTo" type="date" aria-label="To date" />
                 </flux:input.group>
             </div>
 
-            @if($mode == 'Sent')
-            @endif
-
             @if($documentTypeTab == 'inter')
-                <div class="w-full md:w-56">
+                <div class="w-full min-w-0">
                     <x-searchable-filter-select
                         model="typeFilter"
                         :options="$documentTypes->filter(fn ($type) => filled($type->abbreviation))->map(fn ($type) => ['value' => (string) $type->id, 'label' => $type->abbreviation])->values()->all()"
@@ -59,13 +55,13 @@
                 </div>
             @endif
 
-            <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
+            <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="w-full sm:w-auto">
                 Reset filters
             </flux:button>
         </div>
 
         @if($mode == 'Sent')
-        <div class="flex bg-white rounded-md p-1 border border-gray-200 shadow-sm shrink-0">
+        <div class="mt-3 flex w-full max-w-full flex-wrap rounded-md border border-gray-200 bg-white p-1 shadow-sm sm:w-fit">
             <button
                 wire:click="switchDocumentTypeTab('inter')"
                 @class([
