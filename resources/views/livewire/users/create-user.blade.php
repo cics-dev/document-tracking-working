@@ -68,11 +68,9 @@
                 <div class="md:col-span-4">
                     <flux:field>
                         <flux:label>Office <span class="text-red-500">*</span></flux:label>
-                        <flux:select wire:model="office_id" placeholder="Choose office...">
-                            @foreach ($offices as $office)
-                                <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
+                        <x-searchable-filter-select model="office_id" :live="false"
+                            :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                            placeholder="Choose office..." search-placeholder="Search offices..." />
                         <flux:error name="office_id" />
                     </flux:field>
                 </div>

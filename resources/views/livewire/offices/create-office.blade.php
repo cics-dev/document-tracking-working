@@ -6,6 +6,7 @@
 
     <form wire:submit="saveOffice" class="bg-white shadow rounded-lg p-6">
         
+        @if($can_manage_details)
         <div class="mb-8">
             <flux:heading size="lg" class="mb-4">Office Information</flux:heading>
             <flux:separator variant="subtle" class="mb-6" />
@@ -27,13 +28,14 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="mb-8">
             <flux:heading size="lg" class="mb-4">Management Details</flux:heading>
             <flux:separator variant="subtle" class="mb-6" />
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-6">
+                @if($can_manage_details)<div class="md:col-span-6">
                     <flux:field>
                         <flux:label>Type of Office</flux:label>
                         <flux:select wire:model="office_type" placeholder="Choose office type...">
@@ -43,29 +45,29 @@
                         <flux:error name="office_type" />
                     </flux:field>
                 </div>
+                @endif
                 
-                <div class="md:col-span-6">
-                    <flux:select wire:model="office_head" label="Head of Office" placeholder="Choose office head...">
-                        @foreach ($users as $user)
-                            <flux:select.option value="{{ $user->id }}">{{ $user->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
+                @if($can_manage_details)<div class="md:col-span-6">
+                    <flux:label>Head of Office</flux:label>
+                    <x-searchable-filter-select model="office_head" :live="false"
+                        :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->values()->all()"
+                        placeholder="Choose office head..." search-placeholder="Search users..." />
                 </div>
+                @endif
                 <div class="md:col-span-6">
                     <div class="flex items-end gap-3">
                         <div class="flex-1">
-                            <flux:select wire:model="acting_head" label="Officer-in-Charge (optional)" placeholder="Use the designated head when blank...">
-                                @foreach ($users as $user)
-                                    <flux:select.option value="{{ $user->id }}">{{ $user->name }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
+                            <flux:label>Officer-in-Charge (optional)</flux:label>
+                            <x-searchable-filter-select model="acting_head" :live="false"
+                                :options="$users->map(fn($user) => ['value' => (string) $user->id, 'label' => $user->name])->values()->all()"
+                                placeholder="Use the designated head when blank..." search-placeholder="Search users..." />
                         </div>
                         
                         @if ($edit_mode && $acting_head)
                             <flux:button
                                 type="button"
                                 wire:click="removeActingHead"
-                                wire:confirm="Remove this OIC? Pending office steps will immediately return to the designated head."
+                                wire:confirm="Clear the OIC selection? This will only take effect after you click Update Office."
                                 variant="danger"
                                 icon="x-mark"
                                 size="sm"
@@ -73,12 +75,12 @@
                             </flux:button>
                         @endif
                     </div>
-                    <flux:description>Pending workflow steps are assigned to the OIC while set. Completed steps retain the person who acted.</flux:description>
+                    <flux:description>Selection changes only take effect when you click Update Office. The OIC signs for the designated head; completed documents retain their original signatory details.</flux:description>
                 </div>
             </div>
         </div>
 
-        <div class="mb-8">
+        @if($can_manage_details)<div class="mb-8">
             <flux:heading size="lg" class="mb-4">Office Branding</flux:heading>
             <flux:separator variant="subtle" class="mb-6" />
             
@@ -101,6 +103,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <flux:button wire:click="cancel" variant="subtle">Cancel</flux:button>

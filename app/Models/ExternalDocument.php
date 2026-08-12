@@ -25,7 +25,7 @@ class ExternalDocument extends Model
 
     public function toOffice()
     {
-        return $this->belongsTo(Office::class, 'to_id');
+        return $this->belongsTo(Office::class, 'to_id')->withTrashed();
     }
 
     protected function isViewedByMe(): Attribute

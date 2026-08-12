@@ -405,6 +405,7 @@
                             @foreach($grouped as $signatory)
                                 <div class="signatory-box">
                                     @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                        @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
                                         <img 
                                             src="{{ public_path('storage/' . ($signatory['signature'] ?: 'assets/img/fakesig1.png')) }}"
                                             alt="Signature" 
@@ -465,6 +466,7 @@
                                                 @foreach($grouped as $signatory)
                                                     <div class="signatory-box" style="text-align: center; width: 200px; padding-left: 40px;">
                                                         @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                                            @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
                                                             <img 
                                                                 src="{{ public_path('storage/' . $signatory['signature']) }}" 
                                                                 alt="Signature" 

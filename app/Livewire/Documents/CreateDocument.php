@@ -667,6 +667,8 @@ class CreateDocument extends Component
                     'office_id' => $office['id'],
                     'step_type' => 'signatory',
                     'step_label' => $signatory['role'],
+                    'signatory_name' => $office->head?->name ?? $office->workflow_assignee->name,
+                    'signatory_position' => $office->head?->position ?? $office->workflow_assignee->position,
                     'sequence' => $sequence++,
                     'status' => 'Pending',
                 ]);

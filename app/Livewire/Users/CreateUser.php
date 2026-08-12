@@ -13,6 +13,7 @@ class CreateUser extends Component
 {
     use WithFileUploads;
 
+
     public $signature;
     public $family_name = '';
     public $given_name = '';
@@ -53,6 +54,8 @@ class CreateUser extends Component
 
     public function mount($id = null)
     {
+        abort_unless(auth()->user()?->hasAccess('manage_users'), 403);
+
         if ($id) {
             $this->editMode = true;
             $user = User::findOrFail($id);

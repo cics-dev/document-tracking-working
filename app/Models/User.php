@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = ['name', 'email', 'password', 'role_id', 'position', 'office_id', 'signature'];
 
@@ -46,7 +47,7 @@ class User extends Authenticatable
 
     public function office()
     {
-        return $this->belongsTo(Office::class);
+        return $this->belongsTo(Office::class)->withTrashed();
     }
 
     public function actingHeadOf()
@@ -76,6 +77,16 @@ class User extends Authenticatable
             ->unique()
             ->values()
             ->all();
+    }
+
+    public function hasAccess(string $key): bool
+    {
+        return $this->role?->permissions()->where('key', $key)->exists() ?? false;
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
     private function actingOffice(): ?Office

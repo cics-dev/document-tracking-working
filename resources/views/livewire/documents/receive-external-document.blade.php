@@ -83,11 +83,9 @@
 
             <flux:field>
                 <flux:label>To <span class="text-red-500">*</span></flux:label>
-                <flux:select wire:model="document_to_id" placeholder="Choose recipient...">
-                    @foreach ($this->offices as $office)
-                        <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-searchable-filter-select model="document_to_id" :live="false"
+                    :options="collect($this->offices)->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                    placeholder="Choose recipient..." search-placeholder="Search offices..." />
             </flux:field>
         </div>
 

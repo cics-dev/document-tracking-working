@@ -15,9 +15,17 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Navigation')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    @if (auth()->user()?->position === 'Administrator')
-                        <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
-                        <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
+                    @if (auth()->user()?->hasAccess('manage_offices') || auth()->user()?->hasAccess('manage_users') || auth()->user()?->hasAccess('manage_access_rights'))
+                        @if(auth()->user()?->hasAccess('manage_offices'))
+                            <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
+                        @endif
+                        @if(auth()->user()?->hasAccess('manage_users'))
+                            <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
+                        @endif
+                        @if(auth()->user()?->hasAccess('manage_access_rights'))
+                            <flux:navlist.item icon="user-group" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>{{ __('Roles') }}</flux:navlist.item>
+                            <flux:navlist.item icon="key" :href="route('access-rights')" :current="request()->routeIs('access-rights')" wire:navigate>{{ __('Access Rights') }}</flux:navlist.item>
+                        @endif
                         {{-- <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Documents') }}</flux:navlist.item> --}}
                     @else
                         @if (auth()->user()?->position === 'Records Officer')

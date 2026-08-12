@@ -4,13 +4,15 @@
     'placeholder' => 'All options',
     'searchPlaceholder' => 'Search options...',
     'emptyMessage' => 'No matching options.',
+    'disabled' => false,
+    'live' => true,
 ])
 
 <div
     x-data="{
         open: false,
         search: '',
-        value: $wire.entangle({{ \Illuminate\Support\Js::from($model) }}).live,
+        value: $wire.entangle({{ \Illuminate\Support\Js::from($model) }}){{ $live ? '.live' : '' }},
         options: {{ \Illuminate\Support\Js::from($options) }},
         selectedLabel() {
             return this.options.find((option) => String(option.value) === String(this.value))?.label ?? {{ \Illuminate\Support\Js::from($placeholder) }}
@@ -38,6 +40,8 @@
         @click="open = !open; if (open) { $nextTick(() => $refs.search.focus()) }"
         :aria-expanded="open"
         aria-haspopup="listbox"
+        @disabled($disabled)
+        @class(['opacity-60 cursor-not-allowed' => $disabled])
     >
         <span class="truncate" :class="value ? '' : 'text-zinc-400'" x-text="selectedLabel()"></span>
         <flux:icon icon="chevron-up-down" class="size-4 shrink-0 text-zinc-400" />

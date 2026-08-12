@@ -83,7 +83,7 @@
                                             </button>
                                             <button wire:click="deleteuser({{ $user['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-200 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Delete" class="h-4 w-4 mr-2">
-                                               <b> Delete </b>
+                                               <b> Deactivate </b>
                                             </button>
                                         </div>
                                     </div>
@@ -112,7 +112,7 @@
                     <!-- Inline Action Buttons for Mobile -->
                     <div class="flex justify-end space-x-2 mt-2">
                         <button wire:click="editUser({{ $user['id'] }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
-                        <button wire:click="deleteuser('{{ $user['id'] }}')" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Delete</button>
+                        <button wire:click="deleteUser('{{ $user['id'] }}')" wire:confirm="Deactivate this user? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
                     </div>
                 </div>
             @empty

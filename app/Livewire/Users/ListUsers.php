@@ -23,6 +23,11 @@ class ListUsers extends Component
 
     public string $sortDirection = 'asc';
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAccess('manage_users'), 403);
+    }
+
     public function updated($property): void
     {
         if (in_array($property, ['search', 'officeFilter', 'roleFilter'], true)) {
@@ -89,5 +94,13 @@ class ListUsers extends Component
         $this->is_head = $user->office && $user->office->head_id == $user->id;
 
         return redirect()->route('users.edit-user', $id);
+    }
+
+    public function deleteUser($id): void
+    {
+        abort_unless(auth()->user()?->hasAccess('manage_users'), 403);
+        abort_if((int) $id === auth()->id(), 422, 'You cannot deactivate your own account here.');
+        User::findOrFail($id)->delete();
+        $this->resetPage();
     }
 }

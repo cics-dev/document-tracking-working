@@ -87,6 +87,27 @@ class DocumentWorkflowServiceTest extends TestCase
         }
     }
 
+    public function test_oic_signs_for_the_snapshotted_head_without_replacing_the_signatory(): void
+    {
+        [$document, $head] = $this->documentWithStep('signatory');
+        $head->update(['name' => 'Original Head', 'position' => 'Director']);
+        $step = $document->steps()->firstOrFail();
+        $step->update(['signatory_name' => $head->name, 'signatory_position' => $head->position]);
+        $oic = User::factory()->create(['office_id' => $head->office_id, 'signature' => 'signatures/oic.png']);
+        Office::findOrFail($head->office_id)->update(['acting_head_id' => $oic->id]);
+
+        app(DocumentWorkflowService::class)->approve($document, $oic);
+        $step->refresh();
+
+        $this->assertSame('Original Head', $step->signatory_name);
+        $this->assertSame('Director', $step->signatory_position);
+        $this->assertSame('signatures/oic.png', $step->signature_path);
+        $this->assertTrue($step->signed_for);
+
+        $head->update(['name' => 'Changed Later']);
+        $this->assertSame('Original Head', $step->fresh()->signatory_name);
+    }
+
     public function test_oic_inherits_head_role_without_changing_stored_role(): void
     {
         [$document, $head] = $this->documentWithStep('routing');

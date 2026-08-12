@@ -94,12 +94,12 @@ class Document extends Model
 
     public function fromOffice()
     {
-        return $this->belongsTo(Office::class, 'from_id');
+        return $this->belongsTo(Office::class, 'from_id')->withTrashed();
     }
 
     public function toOffice()
     {
-        return $this->belongsTo(Office::class, 'to_id');
+        return $this->belongsTo(Office::class, 'to_id')->withTrashed();
     }
 
     public function documentType()
@@ -109,7 +109,7 @@ class Document extends Model
 
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 
     public function attachments()

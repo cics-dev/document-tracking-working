@@ -31,12 +31,16 @@ class CreateOffice extends Component
 
     public $edit_mode = false;
 
+    public bool $can_manage_details = false;
+
     public function mount($id = null)
     {
-        $this->users = User::all();
+        $this->can_manage_details = auth()->user()?->hasAccess('manage_offices') ?? false;
+        $this->users = User::orderBy('name')->get();
 
         if ($id) {
             $office = Office::findOrFail($id);
+            abort_unless($this->can_manage_details || $office->head_id === auth()->id(), 403);
 
             $this->office_id = $id;
             $this->name = $office->name;
@@ -46,6 +50,8 @@ class CreateOffice extends Component
             $this->acting_head = $office->acting_head_id??'';
 
             $this->edit_mode = true;
+        } else {
+            abort_unless($this->can_manage_details, 403);
         }
     }
 
@@ -73,6 +79,14 @@ class CreateOffice extends Component
 
     public function saveOffice()
     {
+        if ($this->edit_mode && ! $this->can_manage_details) {
+            $office = Office::findOrFail($this->office_id);
+            abort_unless($office->head_id === auth()->id(), 403);
+            $office->update(['acting_head_id' => $this->acting_head ?: null]);
+            return redirect()->route('dashboard');
+        }
+
+        abort_unless($this->can_manage_details, 403);
         $imagePath = null;
         if ($this->office_logo) {
             $imagePath = $this->office_logo->store('office_images', 'public');

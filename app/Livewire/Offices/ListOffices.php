@@ -39,6 +39,11 @@ class ListOffices extends Component
         'head_id' => 'nullable|exists:users,id',
     ];
 
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasAccess('manage_offices'), 403);
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();

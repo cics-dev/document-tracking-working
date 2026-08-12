@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Office extends Model
 {
+    use SoftDeletes;
     protected $fillable = ['name', 'abbreviation', 'workflow_key', 'office_type', 'head_id', 'acting_head_id', 'office_logo'];
 
     public function head()
     {
-        return $this->belongsTo(User::class, 'head_id');
+        return $this->belongsTo(User::class, 'head_id')->withTrashed();
     }
 
     public function actingHead()
     {
-        return $this->belongsTo(User::class, 'acting_head_id');
+        return $this->belongsTo(User::class, 'acting_head_id')->withTrashed();
     }
 
     public function getWorkflowAssigneeAttribute(): ?User

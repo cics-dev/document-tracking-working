@@ -73,7 +73,7 @@
                                             </button>
                                             <button wire:click="deleteOffice({{ $office->id }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-700 hover:text-red-700 dark:hover:text-red-100 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Delete" class="h-4 w-4 mr-2">
-                                                <b>Delete</b>
+                                                <b>Deactivate</b>
                                             </button>
                                         </div>
                                     </div>
@@ -99,7 +99,7 @@
                     <div class="mb-4"><strong class="text-gray-700 dark:text-gray-200">Office Head:</strong> <span class="text-gray-600 dark:text-gray-300">{{ $office->head->name ?? 'Not set' }}</span></div>
                     <div class="flex justify-end space-x-2">
                         <button wire:click="editOffice({{ $office->id }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
-                        <button wire:click="deleteOffice({{ $office->id }})" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Delete</button>
+                        <button wire:click="deleteOffice({{ $office->id }})" wire:confirm="Deactivate this office? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
                     </div>
                 </div>
             @empty

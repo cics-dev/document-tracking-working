@@ -139,11 +139,9 @@
                     <div>
                         <flux:field>
                             <flux:label>{{ $document_type === 'RLM' ? 'For' : 'To' }} <span class="text-red-500">*</span></flux:label>
-                            <flux:select wire:model="document_to_id" placeholder="Choose recipient..." disabled>
-                                @foreach ($offices as $office)
-                                    <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
+                            <x-searchable-filter-select model="document_to_id" :live="false" :disabled="true"
+                                :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                                placeholder="Choose recipient..." search-placeholder="Search offices..." />
                         </flux:field>
                     </div>
                 @elseif ($document_type === 'ECLR' || $document_type === 'Intra')
@@ -169,11 +167,9 @@
 
         <div class="flex items-center gap-3">
             <div class="flex-1">
-                <flux:select wire:model="selected_cf_office" placeholder="Select office...">
-                    @foreach ($offices as $office)
-                        <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-searchable-filter-select model="selected_cf_office" :live="false"
+                    :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                    placeholder="Select office..." search-placeholder="Search offices..." />
             </div>
             <flux:button wire:click="addCfOffice" wire:loading.attr="disabled" icon="plus" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none" />
         </div>
@@ -278,15 +274,9 @@
                         </div>
 
                         <div class="md:col-span-7">
-                            <flux:select 
-                                wire:model="signatories.{{ $index }}.office_id" 
-                                placeholder="Select Signatory"
-                                :disabled="$isLocked"
-                            >
-                                @foreach ($offices as $office)
-                                    <flux:select.option value="{{ $office->id }}">{{ $office->name }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
+                            <x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="false" :disabled="$isLocked"
+                                :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name])->values()->all()"
+                                placeholder="Select signatory office..." search-placeholder="Search offices..." />
                             <flux:error name="signatories.{{ $index }}.office_id" />
                         </div>
 

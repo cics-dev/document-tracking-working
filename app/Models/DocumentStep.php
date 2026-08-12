@@ -16,6 +16,10 @@ class DocumentStep extends Model
         'office_id',
         'step_type',
         'step_label',
+        'signatory_name',
+        'signatory_position',
+        'signature_path',
+        'signed_for',
         'sequence',
         'status',
         'comments',
@@ -27,6 +31,7 @@ class DocumentStep extends Model
         'sequence' => 'integer',
         'viewed_at' => 'datetime',
         'processed_at' => 'datetime',
+        'signed_for' => 'boolean',
     ];
 
     public function document(): BelongsTo
@@ -36,12 +41,12 @@ class DocumentStep extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function office(): BelongsTo
     {
-        return $this->belongsTo(Office::class);
+        return $this->belongsTo(Office::class)->withTrashed();
     }
 
     public function getActiveUserAttribute(): ?User

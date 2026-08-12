@@ -96,9 +96,10 @@ class ViewDocument extends Component
         $signatories = $this->document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
-                'user_name' => $step->active_user->office->head->name ?? '',
-                'position' => $step->active_user->office->head->position ?? '',
-                'signature' => $step->active_user->signature ?? '',
+                'user_name' => $step->signatory_name ?? $step->user?->name ?? '',
+                'position' => $step->signatory_position ?? $step->user?->position ?? '',
+                'signature' => $step->signature_path ?? '',
+                'signed_for' => $step->signed_for,
                 'signed' => $step->processed_at,
             ];
         });
@@ -492,9 +493,10 @@ class ViewDocument extends Component
         $signatories = $attachment_document->steps->where('step_type', 'signatory')->map(function ($step) {
             return [
                 'role' => $step->step_label,
-                'user_name' => $step->active_user->office->head->name ?? '',
-                'position' => $step->active_user->office->head->position ?? '',
-                'signature' => $step->active_user->signature ?? '',
+                'user_name' => $step->signatory_name ?? $step->user?->name ?? '',
+                'position' => $step->signatory_position ?? $step->user?->position ?? '',
+                'signature' => $step->signature_path ?? '',
+                'signed_for' => $step->signed_for,
                 'signed' => $step->processed_at,
             ];
         });

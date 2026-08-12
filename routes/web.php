@@ -14,8 +14,11 @@ use App\Livewire\Offices\ListOffices;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\Settings\Office as OfficeSettings;
 use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
+use App\Livewire\AccessRights\ManageAccessRights;
+use App\Livewire\Roles\ManageRoles;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentTrackingController;
 
@@ -54,6 +57,8 @@ Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/access-rights', ManageAccessRights::class)->name('access-rights');
+    Route::get('/roles', ManageRoles::class)->name('roles');
     Route::prefix('offices')->name('offices.')->group(function () {
         Route::get('/', ListOffices::class)->name('list-offices');
         Route::get('/create', CreateOffice::class)->name('create-office');
@@ -85,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
+    Route::get('settings/office', OfficeSettings::class)->name('settings.office');
 });
 
 Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
