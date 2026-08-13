@@ -13,27 +13,27 @@ class OfficeSeeder extends Seeder
      */
     public function run(): void
     {
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'Request Letter Memorandum',
             'abbreviation' => 'RLM',
         ]);
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'Inter-Office Memorandum',
             'abbreviation' => 'IOM',
         ]);
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'Indorsement Letter',
             'abbreviation' => 'IL',
         ]);
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'Special Order',
             'abbreviation' => 'SO',
         ]);
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'External Communication Response Letter',
             'abbreviation' => 'ECLR',
         ]);
-        DocumentType::create([
+        DocumentType::firstOrCreate([
             'name' => 'Intra-Office Memorandum',
             'abbreviation' => 'Intra',
         ]);

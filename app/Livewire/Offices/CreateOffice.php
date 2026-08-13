@@ -36,6 +36,19 @@ class CreateOffice extends Component
 
     public bool $can_manage_details = false;
 
+    public array $newHead = [
+        'family_name' => '', 'given_name' => '', 'middle_name' => '', 'middle_initial' => '',
+        'suffix' => '', 'honorifics' => '', 'titles' => '', 'gender' => '', 'email' => '',
+        'office_id' => '', 'position' => '', 'role_id' => '', 'is_head' => false, 'signature' => null,
+    ];
+
+    public array $newOic = [
+        'family_name' => '', 'given_name' => '', 'middle_name' => '', 'middle_initial' => '',
+        'suffix' => '', 'honorifics' => '', 'titles' => '', 'gender' => '', 'email' => '',
+        'office_id' => '', 'position' => '', 'role_id' => '', 'is_head' => false, 'signature' => null,
+    ];
+
+    /** @deprecated Compatibility for existing single-inline-user clients. */
     public array $newUser = [
         'family_name' => '', 'given_name' => '', 'middle_name' => '', 'middle_initial' => '',
         'suffix' => '', 'honorifics' => '', 'titles' => '', 'gender' => '', 'email' => '',
@@ -101,15 +114,28 @@ class CreateOffice extends Component
         abort_unless($this->can_manage_details, 403);
         $creatingHead = $this->office_head === '__new_user__';
         $creatingOic = $this->acting_head === '__new_user__';
+        if ($creatingHead && ! $creatingOic && empty($this->newHead['email']) && ! empty($this->newUser['email'])) {
+            $this->newHead = $this->newUser;
+        }
+        if ($creatingOic && ! $creatingHead && empty($this->newOic['email']) && ! empty($this->newUser['email'])) {
+            $this->newOic = $this->newUser;
+        }
         if ($creatingHead && $creatingOic) {
-            $this->addError('newUser', 'Create one account at a time. Select an existing user for either Head or OIC.');
-            return;
+            $this->validate([
+                'newOic.email' => ['different:newHead.email'],
+            ], ['newOic.email.different' => 'The Head and OIC must use different email addresses.']);
         }
 
-        if ($creatingHead || $creatingOic) {
-            $this->validate(app(UserAccountService::class)->rules(null, false, 'newUser.'), [
-                'newUser.*.required' => 'Required',
-                'newUser.role_id.required' => 'Please assign a role to this user.',
+        if ($creatingHead) {
+            $this->validate(app(UserAccountService::class)->rules(null, false, 'newHead.'), [
+                'newHead.*.required' => 'Required',
+                'newHead.role_id.required' => 'Please assign a role to this user.',
+            ]);
+        }
+        if ($creatingOic) {
+            $this->validate(app(UserAccountService::class)->rules(null, false, 'newOic.'), [
+                'newOic.*.required' => 'Required',
+                'newOic.role_id.required' => 'Please assign a role to this user.',
             ]);
         }
 
@@ -137,10 +163,10 @@ class CreateOffice extends Component
                 ? tap(Office::findOrFail($this->office_id), fn ($office) => app(OfficeController::class)->update($request, $office))
                 : app(OfficeController::class)->store($request);
 
-            if ($creatingHead || $creatingOic) {
-                $newUser = app(UserAccountService::class)->save($this->newUser, null, $office->id);
-                $office->update([$creatingHead ? 'head_id' : 'acting_head_id' => $newUser->id]);
-            }
+            $assignments = [];
+            if ($creatingHead) $assignments['head_id'] = app(UserAccountService::class)->save($this->newHead, null, $office->id)->id;
+            if ($creatingOic) $assignments['acting_head_id'] = app(UserAccountService::class)->save($this->newOic, null, $office->id)->id;
+            if ($assignments) $office->update($assignments);
         });
 
         redirect()->route('offices.list-offices');

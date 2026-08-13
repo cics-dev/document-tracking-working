@@ -80,12 +80,19 @@
             </div>
         </div>
 
-        @if($can_manage_details && ($office_head === '__new_user__' || $acting_head === '__new_user__'))
+        @if($can_manage_details && $office_head === '__new_user__')
             <div class="mb-8 rounded-lg border border-indigo-200 bg-indigo-50/40 p-5">
-                <flux:heading size="lg" class="mb-1">New {{ $office_head === '__new_user__' ? 'Head' : 'OIC' }} User Account</flux:heading>
+                <flux:heading size="lg" class="mb-1">New Head User Account</flux:heading>
                 <flux:subheading class="mb-6">This account will be assigned to the office when you save.</flux:subheading>
-                @error('newUser') <div class="mb-4 rounded bg-red-100 p-3 text-red-800">{{ $message }}</div> @enderror
-                <x-user-account-fields :$offices :$roles model-prefix="newUser." :show-office="false" :show-is-head="false" />
+                <x-user-account-fields :$offices :$roles model-prefix="newHead." :show-office="false" :show-is-head="false" />
+            </div>
+        @endif
+
+        @if($can_manage_details && $acting_head === '__new_user__')
+            <div class="mb-8 rounded-lg border border-amber-200 bg-amber-50/40 p-5">
+                <flux:heading size="lg" class="mb-1">New OIC User Account</flux:heading>
+                <flux:subheading class="mb-6">This separate account will be assigned as OIC when you save.</flux:subheading>
+                <x-user-account-fields :$offices :$roles model-prefix="newOic." :show-office="false" :show-is-head="false" />
             </div>
         @endif
 

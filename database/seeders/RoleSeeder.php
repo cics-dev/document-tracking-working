@@ -95,10 +95,10 @@ class RoleSeeder extends Seeder
         $allDocumentTypes = DocumentType::all()->pluck('id')->toArray();
 
         foreach ($roles as $role) {
-            $db_role = Role::create([
-                'role' => $role['role'],
-                'description' => $role['description']
-            ]);
+            $db_role = Role::updateOrCreate(
+                ['role' => $role['role']],
+                ['description' => $role['description']],
+            );
 
             $roleId = $db_role->id;
 
@@ -121,7 +121,12 @@ class RoleSeeder extends Seeder
             }
 
             // Bulk insert for efficiency
-            $db_role->role_document_types()->createMany($entries);
+            foreach ($entries as $entry) {
+                $db_role->role_document_types()->updateOrCreate(
+                    ['document_type_id' => $entry['document_type_id']],
+                    ['is_allowed' => $entry['is_allowed']],
+                );
+            }
         }
     }
 }
