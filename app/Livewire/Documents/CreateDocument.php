@@ -74,13 +74,6 @@ class CreateDocument extends Component
 
     public $selected_cf_office = '';
 
-    public $routingRequirements = [
-        'budget_office' => false,
-        'motor_pool' => false,
-        'legal_review' => false,
-        'igp_review' => false,
-    ];
-
     public array $flowStages = [];
 
     public array $selectedFlowStages = [];
@@ -131,7 +124,47 @@ class CreateDocument extends Component
 
     public function render()
     {
-        return view('livewire.documents.create-document')->layout('layouts.app');
+        $selectedDocumentType = $this->selectedType();
+        $flowConditions = collect($this->flowStages)
+            ->pluck('workflow_condition')
+            ->filter(fn ($condition) => $condition['is_active'] ?? false)
+            ->unique('id')
+            ->values();
+        $cfOfficeRecords = collect($this->cf_offices)
+            ->map(fn ($officeId) => $this->offices[$officeId] ?? null)
+            ->filter()
+            ->values();
+
+        return view('livewire.documents.create-document', compact('selectedDocumentType', 'flowConditions', 'cfOfficeRecords'))
+            ->layout('layouts.app');
+    }
+
+    public function signatoryOfficeOptions(array $signatory): array
+    {
+        $controlled = in_array(strtolower($signatory['role'] ?? ''), ['recommending approval', 'approved by'], true);
+        if (! $controlled) {
+            return collect($this->allOffices)->map(fn ($office) => [
+                'value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation,
+            ])->values()->all();
+        }
+
+        $officeIds = collect($this->flowStages)->where('stage_type', 'signatory')
+            ->filter(fn ($stage) => strcasecmp($stage['label'], $signatory['role'] ?? '') === 0)
+            ->pluck('office_id');
+
+        return collect($this->allOffices)->whereIn('id', $officeIds)->map(fn ($office) => [
+            'value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation,
+        ])->values()->all();
+    }
+
+    public function configuredSignatoryDescription(array $signatory): ?array
+    {
+        return collect($this->flowStages)->first(fn ($stage) =>
+            $stage['stage_type'] === 'signatory'
+            && (int) $stage['office_id'] === (int) ($signatory['office_id'] ?? 0)
+            && strcasecmp($stage['label'], $signatory['role'] ?? '') === 0
+            && ! empty($stage['description'])
+        );
     }
 
     public function handleUpdateDocumentType()
@@ -150,8 +183,13 @@ class CreateDocument extends Component
             ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
 
         $type = $this->selectedType();
-        if ($type?->recipient_mode === 'office' && $type->recipient_office_key) {
-            $recipientOffice = Office::with('head', 'actingHead')->where('workflow_key', $type->recipient_office_key)->first();
+        if (! $type?->show_carbon_copy) {
+            $this->cf_offices = [];
+            $this->selected_cf_office = '';
+        }
+        if (! $type?->allow_attachments) $this->attachments = [];
+        if ($type?->recipient_mode === 'office' && $type->recipient_office_id) {
+            $recipientOffice = Office::with('head', 'actingHead')->find($type->recipient_office_id);
             $this->document_to_id = $recipientOffice?->id;
             $this->document_to_text = null;
 
@@ -198,32 +236,29 @@ class CreateDocument extends Component
             && $this->flowConditionArrayMatches($stage);
     }
 
-    private function presidentOffice(): ?Office
-    {
-        return Office::with('head', 'actingHead')->where('workflow_key', 'university_president')->first();
-    }
-
-    private function requiredReviewOfficeIds(): array
-    {
-        return [
-            'budget_office' => Office::where('workflow_key', 'budget')->value('id'),
-            'motor_pool' => Office::where('workflow_key', 'motor_pool')->value('id'),
-            'legal_review' => Office::where('workflow_key', 'legal')->value('id'),
-            'igp_review' => Office::where('workflow_key', 'igp')->value('id'),
-        ];
-    }
-
     public function addCfOffice()
     {
-        if ($this->selected_cf_office && ! in_array($this->selected_cf_office, $this->cf_offices)) {
-            $this->cf_offices[] = $this->selected_cf_office;
-            $this->selected_cf_office = null;
-        }
+        if (! $this->selectedType()?->show_carbon_copy) return;
+        $officeId = (int) $this->selected_cf_office;
+        if (! $officeId || ! collect($this->allOffices)->contains('id', $officeId)) return;
+        if (! in_array($officeId, array_map('intval', $this->cf_offices), true)) $this->cf_offices[] = $officeId;
+        $this->selected_cf_office = '';
     }
 
     public function removeCfOffice($officeId)
     {
-        $this->cf_offices = array_diff($this->cf_offices, [$officeId]);
+        $this->cf_offices = array_values(array_filter($this->cf_offices, fn ($selected) => (int) $selected !== (int) $officeId));
+    }
+
+    public function availableCfOfficeOptions(): array
+    {
+        $selected = array_map('intval', $this->cf_offices);
+        return collect($this->allOffices)->reject(fn ($office) => in_array((int) $office->id, $selected, true))
+            ->map(fn ($office) => [
+                'value' => (string) $office->id,
+                'label' => $office->name.($office->abbreviation ? " ({$office->abbreviation})" : ''),
+                'search' => trim($office->name.' '.$office->abbreviation),
+            ])->values()->all();
     }
 
     public function addSignatory($data = null)
@@ -462,6 +497,9 @@ class CreateDocument extends Component
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
             'manual_document_number' => $this->is_manual_document_number ? 'required|unique:documents,document_number' : 'nullable',
+            'cf_offices' => $this->selectedType()?->show_carbon_copy ? ['array'] : ['prohibited'],
+            'cf_offices.*' => ['distinct', 'exists:offices,id'],
+            'attachments' => $this->selectedType()?->allow_attachments ? ['array'] : ['prohibited'],
         ];
 
         if ($this->selectedType()?->recipient_mode === 'office') {
@@ -470,8 +508,8 @@ class CreateDocument extends Component
             $rules['document_to_text'] = 'required';
         }
 
-        if ($this->selectedType()?->requires_signatories) {
-            $rules['signatories'] = 'required|array|min:1';
+        if ($this->selectedType()?->requires_signatories || ! empty($this->signatories)) {
+            $rules['signatories'] = $this->selectedType()?->requires_signatories ? 'required|array|min:1' : 'array';
             $rules['signatories.*.role'] = 'required';
             $rules['signatories.*.office_id'] = 'required';
         }
@@ -606,6 +644,7 @@ class CreateDocument extends Component
 
         if (! empty($this->existingAttachments)) {
             foreach ($this->existingAttachments as $existing) {
+                if (! $this->selectedType()?->allow_attachments && ($existing['is_upload'] ?? true)) continue;
                 $document->attachments()->create([
                     'name' => $existing['name'],
                     'file_url' => $existing['file_url'],
@@ -617,7 +656,7 @@ class CreateDocument extends Component
             }
         }
 
-        foreach ($this->attachments as $file) {
+        foreach ($this->selectedType()?->allow_attachments ? $this->attachments : [] as $file) {
             $path = $file->store('attachments', 'public');
             $document->attachments()->create([
                 'name' => $file->getClientOriginalName(),
@@ -783,17 +822,7 @@ class CreateDocument extends Component
         if ($stage->is_required || ! $stage->is_selectable) return true;
 
         if ($stage->stage_type === 'routing') {
-            if (array_key_exists((string) $stage->id, $this->selectedFlowStages)) {
-                return (bool) $this->selectedFlowStages[(string) $stage->id];
-            }
-            $key = match ($stage->office?->workflow_key) {
-                'budget' => 'budget_office',
-                'motor_pool' => 'motor_pool',
-                'legal' => 'legal_review',
-                'igp' => 'igp_review',
-                default => null,
-            };
-            return $key ? (bool) ($this->routingRequirements[$key] ?? false) : false;
+            return (bool) ($this->selectedFlowStages[(string) $stage->id] ?? false);
         }
 
         if ($stage->stage_type === 'signatory') {
@@ -805,8 +834,9 @@ class CreateDocument extends Component
 
     private function processCarbonCopies(Document $document): void
     {
+        if (! $this->selectedType()?->show_carbon_copy) return;
         foreach ($this->cf_offices as $cfId) {
-            $office = $this->offices[$cfId] ?? null;
+            $office = $this->allOffices[$cfId] ?? null;
             if ($office && $office->workflow_assignee) {
                 $document->cfs()->create([
                     'user_id' => $office->workflow_assignee->id,
@@ -897,13 +927,12 @@ class CreateDocument extends Component
 
         $this->cf_offices = $document->cfs->pluck('user.office.id')->toArray() ?? [];
 
-        if (collect($this->flowStages)->where('stage_type', 'routing')->isNotEmpty()) {
-            $routeMap = $this->requiredReviewOfficeIds();
-            $existingRouteOfficeIds = $document->steps()->where('step_type', 'routing')->pluck('user.office.id')->toArray();
-
-            foreach ($routeMap as $key => $officeId) {
-                $this->routingRequirements[$key] = $officeId && in_array($officeId, $existingRouteOfficeIds);
-            }
+        $existingRoutingSteps = $document->steps()->where('step_type', 'routing')->get();
+        foreach (collect($this->flowStages)->where('stage_type', 'routing') as $stage) {
+            $this->selectedFlowStages[(string) $stage['id']] = $existingRoutingSteps->contains(fn ($step) =>
+                (int) $step->office_id === (int) $stage['office_id']
+                && $step->step_label === $stage['label']
+            );
         }
 
         if ($document->status === 'Draft') {

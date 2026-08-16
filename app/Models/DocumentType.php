@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class DocumentType extends Model
 {
     protected $fillable = [
-        'name', 'abbreviation', 'recipient_mode', 'recipient_label', 'recipient_office_key',
-        'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy',
+        'name', 'abbreviation', 'recipient_mode', 'recipient_label', 'recipient_office_id',
+        'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments',
         'requires_signatories', 'is_publicly_creatable', 'content_template',
     ];
 
     protected $casts = [
-        'show_thru' => 'boolean', 'show_carbon_copy' => 'boolean',
+        'show_thru' => 'boolean', 'show_carbon_copy' => 'boolean', 'allow_attachments' => 'boolean',
         'requires_signatories' => 'boolean', 'is_publicly_creatable' => 'boolean',
     ];
 
@@ -25,5 +25,10 @@ class DocumentType extends Model
     public function flowStages()
     {
         return $this->hasMany(DocumentFlowStage::class)->orderBy('sequence');
+    }
+
+    public function recipientOffice()
+    {
+        return $this->belongsTo(Office::class, 'recipient_office_id');
     }
 }

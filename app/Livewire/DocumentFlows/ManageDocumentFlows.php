@@ -152,6 +152,11 @@ class ManageDocumentFlows extends Component
         return $rules;
     }
 
+    public function selectedCondition(): ?WorkflowCondition
+    {
+        return $this->workflowConditionId === '' ? null : WorkflowCondition::find($this->workflowConditionId);
+    }
+
     public function addCondition(): void
     {
         $this->authorizeAccess();

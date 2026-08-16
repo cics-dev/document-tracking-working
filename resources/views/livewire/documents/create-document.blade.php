@@ -134,13 +134,12 @@
                 </flux:field>
             </div>
 
-            @php($selectedDocumentType = $this->selectedType())
             @if ($selectedDocumentType && $selectedDocumentType->recipient_mode !== 'none')
                 @if ($selectedDocumentType->recipient_mode === 'office')
                     <div>
                         <flux:field>
                             <flux:label>{{ $selectedDocumentType->recipient_label }} <span class="text-red-500">*</span></flux:label>
-                            <x-searchable-filter-select model="document_to_id" :live="false" :disabled="(bool) $selectedDocumentType->recipient_office_key"
+                            <x-searchable-filter-select model="document_to_id" :live="false" :disabled="(bool) $selectedDocumentType->recipient_office_id"
                                 :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                                 placeholder="Choose recipient..." search-placeholder="Search offices..." />
                         </flux:field>
@@ -163,27 +162,27 @@
     </div>
 
     @if ($selectedDocumentType?->show_carbon_copy)
-    <div class="mb-8 bg-gray-50/80 p-5 rounded-lg border border-gray-100">
-        <flux:label class="mb-2">CF to Offices</flux:label>
+    <div class="mb-8 rounded-lg border border-gray-200 bg-gray-50/80 p-5">
+        <div class="mb-3">
+            <flux:label>CF to Offices</flux:label>
+            <flux:description>Send informational copies without adding these offices to the approval route.</flux:description>
+        </div>
 
         <div class="flex items-center gap-3">
             <div class="flex-1">
                 <x-searchable-filter-select model="selected_cf_office" :live="false"
-                    :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
-                    placeholder="Select office..." search-placeholder="Search offices..." />
+                    :options="$this->availableCfOfficeOptions()"
+                    placeholder="Choose an office to receive a copy..." search-placeholder="Search office name or abbreviation..." />
             </div>
-            <flux:button wire:click="addCfOffice" wire:loading.attr="disabled" icon="plus" variant="filled" class="bg-indigo-600 hover:bg-indigo-700 text-white border-none" />
+            <flux:button type="button" wire:click="addCfOffice" wire:loading.attr="disabled" :disabled="blank($selected_cf_office)" icon="plus" variant="primary">Add CF</flux:button>
         </div>
 
         @if(is_array($cf_offices) && count($cf_offices) > 0)
-        <div class="mt-4 flex flex-wrap gap-2">
-            @foreach ($cf_offices as $officeId)
-                @php $office = $offices->firstWhere('id', $officeId); @endphp
-                @if ($office)
-                    <flux:badge size="lg" icon-trailing="x-mark" wire:click="removeCfOffice({{ $officeId }})" class="cursor-pointer bg-indigo-100 text-indigo-900 hover:bg-red-100 hover:text-red-700 transition-colors">
-                        {{ $office->name }}
+        <div class="mt-4 flex flex-wrap gap-2" wire:key="cf-office-list">
+            @foreach ($cfOfficeRecords as $office)
+                    <flux:badge wire:key="cf-office-{{ $office->id }}" size="lg" icon-trailing="x-mark" wire:click="removeCfOffice({{ $office->id }})" class="cursor-pointer bg-indigo-100 text-indigo-900 transition-colors hover:bg-red-100 hover:text-red-700">
+                        {{ $office->name }}@if($office->abbreviation) ({{ $office->abbreviation }})@endif
                     </flux:badge>
-                @endif
             @endforeach
         </div>
         @endif
@@ -222,13 +221,6 @@
         </div>
     </div>
 
-    @php
-        $flowConditions = collect($flowStages)
-            ->pluck('workflow_condition')
-            ->filter(fn ($condition) => $condition['is_active'] ?? false)
-            ->unique('id')
-            ->values();
-    @endphp
     @if($flowConditions->isNotEmpty())
         <div class="mb-8 rounded-lg border border-indigo-100 bg-indigo-50/40 p-5">
             <flux:label class="mb-3">Document Conditions</flux:label>
@@ -256,15 +248,11 @@
             <flux:label class="mb-3">Routing Requirements <span class="text-gray-500 font-normal">- select applicable review offices</span></flux:label>
             <div class="h-4"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @if(!empty($flowStages))
-                    @foreach(collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
+                @foreach(collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
                         <div class="space-y-3">
                             @foreach($routingColumn as $stage)
                                 <div class="flex items-center gap-1" x-data="{ showHelp: false }">
-                                    @php
-                                        $conditionLocked = $this->conditionLocksStage($stage);
-                                    @endphp
-                                    <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($conditionLocked ? ' (Required)' : '')" :disabled="$conditionLocked || ($stage['is_required'] && empty($stage['workflow_condition_id']))" />
+                                    <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($this->conditionLocksStage($stage) ? ' (Required)' : '')" :disabled="$this->conditionLocksStage($stage) || ($stage['is_required'] && empty($stage['workflow_condition_id']))" />
                                     @if(!empty($stage['description']))
                                         <div class="relative">
                                             <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50" aria-label="About {{ $stage['label'] }}">?</button>
@@ -276,25 +264,17 @@
                                 </div>
                             @endforeach
                         </div>
-                    @endforeach
-                @else
-                    <div class="space-y-3">
-                        <flux:checkbox wire:model="routingRequirements.budget_office" label="Budget Office" value="1" />
-                        <flux:checkbox wire:model="routingRequirements.motor_pool" label="Motor Pool" value="2" />
-                    </div>
-                    <div class="space-y-3">
-                        <flux:checkbox wire:model="routingRequirements.legal_review" label="Legal/Compliance" value="3" />
-                        <flux:checkbox wire:model="routingRequirements.igp_review" label="IGP Review" value="4" />
-                    </div>
-                @endif
+                @endforeach
             </div>
         </div>
+        @endif
 
+        @if ($selectedDocumentType->requires_signatories || collect($flowStages)->where('stage_type', 'signatory')->isNotEmpty())
         <div class="mb-8">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-1">
                     <flux:heading size="lg">Signatories</flux:heading>
-                    <span class="text-red-500">*</span>
+                    @if($selectedDocumentType->requires_signatories)<span class="text-red-500">*</span>@endif
                 </div>
                 <flux:button wire:click="addSignatory" wire:loading.attr="disabled" variant="ghost" size="sm" icon="plus" class="text-indigo-600">Add Signatory</flux:button>
             </div>
@@ -305,16 +285,12 @@
 
             <div class="space-y-3">
                 @foreach ($signatories as $index => $signatory)
-                    @php 
-                        $isLocked = $signatory['locked'] ?? false; 
-                    @endphp
-
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                         <div class="md:col-span-4">
                             <flux:select 
                                 wire:model.live="signatories.{{ $index }}.role"
                                 placeholder="Select Role"
-                                :disabled="$isLocked" 
+                                :disabled="(bool) ($signatory['locked'] ?? false)"
                             >
                                 <flux:select.option value="Recommending Approval">Recommending Approval</flux:select.option>
                                 <flux:select.option value="Reviewed by">Reviewed by</flux:select.option>
@@ -326,29 +302,14 @@
                         </div>
 
                         <div class="md:col-span-7">
-                            @php
-                                $controlledRole = in_array(strtolower($signatory['role'] ?? ''), ['recommending approval', 'approved by'], true);
-                                $configuredSignatoryIds = collect($flowStages)
-                                    ->where('stage_type', 'signatory')
-                                    ->filter(fn($stage) => strcasecmp($stage['label'], $signatory['role'] ?? '') === 0)
-                                    ->pluck('office_id');
-                                $signatoryOfficeOptions = $controlledRole
-                                    ? collect($allOffices)->whereIn('id', $configuredSignatoryIds)
-                                    : collect($allOffices);
-                                $selectedConfiguredStage = collect($flowStages)->first(fn($stage) =>
-                                    $stage['stage_type'] === 'signatory'
-                                    && (int) $stage['office_id'] === (int) ($signatory['office_id'] ?? 0)
-                                    && strcasecmp($stage['label'], $signatory['role'] ?? '') === 0
-                                );
-                            @endphp
                             <div class="flex items-center gap-2" x-data="{ showHelp: false }">
-                                <div class="flex-1"><x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true" :disabled="$isLocked"
-                                    :options="$signatoryOfficeOptions->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
+                                <div class="flex-1"><x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true" :disabled="(bool) ($signatory['locked'] ?? false)"
+                                    :options="$this->signatoryOfficeOptions($signatory)"
                                     placeholder="Select signatory office..." search-placeholder="Search offices..." /></div>
-                                @if(!empty($selectedConfiguredStage['description']))
+                                @if($this->configuredSignatoryDescription($signatory))
                                     <div class="relative">
                                         <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600" aria-label="About this signatory">?</button>
-                                        <div x-cloak x-show="showHelp" class="absolute right-0 z-30 mt-2 w-72 rounded-lg border bg-white p-3 text-sm shadow-lg"><b>{{ $selectedConfiguredStage['label'] }}</b><br>{{ $selectedConfiguredStage['description'] }}</div>
+                                        <div x-cloak x-show="showHelp" class="absolute right-0 z-30 mt-2 w-72 rounded-lg border bg-white p-3 text-sm shadow-lg"><b>{{ $this->configuredSignatoryDescription($signatory)['label'] }}</b><br>{{ $this->configuredSignatoryDescription($signatory)['description'] }}</div>
                                     </div>
                                 @endif
                             </div>
@@ -356,7 +317,7 @@
                         </div>
 
                         <div class="md:col-span-1 flex justify-end">
-                            @if(!$isLocked)
+                            @if(!($signatory['locked'] ?? false))
                                 <flux:button wire:click="removeSignatory({{ $index }})" wire:loading.attr="disabled" icon="trash" variant="subtle" class="text-red-500 hover:text-red-700 hover:bg-red-50 mt-1" />
                             @else
                                 <div class="mt-2 text-gray-400" title="Required Signatory">
@@ -370,6 +331,7 @@
         </div>
         @endif
 
+        @if ($selectedDocumentType->allow_attachments)
         <div class="mb-8">
             <flux:label class="mb-2">Attachments <span class="text-gray-400 text-xs font-normal">(Max 100MB per file)</span></flux:label>
 
@@ -464,6 +426,7 @@
                 </div>
             </div>
         </div>
+        @endif
     @endif
 
     <div class="flex flex-col-reverse sm:flex-row justify-between items-center pt-6 border-t border-gray-200 gap-4">

@@ -30,15 +30,12 @@
             <flux:select wire:model.live="workflowConditionId" label="Condition"><flux:select.option value="">Always</flux:select.option>@foreach($conditions->where('is_active', true) as $item)<flux:select.option value="{{ $item->id }}">{{ $item->label }}</flux:select.option>@endforeach</flux:select>
             @if($workflowConditionId)
                 <flux:select wire:model="conditionOperator" label="Operator"><flux:select.option value="equals">Equals</flux:select.option><flux:select.option value="not_equals">Does not equal</flux:select.option><flux:select.option value="greater_than">Greater than</flux:select.option><flux:select.option value="less_than">Less than</flux:select.option><flux:select.option value="contains">Contains</flux:select.option></flux:select>
-                @php
-                    $selectedCondition = $conditions->firstWhere('id', (int) $workflowConditionId);
-                @endphp
-                @if($selectedCondition?->input_type === 'boolean')
+                @if($this->selectedCondition()?->input_type === 'boolean')
                     <flux:select wire:model="conditionValue" label="Expected Value" placeholder="Choose Yes or No"><flux:select.option value="1">Yes</flux:select.option><flux:select.option value="0">No</flux:select.option></flux:select>
-                @elseif($selectedCondition?->input_type === 'select')
-                    <flux:select wire:model="conditionValue" label="Expected Value">@foreach($selectedCondition->options ?? [] as $option)<flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>@endforeach</flux:select>
+                @elseif($this->selectedCondition()?->input_type === 'select')
+                    <flux:select wire:model="conditionValue" label="Expected Value">@foreach($this->selectedCondition()?->options ?? [] as $option)<flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>@endforeach</flux:select>
                 @else
-                    <flux:input wire:model="conditionValue" :type="$selectedCondition?->input_type === 'number' ? 'number' : 'text'" label="Expected Value" />
+                    <flux:input wire:model="conditionValue" :type="$this->selectedCondition()?->input_type === 'number' ? 'number' : 'text'" label="Expected Value" />
                 @endif
                 <flux:error name="conditionValue" />
             @endif
