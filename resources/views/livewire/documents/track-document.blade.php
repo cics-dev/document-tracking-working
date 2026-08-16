@@ -75,7 +75,7 @@
             </div>
             <div class="detail-card">
                 <div class="detail-label">Document Type</div>
-                <div class="detail-value">{{ $document->documentType->name ?? ($document->type ?? 'RLM') }}</div>
+                <div class="detail-value">{{ $document->documentType->name ?? ($document->type ?? 'N/A') }}</div>
             </div>
             <div class="detail-card">
                 <div class="detail-label">Current Status</div>

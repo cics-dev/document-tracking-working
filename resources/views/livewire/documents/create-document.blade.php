@@ -134,20 +134,21 @@
                 </flux:field>
             </div>
 
-            @if ($document_type_id)
-                @if ($document_type === 'RLM')
+            @php($selectedDocumentType = $this->selectedType())
+            @if ($selectedDocumentType && $selectedDocumentType->recipient_mode !== 'none')
+                @if ($selectedDocumentType->recipient_mode === 'office')
                     <div>
                         <flux:field>
-                            <flux:label>{{ $document_type === 'RLM' ? 'For' : 'To' }} <span class="text-red-500">*</span></flux:label>
-                            <x-searchable-filter-select model="document_to_id" :live="false" :disabled="true"
+                            <flux:label>{{ $selectedDocumentType->recipient_label }} <span class="text-red-500">*</span></flux:label>
+                            <x-searchable-filter-select model="document_to_id" :live="false" :disabled="(bool) $selectedDocumentType->recipient_office_key"
                                 :options="$offices->map(fn($office) => ['value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation])->values()->all()"
                                 placeholder="Choose recipient..." search-placeholder="Search offices..." />
                         </flux:field>
                     </div>
-                @elseif ($document_type === 'ECLR' || $document_type === 'Intra')
+                @elseif ($selectedDocumentType->recipient_mode === 'text')
                     <div>
                         <flux:field>
-                            <flux:label>To <span class="text-red-500">*</span></flux:label>
+                            <flux:label>{{ $selectedDocumentType->recipient_label }} <span class="text-red-500">*</span></flux:label>
                             <flux:input
                                 wire:model.blur="document_to_text"
                                 wire:change="updateContentWithTo"
@@ -161,7 +162,7 @@
         </div>
     </div>
 
-    @if ($office_type == 'ADMIN' || $document_type == 'IOM' || $document_type == 'SO')
+    @if ($selectedDocumentType?->show_carbon_copy)
     <div class="mb-8 bg-gray-50/80 p-5 rounded-lg border border-gray-100">
         <flux:label class="mb-2">CF to Offices</flux:label>
 
@@ -190,7 +191,7 @@
     @endif
 
     <div class="mb-8">
-        @if ($document_type != 'Intra')
+        @if ($selectedDocumentType?->show_thru)
         <div class="mb-4">
             <flux:input wire:model="thru" type="text" autocomplete="thru" label="Thru"/>
         </div>
@@ -249,8 +250,8 @@
         </div>
     @endif
 
-    @if ($document_type != 'IOM')
-        @if ($document_type == 'RLM')
+    @if ($selectedDocumentType)
+        @if (collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->isNotEmpty())
         <div class="mb-8 bg-gray-50/80 p-5 rounded-lg border border-gray-100">
             <flux:label class="mb-3">Routing Requirements <span class="text-gray-500 font-normal">- select applicable review offices</span></flux:label>
             <div class="h-4"></div>
@@ -500,7 +501,7 @@
                 icon="paper-airplane" 
                 class="bg-indigo-700 hover:bg-indigo-800 text-white border-transparent w-full sm:w-auto"
             >
-                <span wire:loading.remove wire:target="submitDocument('send')">@if ($document_type != 'Intra') Send @else Save @endif</span>
+                <span wire:loading.remove wire:target="submitDocument('send')">@if (($selectedDocumentType?->document_level ?? 'Inter') !== 'Intra') Send @else Save @endif</span>
                 <span wire:loading wire:target="submitDocument('send')">Processing...</span>
             </flux:button>
         </div>

@@ -111,7 +111,7 @@ class ListDocuments extends Component
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
 
-        $documentTypes = DocumentType::where('abbreviation', '!=', 'Intra')->get();
+        $documentTypes = DocumentType::where('document_level', '!=', 'Intra')->get();
 
         return view('livewire.documents.list-documents', [
             'documents' => $documents,

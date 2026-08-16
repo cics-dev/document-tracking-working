@@ -46,7 +46,7 @@ class DocumentGenerationService
         } else {
             abort_unless($this->allowedExternal($rule, $source, $user), 403, 'This generation action is not allowed for this external document.');
             $data = ['subject' => 'RE: '.$source->subject, 'external_document_id' => $source->id];
-            if ($rule->targetType?->abbreviation === 'ECLR') $data['to'] = $source->from;
+            if ($rule->targetType?->recipient_mode === 'text') $data['to'] = $source->from;
         }
         $data['document_type_id'] = $rule->target_document_type_id;
         $data['document_type'] = $rule->targetType->abbreviation;

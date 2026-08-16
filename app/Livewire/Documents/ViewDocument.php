@@ -79,7 +79,7 @@ class ViewDocument extends Component
             'action' => 'Viewed',
         ]);
 
-        if ($this->document->document_type_id == 2 && $this->document->attachments->first()?->attachment_document_id) {
+        if ($this->document->attachments->first()?->attachment_document_id) {
             $origDoc = Document::find($this->document->attachments[0]->attachment_document_id);
             $origDoc->steps()
                 ->where('user_id', Auth::id())
@@ -209,7 +209,7 @@ class ViewDocument extends Component
             'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
-            'documentType' => $this->document->document_level == 'Intra' ? 'Intra' : ($this->document->documentType->name ?? 'N/A'),
+            'documentType' => $this->document->documentType->name ?? 'N/A',
             'documentNumber' => $this->document->document_number,
             'unit' => $this->document->fromOffice->abbreviation,
             'signatories' => $signatories->toJson(),
@@ -500,7 +500,7 @@ class ViewDocument extends Component
             'fromName' => $attachment_document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
-            'documentType' => $attachment_document->document_level == 'Intra' ? 'Intra' : ($attachment_document->documentType->name ?? 'N/A'),
+            'documentType' => $attachment_document->documentType->name ?? 'N/A',
             'documentNumber' => $attachment_document->document_number,
             'unit' => $attachment_document->fromOffice->abbreviation,
             'signatories' => $signatories->toJson(),

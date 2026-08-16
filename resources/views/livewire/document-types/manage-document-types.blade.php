@@ -13,6 +13,13 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <flux:input wire:model="name" label="Document Type Name" placeholder="e.g. Office Memorandum" />
             <flux:input wire:model="abbreviation" label="Abbreviation" placeholder="e.g. IOM" />
+            <flux:select wire:model="recipient_mode" label="Recipient Input"><flux:select.option value="office">Office selector</flux:select.option><flux:select.option value="text">Free text</flux:select.option><flux:select.option value="none">None</flux:select.option></flux:select>
+            <flux:input wire:model="recipient_label" label="Recipient Label" placeholder="To or For" />
+            <flux:input wire:model="recipient_office_key" label="Locked Recipient Workflow Key" placeholder="Leave blank to allow selection" />
+            <flux:input wire:model="document_level" label="Document Level" placeholder="Inter, Intra, External" />
+            <flux:input wire:model="number_prefix" label="Number Prefix Template" placeholder="{office_with_type}-{type}" />
+            <flux:textarea wire:model="content_template" label="Initial Content Template" placeholder="Use {TO} and {SUBJECT}" />
+            <div class="space-y-2"><flux:checkbox wire:model="show_thru" label="Show Thru field" /><flux:checkbox wire:model="show_carbon_copy" label="Show carbon-copy offices" /><flux:checkbox wire:model="requires_signatories" label="Require signatories" /><flux:checkbox wire:model="is_publicly_creatable" label="Allow all users to create" /></div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
             <flux:button type="submit" variant="primary" icon="check">{{ $editingId ? 'Update Document Type' : 'Add Document Type' }}</flux:button>
