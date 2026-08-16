@@ -112,6 +112,18 @@ class CreateOffice extends Component
         }
 
         abort_unless($this->can_manage_details, 403);
+        $this->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'abbreviation' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('offices', 'abbreviation')->ignore($this->office_id)],
+            'office_type' => ['required', \Illuminate\Validation\Rule::in(['ACAD', 'ADMIN'])],
+            'office_head' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) $fail('The selected office head is invalid.');
+            }],
+            'acting_head' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) $fail('The selected officer-in-charge is invalid.');
+            }],
+            'office_logo' => ['nullable', 'image', 'max:2048'],
+        ]);
         $creatingHead = $this->office_head === '__new_user__';
         $creatingOic = $this->acting_head === '__new_user__';
         if ($creatingHead && ! $creatingOic && empty($this->newHead['email']) && ! empty($this->newUser['email'])) {

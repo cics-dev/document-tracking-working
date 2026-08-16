@@ -16,9 +16,9 @@
         <form wire:submit="save" class="h-fit rounded-lg border bg-white p-5 shadow-sm lg:col-span-2">
             <h2 class="mb-4 font-semibold">{{ $roleId ? 'Edit Role' : 'New Role' }}</h2>
             <div class="space-y-4">
-                <flux:input wire:model="role" label="Role key" placeholder="e.g. records-officer" />
+                <flux:field><flux:label>Role key <span class="text-red-500">*</span></flux:label><flux:input wire:model="role" required placeholder="e.g. records-officer" /><flux:error name="role" /></flux:field>
                 <flux:error name="role" />
-                <flux:input wire:model="description" label="Display name" placeholder="e.g. Records Officer" />
+                <flux:field><flux:label>Display name <span class="text-red-500">*</span></flux:label><flux:input wire:model="description" required placeholder="e.g. Records Officer" /><flux:error name="description" /></flux:field>
                 <flux:error name="description" />
                 <x-role-access-editor :$permissions :$types />
                 <div class="flex gap-2">

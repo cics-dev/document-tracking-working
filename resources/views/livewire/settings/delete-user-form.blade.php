@@ -20,7 +20,7 @@
                 </flux:subheading>
             </div>
 
-            <flux:input wire:model="password" :label="__('Password')" type="password" />
+            <flux:field><flux:label>{{ __('Password') }} <span class="text-red-500">*</span></flux:label><flux:input wire:model="password" required type="password" /><flux:error name="password" /></flux:field>
 
             <div class="flex justify-end space-x-2">
                 <flux:modal.close>

@@ -31,9 +31,9 @@
         <form wire:submit="login" class="flex flex-col gap-4 sm:gap-5">
           <!-- Email Address -->
           <div class="space-y-1">
+            <flux:label>{{ __('Email') }} <span class="text-red-500">*</span></flux:label>
             <flux:input
               wire:model="email"
-              :label="__('Email')"
               type="email"
               required
               autofocus
@@ -44,9 +44,9 @@
 
           <!-- Password -->
           <div class="space-y-1 relative">
+            <flux:label>{{ __('Password') }} <span class="text-red-500">*</span></flux:label>
             <flux:input
               wire:model="password"
-              :label="__('Password')"
               type="password"
               required
               autocomplete="current-password"

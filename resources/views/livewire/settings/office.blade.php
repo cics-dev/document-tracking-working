@@ -9,10 +9,10 @@
                 <flux:heading size="lg" class="mb-4">Office Information</flux:heading>
                 <flux:separator variant="subtle" class="mb-6" />
                 <div class="grid gap-4 md:grid-cols-12">
-                    <div class="md:col-span-8"><flux:input wire:model="name" label="Office Name" required /><flux:error name="name" /></div>
-                    <div class="md:col-span-4"><flux:input wire:model="abbreviation" label="Abbreviation" required /><flux:error name="abbreviation" /></div>
+                    <div class="md:col-span-8"><flux:field><flux:label>Office Name <span class="text-red-500">*</span></flux:label><flux:input wire:model="name" required /><flux:error name="name" /></flux:field></div>
+                    <div class="md:col-span-4"><flux:field><flux:label>Abbreviation <span class="text-red-500">*</span></flux:label><flux:input wire:model="abbreviation" required /><flux:error name="abbreviation" /></flux:field></div>
                     <div class="md:col-span-6">
-                        <flux:select wire:model="office_type" label="Office Type">
+                        <flux:label>Office Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="office_type" required>
                             <flux:select.option value="ACAD">Academic</flux:select.option>
                             <flux:select.option value="ADMIN">Administration</flux:select.option>
                         </flux:select>

@@ -78,6 +78,7 @@
                     wire:model.blur="document_from" 
                     placeholder="Enter sender..." 
                     type="text" 
+                    required
                 />
             </flux:field>
 
@@ -120,6 +121,7 @@
                         id="dropzone-file" 
                         type="file" 
                         wire:model="attachment" 
+                        required
                         accept=".pdf,.doc,.docx,image/*,.jpg,.jpeg,.png,.gif,.webp"
                         class="hidden"
                     />

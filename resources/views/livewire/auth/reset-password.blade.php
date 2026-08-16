@@ -22,9 +22,9 @@
 
                 <form wire:submit="resetPassword" class="flex flex-col gap-4 sm:gap-5">
                     <div class="space-y-1">
+                        <flux:label>{{ __('Email') }} <span class="text-red-500">*</span></flux:label>
                         <flux:input
                             wire:model="email"
-                            :label="__('Email')"
                             type="email"
                             required
                             autocomplete="email"
@@ -33,9 +33,9 @@
                     </div>
 
                     <div class="space-y-1">
+                        <flux:label>{{ __('Password') }} <span class="text-red-500">*</span></flux:label>
                         <flux:input
                             wire:model="password"
-                            :label="__('Password')"
                             type="password"
                             required
                             autocomplete="new-password"
@@ -44,9 +44,9 @@
                     </div>
 
                     <div class="space-y-1">
+                        <flux:label>{{ __('Confirm password') }} <span class="text-red-500">*</span></flux:label>
                         <flux:input
                             wire:model="password_confirmation"
-                            :label="__('Confirm password')"
                             type="password"
                             required
                             autocomplete="new-password"

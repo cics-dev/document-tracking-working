@@ -37,8 +37,8 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 @if($can_manage_details)<div class="md:col-span-6">
                     <flux:field>
-                        <flux:label>Type of Office</flux:label>
-                        <flux:select wire:model="office_type" placeholder="Choose office type...">
+                        <flux:label>Type of Office <span class="text-red-500">*</span></flux:label>
+                        <flux:select wire:model="office_type" placeholder="Choose office type..." required>
                             <flux:select.option value="ACAD">Academic</flux:select.option>
                             <flux:select.option value="ADMIN">Administration</flux:select.option>
                         </flux:select>

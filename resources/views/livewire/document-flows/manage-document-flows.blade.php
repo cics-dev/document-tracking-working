@@ -12,7 +12,7 @@
     <div class="grid gap-6 lg:grid-cols-3">
         <form wire:submit="save" class="h-fit space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">{{ $stageId ? 'Edit Stage' : 'Add Stage' }}</h2>
-            <div><flux:label>Office</flux:label><x-searchable-filter-select model="officeId" :live="false" :options="$offices->map(fn($o) => ['value'=>(string)$o->id,'label'=>$o->name,'search'=>$o->abbreviation])->all()" placeholder="Choose office..." search-placeholder="Search offices..." /><flux:error name="officeId" /></div>
+            <div><flux:label>Office <span class="text-red-500">*</span></flux:label><x-searchable-filter-select model="officeId" :live="false" :options="$offices->map(fn($o) => ['value'=>(string)$o->id,'label'=>$o->name,'search'=>$o->abbreviation])->all()" placeholder="Choose office..." search-placeholder="Search offices..." /><flux:error name="officeId" /></div>
             <flux:select wire:model.live="stageType" label="Stage Type"><flux:select.option value="routing">Routing</flux:select.option><flux:select.option value="signatory">Signatory</flux:select.option><flux:select.option value="action">Action / Generation</flux:select.option></flux:select>
             @if($stageType === 'signatory')
                 <flux:select wire:model="label" label="Stage Label">
@@ -21,7 +21,7 @@
                 </flux:select>
                 <flux:description>Use Approved by for the President or Recommending Approval for allowed recommending offices.</flux:description>
             @else
-                <flux:input wire:model="label" label="Stage Label" placeholder="e.g. VPAF Review" />
+                <flux:field><flux:label>Stage Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="label" required placeholder="e.g. VPAF Review" /></flux:field>
             @endif
             <flux:error name="label" />
             <flux:textarea wire:model="description" label="Help Description" placeholder="e.g. For gymnasium or any school facility usage" rows="3" />
@@ -58,8 +58,8 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <form wire:submit="addCondition" class="space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">Add Workflow Condition</h2>
-            <flux:input wire:model="newConditionKey" label="Key" placeholder="e.g. uses_external_funding" />
-            <flux:input wire:model="newConditionLabel" label="Question / Label" />
+            <flux:field><flux:label>Key <span class="text-red-500">*</span></flux:label><flux:input wire:model="newConditionKey" required placeholder="e.g. uses_external_funding" /><flux:error name="newConditionKey" /></flux:field>
+            <flux:field><flux:label>Question / Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="newConditionLabel" required /><flux:error name="newConditionLabel" /></flux:field>
             <flux:select wire:model="newConditionType" label="Input Type"><flux:select.option value="boolean">Yes / No</flux:select.option><flux:select.option value="select">Dropdown</flux:select.option><flux:select.option value="text">Text</flux:select.option><flux:select.option value="number">Number</flux:select.option></flux:select>
             @if($newConditionType === 'select')<flux:input wire:model="newConditionOptions" label="Options (comma separated)" />@endif
             <flux:button type="submit" variant="primary">Add Condition</flux:button>
@@ -68,12 +68,12 @@
         <form wire:submit="addGenerationRule" class="space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">Add Document Generation Rule</h2>
             <flux:select wire:model.live="generationContext" label="Source Context"><flux:select.option value="internal">Internal document</flux:select.option><flux:select.option value="external">External document</flux:select.option></flux:select>
-            @if($generationContext === 'internal')<flux:select wire:model="generationSourceTypeId" label="Source Document Type">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select>@endif
-            <flux:select wire:model="generationTargetTypeId" label="Generated Document Type">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select>
-            <flux:input wire:model="generationLabel" label="Button Label" placeholder="Generate ECLR" />
+            @if($generationContext === 'internal')<flux:field><flux:label>Source Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationSourceTypeId" required>@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationSourceTypeId" /></flux:field>@endif
+            <flux:field><flux:label>Generated Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationTargetTypeId" required>@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationTargetTypeId" /></flux:field>
+            <flux:field><flux:label>Button Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="generationLabel" required placeholder="Generate ECLR" /><flux:error name="generationLabel" /></flux:field>
             <flux:input wire:model="generationStatus" label="Required Source Status" placeholder="Approved (blank for any)" />
             <flux:checkbox wire:model="generationRequiresAssignment" label="Only the assigned action/recipient office can generate" />
-            <div><flux:label>Allowed Roles</flux:label><div class="mt-2 grid gap-2 sm:grid-cols-2">@foreach($roles as $role)<flux:checkbox wire:model="generationRoles" value="{{ $role->id }}" label="{{ $role->description }}" />@endforeach</div><flux:error name="generationRoles" /></div>
+            <div><flux:label>Allowed Roles <span class="text-red-500">*</span></flux:label><div class="mt-2 grid gap-2 sm:grid-cols-2">@foreach($roles as $role)<flux:checkbox wire:model="generationRoles" value="{{ $role->id }}" label="{{ $role->description }}" />@endforeach</div><flux:error name="generationRoles" /></div>
             <flux:button type="submit" variant="primary">Add Generation Rule</flux:button>
         </form>
     </div>

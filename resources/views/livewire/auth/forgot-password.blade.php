@@ -22,9 +22,9 @@
 
                 <form wire:submit="sendPasswordResetLink" class="flex flex-col gap-4 sm:gap-5">
                     <div class="space-y-1">
+                        <flux:label>{{ __('Email Address') }} <span class="text-red-500">*</span></flux:label>
                         <flux:input
                             wire:model="email"
-                            :label="__('Email Address')"
                             type="email"
                             required
                             autofocus
