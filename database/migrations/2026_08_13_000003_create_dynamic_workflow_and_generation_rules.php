@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -55,37 +54,6 @@ return new class extends Migration
             $table->primary(['document_generation_rule_id', 'role_id'], 'generation_rule_role_primary');
         });
 
-        $now = now();
-        $budgetConditionId = DB::table('workflow_conditions')->insertGetId([
-            'key' => 'has_budget_implications', 'label' => 'Has budget implications?', 'input_type' => 'boolean',
-            'options' => null, 'is_active' => true, 'created_at' => $now, 'updated_at' => $now,
-        ]);
-        DB::table('document_flow_stages')->where('condition', 'with_budget')->update([
-            'workflow_condition_id' => $budgetConditionId, 'condition_operator' => 'equals', 'condition_value' => '1',
-        ]);
-        DB::table('document_flow_stages')->where('condition', 'without_budget')->update([
-            'workflow_condition_id' => $budgetConditionId, 'condition_operator' => 'equals', 'condition_value' => '0',
-        ]);
-
-        $types = DB::table('document_types')->pluck('id', 'abbreviation');
-        $rules = [
-            ['internal', 'RLM', 'IOM', 'Generate IOM', 'Approved'],
-            ['internal', 'IL', 'IOM', 'Generate IOM', 'Approved'],
-            ['internal', 'IL', 'SO', 'Generate SO', 'Approved'],
-            ['external', null, 'ECLR', 'Generate ECLR', null],
-            ['external', null, 'RLM', 'Generate RLM', null],
-        ];
-        $roleIds = DB::table('roles')->pluck('id');
-        foreach ($rules as [$context, $source, $target, $label, $status]) {
-            if (! isset($types[$target]) || ($source && ! isset($types[$source]))) continue;
-            $id = DB::table('document_generation_rules')->insertGetId([
-                'source_context' => $context, 'source_document_type_id' => $source ? $types[$source] : null,
-                'target_document_type_id' => $types[$target], 'button_label' => $label,
-                'required_status' => $status, 'requires_assigned_office' => true, 'is_active' => true,
-                'created_at' => $now, 'updated_at' => $now,
-            ]);
-            foreach ($roleIds as $roleId) DB::table('document_generation_rule_role')->insert(['document_generation_rule_id' => $id, 'role_id' => $roleId]);
-        }
     }
 
     public function down(): void
