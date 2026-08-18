@@ -23,7 +23,9 @@
         <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
             Reset filters
         </flux:button>
+        <flux:checkbox wire:model.live="showArchived" label="Archived offices" />
     </div>
+    <flux:error name="archive" />
 
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <table class="border-spacing-y-2 text-sm text-left text-gray-700 dark:text-gray-200 w-full hidden md:table">
@@ -67,14 +69,18 @@
                                          x-transition:leave-end="transform opacity-0 scale-95"
                                          class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-100 dark:border-gray-600">
                                         <div class="py-1">
+                                            @if($showArchived)
+                                            <button wire:click="restoreOffice({{ $office->id }})" wire:confirm="Restore this office?" class="flex w-full items-center px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-100"><b>Restore</b></button>
+                                            @else
                                             <button wire:click="editOffice({{ $office->id }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-green-200 dark:hover:bg-green-700 hover:text-green-700 dark:hover:text-green-100 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/12493/12493756.png" alt="Edit" class="h-4 w-4 mr-2">
                                                 <b>Edit</b>
                                             </button>
-                                            <button wire:click="deleteOffice({{ $office->id }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-700 hover:text-red-700 dark:hover:text-red-100 transition-colors">
+                                            <button wire:click="deleteOffice({{ $office->id }})" wire:confirm="Deactivate this office? Historical documents will be retained." class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-900 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-700 hover:text-red-700 dark:hover:text-red-100 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Delete" class="h-4 w-4 mr-2">
                                                 <b>Deactivate</b>
                                             </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -98,8 +104,12 @@
                     <div class="mb-2"><strong class="text-gray-700 dark:text-gray-200">Type:</strong> <span class="text-gray-600 dark:text-gray-300">{{ $office->office_type }}</span></div>
                     <div class="mb-4"><strong class="text-gray-700 dark:text-gray-200">Office Head:</strong> <span class="text-gray-600 dark:text-gray-300">{{ $office->head->name ?? 'Not set' }}</span></div>
                     <div class="flex justify-end space-x-2">
-                        <button wire:click="editOffice({{ $office->id }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
-                        <button wire:click="deleteOffice({{ $office->id }})" wire:confirm="Deactivate this office? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
+                        @if($showArchived)
+                            <button wire:click="restoreOffice({{ $office->id }})" wire:confirm="Restore this office?" class="rounded-md bg-blue-500 px-3 py-1 text-white">Restore</button>
+                        @else
+                            <button wire:click="editOffice({{ $office->id }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
+                            <button wire:click="deleteOffice({{ $office->id }})" wire:confirm="Deactivate this office? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
+                        @endif
                     </div>
                 </div>
             @empty

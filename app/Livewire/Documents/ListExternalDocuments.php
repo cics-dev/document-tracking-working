@@ -72,12 +72,8 @@ class ListExternalDocuments extends Component
         $user = Auth::user();
         $query = ExternalDocument::query();
 
-        $isPrivileged = $user->position == 'Staff'
-                     || $user->position == 'University President'
-                     || optional($user->office)->name == 'Records Section';
-
-        if (! $isPrivileged) {
-            $query->where('to_id', $user->office_id);
+        if (! $user->hasAccess('view_all_documents')) {
+            $query->whereIn('to_id', $user->workflowOfficeIds());
         }
 
         if (! empty($this->search)) {

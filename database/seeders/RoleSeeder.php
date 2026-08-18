@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use App\Models\Role;
 use App\Models\DocumentType;
+use App\Models\Role;
+use App\Models\RoleDocumentType;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -18,11 +17,11 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'role' => 'admin',
-                'description' => 'Administrator'
+                'description' => 'Administrator',
             ],
             [
                 'role' => 'pres',
-                'description' => 'President'
+                'description' => 'President',
             ],
             [
                 'role' => 'vp',
@@ -71,28 +70,27 @@ class RoleSeeder extends Seeder
             [
                 'role' => 'staff',
                 'description' => 'Staff',
-            ]
+            ],
         ];
-
 
         $accessMap = [
-            1  => 'all',
-            2  => [2, 3, 4, 5, 6],
-            3  => [1, 2, 3, 5, 6],
-            4  => 'all',
-            5  => [1, 2, 3, 5, 6],
-            6  => [1, 3, 5, 6],
-            7  => [1, 2, 3, 5, 6],
-            8  => [1, 3, 5, 6],
-            9  => [1, 3, 5, 6],
-            10 => [1, 3, 5, 6],
-            11 => [1, 3, 5, 6],
-            12 => [1, 3, 5, 6],
-            13 => [1],
+            'admin' => 'all',
+            'pres' => ['IOM', 'IL', 'SO', 'ECLR', 'Intra'],
+            'vp' => ['RLM', 'IOM', 'IL', 'ECLR', 'Intra'],
+            'sao-a' => 'all',
+            'sao-f' => ['RLM', 'IOM', 'IL', 'ECLR', 'Intra'],
+            'cao' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'boardsec' => ['RLM', 'IOM', 'IL', 'ECLR', 'Intra'],
+            'dean' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'director' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'head' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'principal' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'chairperson' => ['RLM', 'IL', 'ECLR', 'Intra'],
+            'proponent' => ['RLM'],
+            'staff' => [],
         ];
 
-
-        $allDocumentTypes = DocumentType::all()->pluck('id')->toArray();
+        $documentTypes = DocumentType::query()->get(['id', 'abbreviation']);
 
         foreach ($roles as $role) {
             $db_role = Role::updateOrCreate(
@@ -100,33 +98,20 @@ class RoleSeeder extends Seeder
                 ['description' => $role['description']],
             );
 
-            $roleId = $db_role->id;
+            $allowed = $accessMap[$role['role']] ?? [];
+            $entries = $documentTypes->map(fn (DocumentType $type) => [
+                'role_id' => $db_role->id,
+                'document_type_id' => $type->id,
+                'is_allowed' => $allowed === 'all' || in_array($type->abbreviation, $allowed, true),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->all();
 
-            // Determine allowed document types
-            if (!isset($accessMap[$roleId])) {
-                $allowed = [];
-            } elseif ($accessMap[$roleId] === 'all') {
-                $allowed = $allDocumentTypes;
-            } else {
-                $allowed = $accessMap[$roleId];
-            }
-
-            // Prepare all entries (true for allowed, false for not allowed)
-            $entries = [];
-            foreach ($allDocumentTypes as $docTypeId) {
-                $entries[] = [
-                    'document_type_id' => $docTypeId,
-                    'is_allowed'       => in_array($docTypeId, $allowed),
-                ];
-            }
-
-            // Bulk insert for efficiency
-            foreach ($entries as $entry) {
-                $db_role->role_document_types()->updateOrCreate(
-                    ['document_type_id' => $entry['document_type_id']],
-                    ['is_allowed' => $entry['is_allowed']],
-                );
-            }
+            RoleDocumentType::upsert(
+                $entries,
+                ['role_id', 'document_type_id'],
+                ['is_allowed', 'updated_at'],
+            );
         }
     }
 }

@@ -2,205 +2,54 @@
 
 namespace Database\Seeders;
 
-use App\Models\DocumentType;
 use App\Models\Office;
 use Illuminate\Database\Seeder;
 
 class OfficeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        DocumentType::firstOrCreate([
-            'name' => 'Request Letter Memorandum',
-            'abbreviation' => 'RLM',
-        ]);
-        DocumentType::firstOrCreate([
-            'name' => 'Inter-Office Memorandum',
-            'abbreviation' => 'IOM',
-        ]);
-        DocumentType::firstOrCreate([
-            'name' => 'Indorsement Letter',
-            'abbreviation' => 'IL',
-        ]);
-        DocumentType::firstOrCreate([
-            'name' => 'Special Order',
-            'abbreviation' => 'SO',
-        ]);
-        DocumentType::firstOrCreate([
-            'name' => 'External Communication Response Letter',
-            'abbreviation' => 'ECLR',
-        ]);
-        DocumentType::firstOrCreate([
-            'name' => 'Intra-Office Memorandum',
-            'abbreviation' => 'Intra',
-        ]);
+        $offices = [
+            ['Office of the University President', 'OP', 'university_president', 'ADMIN', null],
+            ['Office of the Vice President for Student Affairs and Services', 'VPSAS', null, 'ADMIN', null],
+            ['Office of the Vice President for Academic Affairs', 'VPAA', null, 'ADMIN', null],
+            ['Office of the Vice President for Administration and Finance', 'VPAF', 'vpaf', 'ADMIN', null],
+            ['Office of the Vice President for Research Development and Extension', 'VPRDE', null, 'ADMIN', null],
+            ['Disaster Risk Reduction and Management Office', 'DRRMO', null, '', null],
+            ['College of Arts, Humanities and Social Sciences', 'CAHSS', null, 'ACAD', null],
+            ['College of Engineering and Technology', 'CET', null, 'ACAD', null],
+            ['College of Information and Computing Sciences', 'CICS', null, 'ACAD', 'office_images/cics-logo.jpg'],
+            ['College of Maritime Education', 'CME', null, 'ACAD', null],
+            ['College of Physical Education and Sports', 'CPES', null, 'ACAD', null],
+            ['College of Teacher Education', 'CTE', null, 'ACAD', null],
+            ['External Program Delivering Unit', 'EPDU', null, 'ACAD', null],
+            ['Institute of Technical Education', 'ITE', null, 'ACAD', null],
+            ['School of Business Administration', 'SBA', null, 'ACAD', null],
+            ['Senior High School', 'SHS', null, 'ACAD', null],
+            ['Records Section', 'Records Section', 'records', '', null],
+            ['Office of the Supervising Administrative Officer for Admin', 'SAO-A', 'sao_admin', 'ADMIN', null],
+            ['Budget Office', 'Budget Office', 'budget', '', null],
+            ['Motorpool Office', 'Motorpool Office', 'motor_pool', '', null],
+            ['Legal Office', 'Legal Office', 'legal', '', null],
+            ['Income Generating Program Office', 'IGP Office', 'igp', '', null],
+            ['Office of the Chief Administrative Officer', 'CAO', 'cao', '', null],
+            ['Information and Communications Technology Unit', 'ICTU', null, '', null],
+            ['University Registrar', 'Registrar', null, '', null],
+            ['Public Information Office', 'PIO', null, '', null],
+            ['Office of the Supervising Administrative Officer for Finance', 'SAO-F', 'sao_finance', 'ADMIN', null],
+        ];
 
-        Office::create([
-            'name' => 'Office of the University President',
-            'abbreviation' => 'OP',
-            'workflow_key' => 'university_president',
-            'office_type' => 'ADMIN',
-        ]);
-        Office::create([
-            'name' => 'Office of the Vice President for Student Affairs and Services',
-            'abbreviation' => 'VPSAS',
-            'office_type' => 'ADMIN',
-        ]);
-        Office::create([
-            'name' => 'Office of the Vice President for Academic Affairs',
-            'abbreviation' => 'VPAA',
-            'office_type' => 'ADMIN',
-        ]);
-        Office::create([
-            'name' => 'Office of the Vice President for Administration and Finance',
-            'abbreviation' => 'VPAF',
-            'workflow_key' => 'vpaf',
-            'office_type' => 'ADMIN',
-        ]);
-        Office::create([
-            'name' => 'Office of the Vice President for Research Development and Extension',
-            'abbreviation' => 'VPRDE',
-            'office_type' => 'ADMIN',
-        ]);
-        Office::create([
-            'name' => 'Disaster Risk Reduction and Management Office',
-            'abbreviation' => 'DRRMO',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'College of Arts, Humanities and Social Sciences',
-            'abbreviation' => 'CAHSS',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'College of Engineering and Technology',
-            'abbreviation' => 'CET',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'College of Information and Computing Sciences',
-            'abbreviation' => 'CICS',
-            'office_type' => 'ACAD',
-            'office_logo' => 'office_images/cics-logo.jpg',
-        ]);
-        Office::create([
-            'name' => 'College of Maritime Education',
-            'abbreviation' => 'CME',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'College of Physical Education and Sports',
-            'abbreviation' => 'CPES',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'College of Teacher Education',
-            'abbreviation' => 'CTE',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'External Program Delivering Unit',
-            'abbreviation' => 'EPDU',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'Institute of Technical Education',
-            'abbreviation' => 'ITE',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'School of Business Administration',
-            'abbreviation' => 'SBA',
-            'office_type' => 'ACAD',
-        ]);
-        Office::create([
-            'name' => 'Senior High School',
-            'abbreviation' => 'SHS',
-            'office_type' => 'ACAD',
-        ]);
-
-        Office::create([
-            'name' => 'Records Section',
-            'abbreviation' => 'Records Section',
-            'workflow_key' => 'records',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Office of the Supervising Administrative Officer for Admin',
-            'abbreviation' => 'SAO-A',
-            'workflow_key' => 'sao_admin',
-            'office_type' => 'ADMIN',
-        ]);
-
-        Office::create([
-            'name' => 'Budget Office',
-            'abbreviation' => 'Budget Office',
-            'workflow_key' => 'budget',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Motorpool Office',
-            'abbreviation' => 'Motorpool Office',
-            'workflow_key' => 'motor_pool',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Legal Office',
-            'abbreviation' => 'Legal Office',
-            'workflow_key' => 'legal',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Income Generating Program Office',
-            'abbreviation' => 'IGP Office',
-            'workflow_key' => 'igp',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Office of the Chief Administrative Officer',
-            'abbreviation' => 'CAO',
-            'workflow_key' => 'cao',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Office of the President',
-            'abbreviation' => 'OP',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Information and Communications Technology Unity',
-            'abbreviation' => 'ICTU',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'University Registrar',
-            'abbreviation' => 'Registrar',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Public Information Office',
-            'abbreviation' => 'PIO',
-            'office_type' => '',
-        ]);
-
-        Office::create([
-            'name' => 'Office of the Supervising Administrative Officer for Finance',
-            'abbreviation' => 'SAO-F',
-            'workflow_key' => 'sao_finance',
-            'office_type' => 'ADMIN',
-        ]);
+        foreach ($offices as [$name, $abbreviation, $workflowKey, $officeType, $officeLogo]) {
+            $office = Office::withTrashed()->updateOrCreate(
+                ['abbreviation' => $abbreviation],
+                [
+                    'name' => $name,
+                    'workflow_key' => $workflowKey,
+                    'office_type' => $officeType,
+                    'office_logo' => $officeLogo,
+                ],
+            );
+            $office->restore();
+        }
     }
 }

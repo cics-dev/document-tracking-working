@@ -9,7 +9,7 @@
         </flux:select>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-3">
+    <div class="grid items-start gap-6" style="grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);">
         <form wire:submit="save" class="h-fit space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">{{ $stageId ? 'Edit Stage' : 'Add Stage' }}</h2>
             <div><flux:label>Office <span class="text-red-500">*</span></flux:label><x-searchable-filter-select model="officeId" :live="false" :options="$offices->map(fn($o) => ['value'=>(string)$o->id,'label'=>$o->name,'search'=>$o->abbreviation])->all()" placeholder="Choose office..." search-placeholder="Search offices..." /><flux:error name="officeId" /></div>
@@ -45,8 +45,8 @@
             <div class="flex gap-2"><flux:button type="submit" variant="primary">{{ $stageId ? 'Update' : 'Add' }} Stage</flux:button>@if($stageId)<flux:button type="button" wire:click="resetStage">Cancel</flux:button>@endif</div>
         </form>
 
-        <section class="lg:col-span-2 overflow-hidden rounded-lg border bg-white shadow-sm">
-            <table class="w-full text-left text-sm"><thead class="bg-gray-100 text-xs uppercase"><tr><th class="p-3">Stage</th><th class="p-3">Office</th><th class="p-3">Rules</th><th class="p-3 text-right">Actions</th></tr></thead>
+        <section class="min-w-0 overflow-x-auto rounded-lg border bg-white shadow-sm">
+            <table class="w-full min-w-[44rem] text-left text-sm"><thead class="bg-gray-100 text-xs uppercase"><tr><th class="p-3">Stage</th><th class="p-3">Office</th><th class="p-3">Rules</th><th class="p-3 text-right">Actions</th></tr></thead>
                 <tbody>@forelse($stages as $stage)<tr class="border-t"><td class="p-3"><b>{{ ucfirst($stage->stage_type) }}</b><br>{{ $stage->label }}@if($stage->description)<br><span class="text-xs text-gray-500">{{ $stage->description }}</span>@endif</td><td class="p-3">{{ $stage->office?->name }}</td><td class="p-3">{{ $stage->workflowCondition?->label ?? 'Always' }}@if($stage->workflowCondition) · {{ str_replace('_', ' ', $stage->condition_operator) }} {{ $stage->workflowCondition->input_type === 'boolean' ? ($stage->condition_value ? 'Yes' : 'No') : $stage->condition_value }}@endif<br>{{ $stage->is_required ? 'Must complete' : 'Optional' }} · {{ $stage->is_selectable ? 'Shown to creator' : 'Automatic' }}</td><td class="p-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $stage->id }})">Edit</flux:button><flux:button size="sm" variant="danger" wire:click="delete({{ $stage->id }})" wire:confirm="Delete this flow stage?">Delete</flux:button></div></td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-500">No configured flow.</td></tr>@endforelse</tbody>
             </table>
         </section>

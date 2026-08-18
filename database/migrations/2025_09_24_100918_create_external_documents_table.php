@@ -15,12 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('document_number');
             $table->string('from');
-            $table->foreignId('to_id')->constrained('offices')->onDelete('cascade');
+            $table->foreignId('to_id')->constrained('offices')->restrictOnDelete();
+            $table->foreignId('document_id')->nullable()->constrained('documents')->nullOnDelete();
             $table->string('subject');
             $table->date('received_date');
             $table->string('file_url');
             $table->string('file_type');
             $table->timestamps();
+            $table->index(['to_id', 'received_date']);
+            $table->index(['document_number', 'created_at']);
         });
     }
 

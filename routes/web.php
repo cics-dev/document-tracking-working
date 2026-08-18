@@ -1,62 +1,59 @@
 <?php
 
-use App\Http\Controllers\DocumentPreviewController;
-use App\Http\Controllers\ExternalDocumentPreviewController;
-use App\Http\Controllers\DocumentAttachmentPreviewController;
 use App\Http\Controllers\ChatBotController;
-use App\Livewire\Documents\ReceiveExternalDocument;
-use App\Livewire\Documents\ViewExternalDocument;
-use App\Livewire\Documents\ListExternalDocuments;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentAttachmentPreviewController;
+use App\Http\Controllers\DocumentPreviewController;
+use App\Http\Controllers\DocumentTrackingController;
+use App\Http\Controllers\ExternalDocumentPreviewController;
+use App\Livewire\AccessRights\ManageAccessRights;
+use App\Livewire\DocumentFlows\ManageDocumentFlows;
 use App\Livewire\Documents\CreateDocument;
 use App\Livewire\Documents\ListDocuments;
+use App\Livewire\Documents\ListExternalDocuments;
+use App\Livewire\Documents\ReceiveExternalDocument;
 use App\Livewire\Documents\TrackDocument;
 use App\Livewire\Documents\ViewDocument;
+use App\Livewire\Documents\ViewExternalDocument;
+use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use App\Livewire\Offices\CreateOffice;
 use App\Livewire\Offices\ListOffices;
+use App\Livewire\Roles\ManageRoles;
 use App\Livewire\Settings\Appearance;
+use App\Livewire\Settings\Office as OfficeSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
-use App\Livewire\Settings\Office as OfficeSettings;
 use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
-use App\Livewire\AccessRights\ManageAccessRights;
-use App\Livewire\Roles\ManageRoles;
-use App\Livewire\DocumentFlows\ManageDocumentFlows;
-use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DocumentTrackingController;
-use App\Http\Controllers\DashboardController;
 
-
- Route::get('/offline', function () {
-   return view('offline');
-  })->name('offline');
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');
 
 Route::get('/help', function () {
     return view('help');
 })->name('help');
 
-// Route for the public landing page at "/"
 Route::get('/landing', function () {
-    return view('landing'); // shows landing.blade.php
+    return view('landing');
 });
 
 Route::get('/', function () {
-    return view('landing'); // shows landing.blade.php
+    return view('landing');
 })->name('landing');
 
 Route::get('/learn', function () {
-    return view('learn'); // shows landing.blade.php
+    return view('learn');
 })->name('learn');
 
-// Route for the internal "home" page (after login), e.g., at "/home"
 Route::get('/home', function () {
-    return view('welcome'); // shows welcome.blade.php
+    return view('welcome');
 })->middleware('auth')->name('home');
 
 Route::get('dashboard', DashboardController::class)
-->middleware(['auth', 'verified'])
-->name('dashboard');
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
@@ -79,8 +76,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('documents')->name('documents.')->group(function () {
-        // Route::get('/received', ListDocuments::class)->name('recieved-documents');
-        // Route::get('/sent', ListDocuments::class)->name('sent-documents');
         Route::get('/external-document/{externalDocument}/preview', ExternalDocumentPreviewController::class)->name('external-document-preview');
         Route::get('/attachment/{documentAttachment}/preview', DocumentAttachmentPreviewController::class)->name('attachment-preview');
         Route::get('/view-external-document/{id}', ViewExternalDocument::class)->name('view-external-document');

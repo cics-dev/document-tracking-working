@@ -251,15 +251,12 @@
                 @foreach(collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
                         <div class="space-y-3">
                             @foreach($routingColumn as $stage)
-                                <div class="flex items-center gap-1" x-data="{ showHelp: false }">
+                                <div class="flex items-center gap-1">
                                     <flux:checkbox wire:model="selectedFlowStages.{{ $stage['id'] }}" :label="$stage['label'].($this->conditionLocksStage($stage) ? ' (Required)' : '')" :disabled="$this->conditionLocksStage($stage) || ($stage['is_required'] && empty($stage['workflow_condition_id']))" />
                                     @if(!empty($stage['description']))
-                                        <div class="relative">
-                                            <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50" aria-label="About {{ $stage['label'] }}">?</button>
-                                            <div x-cloak x-show="showHelp" x-transition class="absolute left-0 z-30 mt-2 w-72 rounded-lg border border-gray-200 bg-white p-3 text-sm text-gray-700 shadow-lg">
-                                                <b>{{ $stage['label'] }}</b><br>{{ $stage['description'] }}
-                                            </div>
-                                        </div>
+                                        <flux:tooltip :content="$stage['description']" position="top">
+                                            <button type="button" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" aria-label="{{ $stage['label'] }} help">?</button>
+                                        </flux:tooltip>
                                     @endif
                                 </div>
                             @endforeach
@@ -287,30 +284,19 @@
                 @foreach ($signatories as $index => $signatory)
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                         <div class="md:col-span-4">
-                            <flux:select 
-                                wire:model.live="signatories.{{ $index }}.role"
-                                placeholder="Select Role"
-                                :disabled="(bool) ($signatory['locked'] ?? false)"
-                            >
-                                <flux:select.option value="Recommending Approval">Recommending Approval</flux:select.option>
-                                <flux:select.option value="Reviewed by">Reviewed by</flux:select.option>
-                                <flux:select.option value="Noted by">Noted by</flux:select.option>
-                                <flux:select.option value="Approved by">Approved by</flux:select.option>
-                                <flux:select.option value="Concurred by">Concurred by</flux:select.option>
-                            </flux:select>
+                            <flux:input wire:model.live="signatories.{{ $index }}.role" placeholder="e.g. Reviewed by" :disabled="(bool) ($signatory['locked'] ?? false)" />
                             <flux:error name="signatories.{{ $index }}.role" />
                         </div>
 
                         <div class="md:col-span-7">
-                            <div class="flex items-center gap-2" x-data="{ showHelp: false }">
+                            <div class="flex items-center gap-2">
                                 <div class="flex-1"><x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true" :disabled="(bool) ($signatory['locked'] ?? false)"
                                     :options="$this->signatoryOfficeOptions($signatory)"
                                     placeholder="Select signatory office..." search-placeholder="Search offices..." /></div>
                                 @if($this->configuredSignatoryDescription($signatory))
-                                    <div class="relative">
-                                        <button type="button" @click="showHelp = !showHelp" @click.outside="showHelp = false" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600" aria-label="About this signatory">?</button>
-                                        <div x-cloak x-show="showHelp" class="absolute right-0 z-30 mt-2 w-72 rounded-lg border bg-white p-3 text-sm shadow-lg"><b>{{ $this->configuredSignatoryDescription($signatory)['label'] }}</b><br>{{ $this->configuredSignatoryDescription($signatory)['description'] }}</div>
-                                    </div>
+                                    <flux:tooltip :content="$this->configuredSignatoryDescription($signatory)['description']" position="top">
+                                        <button type="button" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" aria-label="{{ $this->configuredSignatoryDescription($signatory)['label'] }} help">?</button>
+                                    </flux:tooltip>
                                 @endif
                             </div>
                             <flux:error name="signatories.{{ $index }}.office_id" />

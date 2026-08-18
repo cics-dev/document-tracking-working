@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('document_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('document_id')->constrained('documents')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->string('action');
             $table->string('description')->nullable();
             $table->timestamps();
+            $table->index(['document_id', 'user_id', 'action', 'created_at']);
         });
     }
 

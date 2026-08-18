@@ -8,6 +8,7 @@ use App\Models\DocumentFlowStage;
 use App\Models\DocumentType;
 use App\Models\Office;
 use App\Models\User;
+use App\Models\WorkflowCondition;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use ReflectionMethod;
@@ -45,7 +46,9 @@ class ConfiguredDocumentFlowTest extends TestCase
         $component->document_type_id = (string) $type->id;
         $component->flowStages = DocumentFlowStage::where('document_type_id', $type->id)->get()->toArray();
         $component->selectedFlowStages = [(string) $optionalStage->id => true];
-        $component->hasBudgetImplications = true;
+        $component->conditionValues = [
+            (string) WorkflowCondition::where('key', 'has_budget_implications')->value('id') => true,
+        ];
         $component->signatories = [
             ['role' => 'Recommending Approval', 'office_id' => $recommender->id],
             ['role' => 'Noted by', 'office_id' => $noted->id],
@@ -167,15 +170,27 @@ class ConfiguredDocumentFlowTest extends TestCase
         $office = Office::create(compact('name', 'abbreviation') + ['office_type' => 'ADMIN']);
         $head = User::factory()->create(['office_id' => $office->id]);
         $office->update(['head_id' => $head->id]);
+
         return $office->fresh();
     }
 
     private function stage(DocumentType $type, Office $office, string $stageType, string $label, int $sequence, bool $required, bool $selectable, string $condition = 'always'): DocumentFlowStage
     {
+        $workflowConditionId = null;
+        $conditionValue = null;
+        if ($condition !== 'always') {
+            $workflowConditionId = WorkflowCondition::firstOrCreate(
+                ['key' => 'has_budget_implications'],
+                ['label' => 'Has budget implications?', 'input_type' => 'boolean', 'is_active' => true],
+            )->id;
+            $conditionValue = $condition === 'with_budget' ? '1' : '0';
+        }
+
         return DocumentFlowStage::create([
             'document_type_id' => $type->id, 'office_id' => $office->id, 'stage_type' => $stageType,
             'label' => $label, 'sequence' => $sequence, 'is_required' => $required,
-            'is_selectable' => $selectable, 'condition' => $condition,
+            'is_selectable' => $selectable, 'workflow_condition_id' => $workflowConditionId,
+            'condition_operator' => 'equals', 'condition_value' => $conditionValue,
         ]);
     }
 }

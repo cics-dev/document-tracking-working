@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class Document extends Model
 {
+    protected $casts = [
+        'date_sent' => 'date',
+        'is_revision' => 'boolean',
+    ];
+
     protected $fillable = [
         'document_number',
         'from_id',

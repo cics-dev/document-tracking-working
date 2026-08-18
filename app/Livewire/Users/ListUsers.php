@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use App\Models\Office;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ArchivalService;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -22,6 +23,8 @@ class ListUsers extends Component
     public string $sortBy = 'name';
 
     public string $sortDirection = 'asc';
+
+    public bool $showArchived = false;
 
     public function mount(): void
     {
@@ -41,6 +44,11 @@ class ListUsers extends Component
         $this->resetPage();
     }
 
+    public function updatedShowArchived(): void
+    {
+        $this->resetPage();
+    }
+
     public function sort(string $column): void
     {
         if (! in_array($column, ['name', 'email', 'position', 'created_at'], true)) {
@@ -53,7 +61,7 @@ class ListUsers extends Component
 
     public function render()
     {
-        $users = User::query()->with('profile', 'office')
+        $users = User::query()->when($this->showArchived, fn (Builder $query) => $query->onlyTrashed())->with('profile', 'office')
             ->when($this->search !== '', fn (Builder $query) => $query->where(fn (Builder $query) => $query
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%")
@@ -72,27 +80,6 @@ class ListUsers extends Component
 
     public function editUser($id)
     {
-        $user = User::with('profile', 'office')->findOrFail($id);
-
-        $this->userId = $user->id;
-        $this->editMode = true;
-
-        $this->family_name = $user->profile->family_name;
-        $this->given_name = $user->profile->given_name;
-        $this->middle_name = $user->profile->middle_name;
-        $this->middle_initial = $user->profile->middle_initial;
-        $this->suffix = $user->profile->suffix;
-        $this->honorifics = $user->profile->honorifics;
-        $this->titles = $user->profile->titles;
-
-        $this->gender = $user->profile->gender;
-        $this->email = $user->email;
-        $this->office_id = $user->office_id;
-        $this->position = $user->profile->position;
-        $this->role_id = $user->role_id;
-
-        $this->is_head = $user->office && $user->office->head_id == $user->id;
-
         return redirect()->route('users.edit-user', $id);
     }
 
@@ -100,7 +87,14 @@ class ListUsers extends Component
     {
         abort_unless(auth()->user()?->hasAccess('manage_users'), 403);
         abort_if((int) $id === auth()->id(), 422, 'You cannot deactivate your own account here.');
-        User::findOrFail($id)->delete();
+        app(ArchivalService::class)->archiveUser(User::findOrFail($id));
+        $this->resetPage();
+    }
+
+    public function restoreUser(int $id): void
+    {
+        abort_unless(auth()->user()?->hasAccess('manage_users'), 403);
+        app(ArchivalService::class)->restoreUser(User::onlyTrashed()->findOrFail($id));
         $this->resetPage();
     }
 }

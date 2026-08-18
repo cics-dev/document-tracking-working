@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Livewire\AccessRights\ManageAccessRights;
 use App\Livewire\DocumentFlows\ManageDocumentFlows;
-use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use App\Livewire\Documents\CreateDocument;
+use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use App\Livewire\Offices\CreateOffice;
 use App\Livewire\Roles\ManageRoles;
 use App\Livewire\Users\CreateUser;
@@ -46,7 +46,7 @@ class SystemManagementRenderingTest extends TestCase
         DocumentFlowStage::create([
             'document_type_id' => $type->id, 'office_id' => $office->id, 'stage_type' => 'routing',
             'label' => 'Test review', 'description' => 'Runtime rendering check', 'sequence' => 10,
-            'is_required' => false, 'is_selectable' => true, 'condition' => 'always',
+            'is_required' => false, 'is_selectable' => true,
         ]);
 
         $this->actingAs($user);

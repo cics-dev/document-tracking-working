@@ -11,18 +11,31 @@ use Livewire\Component;
 class ManageDocumentTypes extends Component
 {
     public ?int $editingId = null;
+
     public string $name = '';
+
     public string $abbreviation = '';
+
     public string $recipient_mode = 'office';
+
     public string $recipient_label = 'To';
+
     public string $recipient_office_id = '';
+
     public string $document_level = 'Inter';
+
     public string $number_prefix = '';
+
     public bool $show_thru = true;
+
     public bool $show_carbon_copy = true;
+
     public bool $allow_attachments = true;
+
     public bool $requires_signatories = false;
+
     public bool $is_publicly_creatable = false;
+
     public string $content_template = '';
 
     public function mount(): void
@@ -86,8 +99,12 @@ class ManageDocumentTypes extends Component
     public function resetForm(): void
     {
         $this->reset('editingId', 'name', 'abbreviation', 'recipient_office_id', 'number_prefix', 'requires_signatories', 'is_publicly_creatable', 'content_template');
-        $this->recipient_mode = 'office'; $this->recipient_label = 'To'; $this->document_level = 'Inter';
-        $this->show_thru = true; $this->show_carbon_copy = true; $this->allow_attachments = true;
+        $this->recipient_mode = 'office';
+        $this->recipient_label = 'To';
+        $this->document_level = 'Inter';
+        $this->show_thru = true;
+        $this->show_carbon_copy = true;
+        $this->allow_attachments = true;
         $this->resetValidation();
     }
 

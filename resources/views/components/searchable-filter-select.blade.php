@@ -29,6 +29,12 @@
             this.search = ''
             this.open = false
         },
+        openDropdown() {
+            if ({{ $disabled ? 'true' : 'false' }}) return
+
+            this.open = true
+            this.$nextTick(() => this.$refs.search?.focus())
+        },
     }"
     class="relative"
     @click.outside="open = false; search = ''"
@@ -37,7 +43,7 @@
     <button
         type="button"
         class="flex h-10 w-full items-center justify-between rounded-lg border border-zinc-200 border-b-zinc-300/80 bg-white px-3 text-left text-sm text-zinc-700 shadow-xs transition hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300"
-        @click="open = !open; if (open) { $nextTick(() => $refs.search.focus()) }"
+        @click="open ? (open = false, search = '') : openDropdown()"
         :aria-expanded="open"
         aria-haspopup="listbox"
         @disabled($disabled)
@@ -51,11 +57,21 @@
         x-cloak
         x-show="open"
         x-transition.origin.top
-        class="absolute z-30 mt-1 w-full min-w-64 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-800"
+        class="absolute z-50 mt-1 w-full min-w-64 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-800"
         role="listbox"
     >
         <div class="border-b border-zinc-200 p-2 dark:border-white/10">
-            <flux:input x-ref="search" x-model="search" type="search" x-bind:placeholder="{{ \Illuminate\Support\Js::from($searchPlaceholder) }}" aria-label="{{ $searchPlaceholder }}" />
+            <input
+                x-ref="search"
+                x-model="search"
+                type="search"
+                placeholder="{{ $searchPlaceholder }}"
+                aria-label="{{ $searchPlaceholder }}"
+                autocomplete="off"
+                class="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-800 outline-none transition placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-100"
+                @keydown.escape.stop="open = false; search = ''"
+                @keydown.enter.prevent="if (filteredOptions().length === 1) select(filteredOptions()[0])"
+            >
         </div>
 
         <div class="max-h-64 overflow-y-auto p-1">

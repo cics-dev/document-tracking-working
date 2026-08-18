@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamp('viewed_at')->nullable();
             $table->timestamps();
+            $table->unique(['document_id', 'user_id']);
+            $table->index(['user_id', 'document_id']);
         });
     }
 

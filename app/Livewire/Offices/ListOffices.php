@@ -3,26 +3,13 @@
 namespace App\Livewire\Offices;
 
 use App\Models\Office;
+use App\Services\ArchivalService;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ListOffices extends Component
 {
     use WithPagination;
-
-    public $name;
-
-    public $abbreviation;
-
-    public $office_type;
-
-    public $head_id;
-
-    public $editMode = false;
-
-    public $officeId;
-
-    public $content = '';
 
     public string $search = '';
 
@@ -32,12 +19,7 @@ class ListOffices extends Component
 
     public string $sortDirection = 'asc';
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'abbreviation' => 'required|string|max:50|unique:offices,abbreviation',
-        'office_type' => 'required|in:ACAD,ADMIN',
-        'head_id' => 'nullable|exists:users,id',
-    ];
+    public bool $showArchived = false;
 
     public function mount(): void
     {
@@ -50,6 +32,11 @@ class ListOffices extends Component
     }
 
     public function updatedTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedShowArchived(): void
     {
         $this->resetPage();
     }
@@ -75,15 +62,24 @@ class ListOffices extends Component
         return redirect()->route('offices.edit-office', $id);
     }
 
-    public function deleteOffice($id)
+    public function deleteOffice($id): void
     {
-        Office::findOrFail($id)->delete();
+        abort_unless(auth()->user()?->hasAccess('manage_offices'), 403);
+        $this->resetErrorBag('archive');
+        app(ArchivalService::class)->archiveOffice(Office::findOrFail($id));
+        $this->resetPage();
+    }
+
+    public function restoreOffice(int $id): void
+    {
+        abort_unless(auth()->user()?->hasAccess('manage_offices'), 403);
+        app(ArchivalService::class)->restoreOffice(Office::onlyTrashed()->findOrFail($id));
         $this->resetPage();
     }
 
     public function render()
     {
-        $offices = Office::query()->with('head', 'actingHead')
+        $offices = Office::query()->when($this->showArchived, fn ($query) => $query->onlyTrashed())->with('head', 'actingHead')
             ->when($this->search !== '', fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$this->search}%")->orWhere('abbreviation', 'like', "%{$this->search}%")))
             ->when($this->typeFilter !== '', fn ($query) => $query->where('office_type', $this->typeFilter))
             ->orderBy($this->sortBy, $this->sortDirection)

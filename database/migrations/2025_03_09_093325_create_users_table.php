@@ -21,8 +21,15 @@ return new class extends Migration
             $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('office_id')->nullable()->constrained()->nullOnDelete();
             $table->string('signature')->nullable();
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::table('offices', function (Blueprint $table) {
+            $table->foreign('head_id')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('acting_head_id')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -46,6 +53,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('offices', function (Blueprint $table) {
+            $table->dropForeign(['head_id']);
+            $table->dropForeign(['acting_head_id']);
+        });
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');

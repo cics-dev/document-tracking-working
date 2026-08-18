@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('role_document_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('document_type_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('document_type_id')->constrained()->cascadeOnDelete();
             $table->boolean('is_allowed')->default(true);
             $table->timestamps();
+            $table->unique(['role_id', 'document_type_id']);
         });
     }
 

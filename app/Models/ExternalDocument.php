@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 
 class ExternalDocument extends Model
 {
+    protected $casts = [
+        'received_date' => 'date',
+    ];
+
     protected $fillable = [
         'document_number',
         'from',
@@ -46,7 +50,7 @@ class ExternalDocument extends Model
 
                 // Case 3: Fallback (Safety net)
                 // If we forgot to load anything, assume unread to prevent N+1 queries
-                return false; 
+                return false;
             }
         );
     }

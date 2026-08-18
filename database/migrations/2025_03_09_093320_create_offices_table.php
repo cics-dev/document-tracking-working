@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('offices', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('abbreviation', 50);
+            $table->string('abbreviation', 50)->unique();
             $table->enum('office_type', ['ACAD', 'ADMIN', ''])->default('');
-            $table->unsignedBigInteger('head_id')->nullable(); // FK added later
+            $table->unsignedBigInteger('head_id')->nullable();
+            $table->unsignedBigInteger('acting_head_id')->nullable();
+            $table->string('workflow_key')->nullable()->unique();
             $table->string('office_logo')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

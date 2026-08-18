@@ -8,6 +8,10 @@ class DocumentCarbonCopy extends Model
 {
     protected $fillable = ['document_id', 'user_id', 'viewed_at'];
 
+    protected $casts = [
+        'viewed_at' => 'datetime',
+    ];
+
     public function document()
     {
         return $this->belongsTo(Document::class);

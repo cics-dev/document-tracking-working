@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Office extends Model
 {
     use SoftDeletes;
+
     protected $fillable = ['name', 'abbreviation', 'workflow_key', 'office_type', 'head_id', 'acting_head_id', 'office_logo'];
 
     public function head()
@@ -22,16 +23,37 @@ class Office extends Model
 
     public function getWorkflowAssigneeAttribute(): ?User
     {
-        return $this->actingHead ?? $this->head;
+        if ($this->actingHead && ! $this->actingHead->trashed()) {
+            return $this->actingHead;
+        }
+
+        return $this->head && ! $this->head->trashed() ? $this->head : null;
     }
 
     public function workflowAssigneePosition(): ?string
     {
-        if ($this->actingHead) {
+        if ($this->actingHead && ! $this->actingHead->trashed()) {
             return 'Officer-in-Charge'.($this->name ? ', '.$this->name : '');
         }
 
-        return $this->head?->position;
+        return $this->workflow_assignee?->position;
+    }
+
+    public function qualifyPosition(?string $position): ?string
+    {
+        if (blank($position) || $position === 'N/A' || blank($this->name)) {
+            return $position;
+        }
+
+        $normalize = fn (string $value) => str($value)->lower()->replaceMatches('/[^a-z0-9]+/', ' ')->squish();
+        $positionWords = $normalize($position)->explode(' ')->filter(fn ($word) => strlen($word) > 2);
+        $officeName = $normalize($this->name);
+
+        return $positionWords->every(fn ($word) => $officeName->contains($word))
+            || $officeName->contains($normalize($position))
+            || $normalize($position)->contains($officeName)
+                ? $position
+                : $position.', '.$this->name;
     }
 
     public function users()

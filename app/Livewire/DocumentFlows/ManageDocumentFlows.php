@@ -3,38 +3,58 @@
 namespace App\Livewire\DocumentFlows;
 
 use App\Models\DocumentFlowStage;
+use App\Models\DocumentGenerationRule;
 use App\Models\DocumentType;
 use App\Models\Office;
-use App\Models\WorkflowCondition;
-use App\Models\DocumentGenerationRule;
 use App\Models\Role;
+use App\Models\WorkflowCondition;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class ManageDocumentFlows extends Component
 {
     public string $documentTypeId = '';
+
     public ?int $stageId = null;
+
     public string $officeId = '';
+
     public string $stageType = 'routing';
+
     public string $label = '';
+
     public string $description = '';
+
     public bool $isRequired = true;
+
     public bool $isSelectable = false;
-    public string $condition = 'always';
+
     public string $workflowConditionId = '';
+
     public string $conditionOperator = 'equals';
+
     public string $conditionValue = '';
+
     public string $newConditionKey = '';
+
     public string $newConditionLabel = '';
+
     public string $newConditionType = 'boolean';
+
     public string $newConditionOptions = '';
+
     public string $generationContext = 'internal';
+
     public string $generationSourceTypeId = '';
+
     public string $generationTargetTypeId = '';
+
     public string $generationLabel = '';
+
     public string $generationStatus = 'Approved';
+
     public bool $generationRequiresAssignment = true;
+
     public array $generationRoles = [];
 
     public function mount(): void
@@ -53,17 +73,9 @@ class ManageDocumentFlows extends Component
         $this->description = $stage->description ?? '';
         $this->isRequired = $stage->is_required;
         $this->isSelectable = $stage->is_selectable;
-        $this->condition = $stage->condition;
         $this->workflowConditionId = (string) ($stage->workflow_condition_id ?? '');
         $this->conditionOperator = $stage->condition_operator ?? 'equals';
         $this->conditionValue = $stage->condition_value ?? '';
-    }
-
-    public function updatedStageType(string $value): void
-    {
-        if ($value === 'signatory' && ! in_array($this->label, ['Approved by', 'Recommending Approval'], true)) {
-            $this->label = 'Recommending Approval';
-        }
     }
 
     public function updatedWorkflowConditionId(): void
@@ -71,6 +83,13 @@ class ManageDocumentFlows extends Component
         $this->conditionOperator = 'equals';
         $this->conditionValue = '';
         $this->resetValidation(['conditionValue', 'conditionOperator']);
+    }
+
+    public function updatedStageType(string $value): void
+    {
+        if ($value === 'signatory' && ! in_array($this->label, ['Approved by', 'Recommending Approval'], true)) {
+            $this->label = 'Recommending Approval';
+        }
     }
 
     public function save(): void
@@ -102,7 +121,7 @@ class ManageDocumentFlows extends Component
             'sequence' => $this->stageId
                 ? DocumentFlowStage::findOrFail($this->stageId)->sequence
                 : $this->nextInternalOrder($data['documentTypeId'], $data['stageType']),
-            'is_required' => $data['isRequired'], 'is_selectable' => $data['isSelectable'], 'condition' => 'always',
+            'is_required' => $data['isRequired'], 'is_selectable' => $data['isSelectable'],
             'workflow_condition_id' => $data['workflowConditionId'] !== '' ? $data['workflowConditionId'] : null,
             'condition_operator' => $data['conditionOperator'],
             'condition_value' => $data['conditionValue'] === '' ? null : $data['conditionValue'],
@@ -122,8 +141,12 @@ class ManageDocumentFlows extends Component
     public function resetStage(): void
     {
         $this->reset('stageId', 'officeId', 'label', 'description');
-        $this->stageType = 'routing'; $this->isRequired = true; $this->isSelectable = false; $this->condition = 'always';
-        $this->workflowConditionId = ''; $this->conditionOperator = 'equals'; $this->conditionValue = '';
+        $this->stageType = 'routing';
+        $this->isRequired = true;
+        $this->isSelectable = false;
+        $this->workflowConditionId = '';
+        $this->conditionOperator = 'equals';
+        $this->conditionValue = '';
         $this->resetValidation();
     }
 
@@ -143,12 +166,21 @@ class ManageDocumentFlows extends Component
 
     private function conditionValueRules(): array
     {
-        if ($this->workflowConditionId === '') return ['nullable', 'string', 'max:255'];
+        if ($this->workflowConditionId === '') {
+            return ['nullable', 'string', 'max:255'];
+        }
         $condition = WorkflowCondition::find($this->workflowConditionId);
         $rules = ['required', 'string', 'max:255'];
-        if ($condition?->input_type === 'number') $rules[] = 'numeric';
-        if ($condition?->input_type === 'boolean') $rules[] = Rule::in(['0', '1']);
-        if ($condition?->input_type === 'select') $rules[] = Rule::in($condition->options ?? []);
+        if ($condition?->input_type === 'number') {
+            $rules[] = 'numeric';
+        }
+        if ($condition?->input_type === 'boolean') {
+            $rules[] = Rule::in(['0', '1']);
+        }
+        if ($condition?->input_type === 'select') {
+            $rules[] = Rule::in($condition->options ?? []);
+        }
+
         return $rules;
     }
 
@@ -167,7 +199,8 @@ class ManageDocumentFlows extends Component
             'newConditionOptions' => ['nullable', 'string'],
         ]);
         WorkflowCondition::create(['key' => $data['newConditionKey'], 'label' => $data['newConditionLabel'], 'input_type' => $data['newConditionType'], 'options' => collect(explode(',', $data['newConditionOptions']))->map(fn ($v) => trim($v))->filter()->values()->all() ?: null]);
-        $this->reset('newConditionKey', 'newConditionLabel', 'newConditionOptions'); $this->newConditionType = 'boolean';
+        $this->reset('newConditionKey', 'newConditionLabel', 'newConditionOptions');
+        $this->newConditionType = 'boolean';
         session()->flash('status', 'Workflow condition added.');
     }
 
@@ -193,9 +226,25 @@ class ManageDocumentFlows extends Component
         session()->flash('status', 'Generation rule added.');
     }
 
-    public function deleteGenerationRule(int $id): void { $this->authorizeAccess(); DocumentGenerationRule::findOrFail($id)->delete(); }
-    public function toggleGenerationRule(int $id): void { $this->authorizeAccess(); $rule = DocumentGenerationRule::findOrFail($id); $rule->update(['is_active' => ! $rule->is_active]); }
-    public function toggleCondition(int $id): void { $this->authorizeAccess(); $condition = WorkflowCondition::findOrFail($id); $condition->update(['is_active' => ! $condition->is_active]); }
+    public function deleteGenerationRule(int $id): void
+    {
+        $this->authorizeAccess();
+        DocumentGenerationRule::findOrFail($id)->delete();
+    }
+
+    public function toggleGenerationRule(int $id): void
+    {
+        $this->authorizeAccess();
+        $rule = DocumentGenerationRule::findOrFail($id);
+        $rule->update(['is_active' => ! $rule->is_active]);
+    }
+
+    public function toggleCondition(int $id): void
+    {
+        $this->authorizeAccess();
+        $condition = WorkflowCondition::findOrFail($id);
+        $condition->update(['is_active' => ! $condition->is_active]);
+    }
 
     public function render()
     {

@@ -58,12 +58,14 @@ class DocumentStep extends Model
             return $this->user;
         }
 
-        return $this->office?->workflow_assignee ?? $this->user;
+        $assignee = $this->office?->workflow_assignee ?? $this->user;
+
+        return $assignee && ! $assignee->trashed() ? $assignee : null;
     }
 
     public function isAssignedTo(User $user): bool
     {
         return $this->status === 'Pending'
-            && ($this->office?->workflow_assignee?->is($user) ?? $this->user?->is($user));
+            && $this->active_user?->is($user);
     }
 }

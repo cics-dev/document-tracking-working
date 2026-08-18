@@ -224,6 +224,17 @@
 </head>
 <body>
     @php
+        $printLayout = match ($documentType ?? null) {
+            'Indorsement Letter' => 'indorsement',
+            'External Communication Response Letter' => 'letter',
+            'Special Order' => 'special_order',
+            default => 'memorandum',
+        };
+        $documentTitle = $documentType === 'Intra-Office Memorandum' ? 'College Memorandum' : ($documentType ?? 'Document');
+        $showApprovalAction = in_array($documentType ?? null, ['Request Letter Memorandum', 'Indorsement Letter'], true);
+        $showSignatories = ($documentType ?? null) !== 'Inter-Office Memorandum';
+        $recipientLabel = in_array($documentType ?? null, ['Intra-Office Memorandum', 'Inter-Office Memorandum'], true) ? 'To' : 'For';
+        $documentLevel = ($documentType ?? null) === 'Intra-Office Memorandum' ? 'Intra' : 'Inter';
         $status = null;
         if (isset($document)) {
             if (is_array($document)) {
@@ -233,7 +244,7 @@
             }
         }
     @endphp
-    @if ($documentType == 'Indorsement Letter')
+    @if ($printLayout === 'indorsement')
         <div class="document-container">
             <table class="document-header" cellspacing="0" cellpadding="0">
                 <tr>
@@ -261,7 +272,7 @@
                 </tr>
                 <tr>
                     <td class="office-title-area" rowspan="3" style="width: 50%;">
-                        Office of the Vice President for Administration and Finance
+                        {{ $issuingOfficeName ?? '' }}
                     </td>
 
                     <td class="info-cell">Revision Code</td>
@@ -296,24 +307,20 @@
             Region IX, Western Mindanao<br>
             R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
             Telephone No.: 955-4024 / 991-4012
-            @if(isset($office_logo) && $office_logo && $documentType=='Intra')
+            @if(isset($office_logo) && $office_logo && $documentLevel === 'Intra')
                 <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
             @endif
         </div>
 
         <hr style="margin: 10px 0;">
         
-        @if ($documentType == 'External Communication Response Letter')
+        @if ($printLayout === 'letter')
         <br>{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}<br><br><br>
         @endif
-        @if ($documentType != 'External Communication Response Letter')
+        @if ($printLayout !== 'letter')
         <div class="memo-info">
-            @if($documentType == 'Intra')
-                <p><strong>College Memorandum</strong><br>
-            @else
-                <p><strong>{{ strtoupper($documentType) }}</strong><br>
-            @endif
-            @if($documentType != 'Special Order')
+            <p><strong>{{ strtoupper($documentTitle) }}</strong><br>
+            @if($printLayout !== 'special_order')
                 {{ $documentNumber }}</p>
             @else
                 <?php
@@ -328,15 +335,15 @@
                 ?>
             @endif
             <table>
-                @if(!empty($toName) && $documentType != 'Special Order' && $toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
+                @if(!empty($toName) && $printLayout !== 'special_order' && $toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
                     <tr>
-                        <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
+                        <td class="label">{{ strtoupper($recipientLabel) }}</td>
                         <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
                         </td>
                     </tr>
                 @endif
-                @if(!empty($thru) && $documentType != 'Special Order')
+                @if(!empty($thru) && $printLayout !== 'special_order')
                     <tr>
                         <td class="label">THRU</td>
                         <td>
@@ -344,17 +351,11 @@
                         </td>
                     </tr>
                 @endif
-                @if ($documentType != 'Special Order')
+                @if ($printLayout !== 'special_order')
                     <tr>
-                        <td class="label" style="{{ 
-                            ($fromPosition == 'University President' && $status == 'Approved') || 
-                            ($fromPosition != 'University President') 
-                            ? 'padding-top:35px;' : '' }}">FROM</td>
+                        <td class="label" style="{{ $status === 'Approved' ? 'padding-top:35px;' : '' }}">FROM</td>
                         <td>
-                            @if(
-                                ($fromPosition == 'University President' && $status == 'Approved') ||
-                                ($fromPosition != 'University President')
-                            )
+                            @if($status === 'Approved')
                                 @if(isset($document))
                                     @php
                                         $fromHeadSig = is_array($document) ? ($document['from_office']['head']['signature'] ?? null) : ($document->fromOffice->head->signature ?? null);
@@ -386,18 +387,20 @@
         @endif
     @endif
 
-    <div class="content" style="line-height: {{ $documentType == 'External Communication Response Letter' ? '0.25' : '1.5' }};">
+    <div class="content" style="line-height: {{ $printLayout === 'letter' ? '0.25' : '1.5' }};">
         {!! $content !!}
     </div>
 
-    @if(!empty($signatories) && $documentType != 'Inter-Office Memorandum')
+    @if(!empty($signatories) && $showSignatories)
     <div class="signatory">
-        @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
-                @if($role != "Approved by" 
-                    || 
-                    ($role == "Approved by" && $documentType != 'Request Letter Memorandum' && $documentType != 'Indorsement Letter'))
+        @php
+            $signatoryGroups = collect($signatories)->groupBy('role');
+            $approvalRole = $showApprovalAction ? $signatoryGroups->keys()->last() : null;
+        @endphp
+        @foreach($signatoryGroups as $role => $grouped)
+                @if(!$showApprovalAction || $role !== $approvalRole)
                     <div class="signatory-group">
-                        @if (!empty($role) && $documentType == 'Request Letter Memorandum')
+                        @if (!empty($role))
                             <p class="signatory-label">{{ $role }}:</p>
                         @endif
 
@@ -421,7 +424,7 @@
                             @endforeach
                         </div>
                     </div>
-                @elseif($documentType === 'Request Letter Memorandum' || $documentType === 'Indorsement Letter')
+                @else
                     <br><br>   
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
@@ -507,7 +510,7 @@
     @endif
 
     <footer style="position: fixed; bottom: 30px; width: 100%; text-align: left; font-size: 12px;">
-        @if ($documentType === 'Special Order' || $documentType === 'External Communication Response Letter')
+        @if (in_array($printLayout, ['special_order', 'letter'], true))
             {{ $documentNumber }}
         @endif
     </footer>

@@ -3,7 +3,9 @@
 namespace App\Livewire\Settings;
 
 use App\Livewire\Actions\Logout;
+use App\Services\ArchivalService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class DeleteUserForm extends Component
@@ -19,7 +21,15 @@ class DeleteUserForm extends Component
             'password' => ['required', 'string', 'current_password'],
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        $user = Auth::user();
+        try {
+            app(ArchivalService::class)->archiveUser($user);
+        } catch (ValidationException $exception) {
+            $this->addError('password', $exception->errors()['archive'][0]);
+
+            return;
+        }
+        $logout();
 
         $this->redirect('/', navigate: true);
     }

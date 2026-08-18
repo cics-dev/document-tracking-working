@@ -32,7 +32,9 @@
         <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="shrink-0">
             Reset filters
         </flux:button>
+        <flux:checkbox wire:model.live="showArchived" label="Archived users" />
     </div>
+    <flux:error name="archive" />
 
     <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <!-- Desktop Table -->
@@ -77,14 +79,20 @@
                                          x-transition:leave-end="transform opacity-0 scale-95"
                                          class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 border border-gray-100 dark:border-gray-600">
                                         <div class="py-1">
-                                            <button wire:click="editUser({{ $user['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-200 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-200 transition-colors">
+                                            @if($showArchived)
+                                            <button wire:click="restoreUser({{ $user->id }})" wire:confirm="Restore this user account?" class="flex items-center w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-100">
+                                               <b>Restore</b>
+                                            </button>
+                                            @else
+                                            <button wire:click="editUser({{ $user->id }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-200 dark:hover:bg-green-900 hover:text-green-700 dark:hover:text-green-200 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/12493/12493756.png" alt="Edit" class="h-4 w-4 mr-2">
                                                <b> Edit </b>
                                             </button>
-                                            <button wire:click="deleteuser({{ $user['id'] }})" class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-200 transition-colors">
+                                            <button wire:click="deleteUser({{ $user->id }})" wire:confirm="Deactivate this user? Historical documents will be retained." class="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-200 dark:hover:bg-red-900 hover:text-red-700 dark:hover:text-red-200 transition-colors">
                                                 <img src="https://cdn-icons-png.flaticon.com/128/11641/11641591.png" alt="Delete" class="h-4 w-4 mr-2">
                                                <b> Deactivate </b>
                                             </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -111,8 +119,12 @@
 
                     <!-- Inline Action Buttons for Mobile -->
                     <div class="flex justify-end space-x-2 mt-2">
-                        <button wire:click="editUser({{ $user['id'] }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
-                        <button wire:click="deleteUser('{{ $user['id'] }}')" wire:confirm="Deactivate this user? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
+                        @if($showArchived)
+                            <button wire:click="restoreUser({{ $user->id }})" wire:confirm="Restore this user account?" class="rounded-md bg-blue-500 px-3 py-1 text-white">Restore</button>
+                        @else
+                            <button wire:click="editUser({{ $user->id }})" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 transition">Edit</button>
+                            <button wire:click="deleteUser({{ $user->id }})" wire:confirm="Deactivate this user? Historical documents will be retained." class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition">Deactivate</button>
+                        @endif
                     </div>
                 </div>
             @empty

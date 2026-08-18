@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('action');
             $table->timestamps();
+            $table->unique(['documentable_type', 'documentable_id', 'user_id', 'action'], 'dal_document_user_action_unique');
+            $table->index(['user_id', 'action', 'documentable_type', 'documentable_id'], 'dal_user_action_document_index');
         });
     }
 

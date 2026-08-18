@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentAttachment extends Model
 {
+    protected $casts = [
+        'is_upload' => 'boolean',
+    ];
+
     protected $fillable = [
         'document_id',
         'attachment_document_id',
