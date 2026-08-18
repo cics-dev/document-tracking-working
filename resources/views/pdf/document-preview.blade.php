@@ -404,13 +404,16 @@
                         <div class="signatory-row">
                             @foreach($grouped as $signatory)
                                 <div class="signatory-box">
-                                    @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                    @if($signatory['signed'])
                                         @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
+                                        @if(isset($signatory['signature']) && $signatory['signature'])
                                         <img 
                                             src="{{ public_path('storage/' . ($signatory['signature'] ?: 'assets/img/fakesig1.png')) }}"
                                             alt="Signature" 
                                             style="height: 50px; margin-bottom: 10px;"
-                                        ><br>
+                                        >
+                                        @endif
+                                        <br>
                                     @endif
                                     <strong>{{ strtoupper($signatory['user_name']) }}</strong><br>
                                     {{ $signatory['position'] }}
@@ -465,13 +468,16 @@
                                             <div class="signatory-row" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; width: 200px;">
                                                 @foreach($grouped as $signatory)
                                                     <div class="signatory-box" style="text-align: center; width: 200px; padding-left: 40px;">
-                                                        @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
+                                                        @if($signatory['signed'])
                                                             @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
+                                                            @if(isset($signatory['signature']) && $signatory['signature'])
                                                             <img 
                                                                 src="{{ public_path('storage/' . $signatory['signature']) }}" 
                                                                 alt="Signature" 
                                                                 style="height: 50px; margin-bottom: 10px;"
-                                                            ><br>
+                                                            >
+                                                            @endif
+                                                            <br>
                                                         @endif
                                                         <strong>{{ strtoupper($signatory['user_name']) }}</strong><br>
                                                         {{ $signatory['position'] }}

@@ -1,3 +1,12 @@
+@props([
+    'recipient',
+    'remarks' => '',
+    'head',
+    'date',
+    'signature' => null,
+    'signedFor' => false,
+])
+
 <div class="bg-pink-200 p-6 max-w-md w-full border border-gray-800" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
     <div class="text-center mb-4">
         <div class="flex justify-end mb-2">  <!-- Changed from justify-start to justify-end -->
@@ -54,8 +63,16 @@
     </div>
 
     <div class="text-center mt-6">
-        <img class="w-20 rounded-full object-cover mx-auto" 
-            src="{{ asset('storage/assets/img/fakesig1.png') }}">
+        <div class="flex items-end justify-center gap-1 min-h-20">
+            @if($signedFor)
+                <span class="italic text-sm mb-2">for</span>
+            @endif
+            @if($signature)
+                <img class="h-20 max-w-40 object-contain"
+                    src="{{ asset('storage/'.$signature) }}"
+                    alt="Signature">
+            @endif
+        </div>
         <div class="inline-block border-t border-black px-8">
             <p class="font-bold text-sm">{{ $head }}</p>
         </div>

@@ -108,6 +108,15 @@ class DynamicConfigurationTest extends TestCase
         $available = app(DocumentGenerationService::class)->availableForInternal($document->fresh(['steps']), $user);
         $this->assertSame(['Generate ECLR'], $available->pluck('button_label')->all());
         $this->assertSame('ECLR', app(DocumentGenerationService::class)->redirectData($rule->load('targetType'), $document->fresh(['steps']), $user)['document_type']);
+
+        $this->actingAs($user);
+        $component = new CreateDocument;
+        $component->original_document_id = $document->id;
+        $component->document_type_id = (string) $targetType->id;
+        $method = new ReflectionMethod(CreateDocument::class, 'ensureDocumentTypeAllowed');
+        $method->setAccessible(true);
+        $method->invoke($component);
+        $this->assertTrue(true);
     }
 
     private function office(string $name, string $abbreviation): Office

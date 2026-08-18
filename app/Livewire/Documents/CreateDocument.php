@@ -310,15 +310,17 @@ class CreateDocument extends Component
 
     public function previewDocument()
     {
-        $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
+        $fromOffice = $this->document_from_id ? Office::with('head', 'actingHead')->find($this->document_from_id) : Auth::user()->office->loadMissing('head', 'actingHead');
+        $fromUser = $fromOffice?->workflow_assignee ?? Auth::user();
         $toName = 'N/A';
         $toPosition = 'N/A';
 
         if ($this->selectedType()?->recipient_mode === 'office' && $this->document_to_id) {
             $toOffice = $this->offices[$this->document_to_id] ?? null;
             if ($toOffice) {
-                $toName = $toOffice['head']['name'] ?? 'N/A';
-                $pos = $toOffice['head']['position'] ?? 'N/A';
+                $recipient = $this->allOffices[$this->document_to_id]?->workflow_assignee;
+                $toName = $recipient?->name ?? 'N/A';
+                $pos = $this->allOffices[$this->document_to_id]?->workflowAssigneePosition() ?? 'N/A';
                 $toPosition = ($pos != 'University President' && $pos != 'N/A') ? "$pos, {$toOffice['name']}" : $pos;
             }
         } else {
@@ -326,8 +328,8 @@ class CreateDocument extends Component
         }
 
         $fromName = $fromUser->name.($fromUser->profile->title ? ', '.$fromUser->profile->title : '');
-        $fromPosition = $fromUser->position ?? 'N/A';
-        if ($fromUser->position != 'University President' && $fromPosition != 'N/A') {
+        $fromPosition = $fromOffice?->workflowAssigneePosition() ?? $fromUser->position ?? 'N/A';
+        if ($fromUser->position != 'University President' && $fromPosition != 'N/A' && ! str_contains($fromPosition, $fromUser->office->name)) {
             $fromPosition .= ', '.$fromUser->office->name;
         }
 
@@ -342,12 +344,12 @@ class CreateDocument extends Component
         $docNumber = $this->documentNumberPrefix($typeObj, $officePart).'-_____-'.date('Y');
 
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
-            $office = $this->offices[$sig['office_id']] ?? null;
+            $office = $this->allOffices[$sig['office_id']] ?? null;
 
             return [
                 'role' => $sig['role'],
-                'user_name' => $office['head']['name'] ?? '',
-                'position' => $office['head']['position'] ?? '',
+                'user_name' => $office?->workflow_assignee?->name ?? '',
+                'position' => $office?->workflowAssigneePosition() ?? '',
             ];
         });
 
@@ -403,7 +405,10 @@ class CreateDocument extends Component
             ]);
         }
 
-        $fromUser = $this->document_from_id ? Office::find($this->document_from_id)->head : Auth::user();
+        $fromOffice = $this->document_from_id
+            ? Office::with('head', 'actingHead')->find($this->document_from_id)
+            : Auth::user()->office->loadMissing('head', 'actingHead');
+        $fromUser = $fromOffice?->workflow_assignee ?? Auth::user();
         $docNumber = null;
 
         if ($isSend && ! $this->is_manual_document_number && empty($this->document_number)) {
@@ -421,7 +426,11 @@ class CreateDocument extends Component
 
         $data = [
             'from_id' => $fromUser->office->id,
+            'from_name' => $isSend ? $fromUser->name : null,
+            'from_position' => $isSend ? ($fromUser->office->workflowAssigneePosition() ?? $fromUser->position) : null,
             'to_id' => $this->selectedType()?->recipient_mode === 'office' ? $this->document_to_id : null,
+            'to_name' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflow_assignee?->name : null,
+            'to_position' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflowAssigneePosition() : null,
             'to_text' => $this->selectedType()?->recipient_mode === 'text' ? $this->document_to_text : null,
             'document_type_id' => $this->document_type_id,
             'document_number' => $this->revision_document_number ?? $docNumber,
@@ -478,6 +487,11 @@ class CreateDocument extends Component
             ->where('source_document_type_id', $source->document_type_id)
             ->where('target_document_type_id', $this->document_type_id)->where('is_active', true)->first() : null;
         if (! $rule) return;
+        if (! $rule->roles()->whereKey(Auth::user()->effectiveRoleId())->exists()) {
+            throw ValidationException::withMessages([
+                'document_type_id' => 'This generation action is not assigned to your role.',
+            ]);
+        }
         if ($rule->required_status && $source->status !== $rule->required_status) {
             throw ValidationException::withMessages([
                 'document_type_id' => "This document may only be generated when its source is {$rule->required_status}.",
@@ -550,7 +564,15 @@ class CreateDocument extends Component
             ->where('is_allowed', true)
             ->exists();
 
-        if (! $isPublic && ! $allowed) {
+        $source = $this->original_document_id ? Document::find($this->original_document_id) : null;
+        $allowedByGenerationRule = $source && DocumentGenerationRule::where('source_context', 'internal')
+            ->where('source_document_type_id', $source->document_type_id)
+            ->where('target_document_type_id', $this->document_type_id)
+            ->where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->whereKey(Auth::user()->effectiveRoleId()))
+            ->exists();
+
+        if (! $isPublic && ! $allowed && ! $allowedByGenerationRule) {
             throw ValidationException::withMessages([
                 'document_type_id' => 'You are not authorized to create this document type.',
             ]);
@@ -755,9 +777,10 @@ class CreateDocument extends Component
             }
             $document->steps()->create([
                 'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
+                'assigned_user_id' => $office->workflow_assignee->id,
                 'step_type' => 'signatory', 'step_label' => $role,
-                'signatory_name' => $office->head?->name ?? $office->workflow_assignee->name,
-                'signatory_position' => $office->head?->position ?? $office->workflow_assignee->position,
+                'signatory_name' => $office->workflow_assignee->name,
+                'signatory_position' => $office->workflowAssigneePosition(),
                 'sequence' => $sequence++, 'status' => 'Pending',
             ]);
         }
@@ -812,11 +835,17 @@ class CreateDocument extends Component
         if (! $office?->workflow_assignee) {
             throw ValidationException::withMessages(['document_type_id' => "{$stage->label} has no assigned office head or OIC."]);
         }
+        $namedOfficial = $stage->stage_type === 'routing'
+            ? ($office->head ?? $office->workflow_assignee)
+            : $office->workflow_assignee;
         $document->steps()->create([
             'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
+            'assigned_user_id' => $namedOfficial->id,
             'step_type' => $stage->stage_type, 'step_label' => $stage->label,
-            'signatory_name' => $stage->stage_type === 'signatory' ? ($office->head?->name ?? $office->workflow_assignee->name) : null,
-            'signatory_position' => $stage->stage_type === 'signatory' ? ($office->head?->position ?? $office->workflow_assignee->position) : null,
+            'signatory_name' => $namedOfficial->name,
+            'signatory_position' => $stage->stage_type === 'routing'
+                ? $namedOfficial->position
+                : $office->workflowAssigneePosition(),
             'sequence' => $sequence, 'status' => 'Pending',
         ]);
     }
@@ -907,6 +936,7 @@ class CreateDocument extends Component
         }
 
         $this->original_document_id = $document->id;
+        $this->document_from_id = $document->from_id;
         $this->document_to_id = $document->to_id;
         $this->document_type_id = $document->document_type_id;
         $this->thru = $document->thru;

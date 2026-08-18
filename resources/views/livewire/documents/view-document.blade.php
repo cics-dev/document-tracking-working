@@ -14,7 +14,7 @@
         @foreach($slips as $slip)
         <div x-data="{ open: false }">
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[120px] relative">
-                <strong>Routing Slip from: {{ $slip->user->office->abbreviation }}</strong><br>
+                <strong>Routing Slip from: {{ $slip->office?->abbreviation ?? $slip->user->office->abbreviation }}</strong><br>
                 <strong>Status: {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}</strong><br>
                 <strong>Remarks:</strong>
                 <p class="truncate w-[260px]">
@@ -32,10 +32,12 @@
             <div x-show="open" class="fixed inset-0 flex items-start justify-center p-4 z-50" style="display: none;">
                 <div @click.away="open = false">
                     <x-routing-slip 
-                        recipient="{{ $slip->user->office->name }}"
+                        recipient="{{ $slip->office?->name ?? $slip->user->office->name }}"
                         remarks="{{ $slip->comments }}"
-                        head="{{ $slip->user->name }}"
+                        head="{{ $slip->signatory_name ?? $slip->office?->head?->name ?? $slip->user->name }}"
                         date="{{ $slip->processed_at }}"
+                        signature="{{ $slip->signature_path }}"
+                        :signed-for="$slip->signed_for"
                     />
                 </div>
             </div>

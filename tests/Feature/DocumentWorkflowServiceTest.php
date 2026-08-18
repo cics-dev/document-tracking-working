@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -74,6 +75,41 @@ class DocumentWorkflowServiceTest extends TestCase
             'user_id' => $oic->id,
             'status' => 'Reviewed',
         ]);
+    }
+
+    public function test_oic_routing_for_an_existing_head_assignment_preserves_head_and_records_for_signature(): void
+    {
+        [$document, $head] = $this->documentWithStep('routing');
+        $head->update(['name' => 'Maria Clara', 'position' => 'Vice President']);
+        $step = $document->steps()->firstOrFail();
+        $step->update([
+            'assigned_user_id' => $head->id,
+            'signatory_name' => $head->name,
+            'signatory_position' => $head->position,
+        ]);
+        $oic = User::factory()->create([
+            'name' => 'Elena Garcia',
+            'office_id' => $head->office_id,
+            'signature' => 'signatures/elena.png',
+        ]);
+        Office::findOrFail($head->office_id)->update(['acting_head_id' => $oic->id]);
+
+        app(DocumentWorkflowService::class)->approve($document, $oic);
+        $step->refresh();
+
+        $this->assertSame('Maria Clara', $step->signatory_name);
+        $this->assertSame('Vice President', $step->signatory_position);
+        $this->assertSame('signatures/elena.png', $step->signature_path);
+        $this->assertTrue($step->signed_for);
+
+        $routingSlip = Blade::render(
+            '<x-routing-slip recipient="Motorpool" remarks="Checked" :head="$head" :date="$date" :signature="$signature" :signed-for="true" />',
+            ['head' => $step->signatory_name, 'date' => $step->processed_at, 'signature' => $step->signature_path]
+        );
+        $this->assertStringContainsString('Maria Clara', $routingSlip);
+        $this->assertStringContainsString('signatures/elena.png', $routingSlip);
+        $this->assertStringContainsString('>for</span>', $routingSlip);
+        $this->assertStringNotContainsString('Elena Garcia</p>', $routingSlip);
     }
 
     public function test_designated_head_keeps_visibility_but_cannot_act_while_an_oic_is_active(): void

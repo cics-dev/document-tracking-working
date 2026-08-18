@@ -57,8 +57,8 @@ class DocumentWorkflowService
 
             $step->update([
                 'user_id' => $actor->id,
-                'signature_path' => $step->step_type === 'signatory' ? $actor->signature : $step->signature_path,
-                'signed_for' => $step->step_type === 'signatory' && $step->office?->head_id !== $actor->id,
+                'signature_path' => $actor->signature ?? $step->signature_path,
+                'signed_for' => ($step->assigned_user_id ?? $step->user_id) !== $actor->id,
                 'processed_at' => now(),
                 'comments' => $remarks,
                 'status' => $status,

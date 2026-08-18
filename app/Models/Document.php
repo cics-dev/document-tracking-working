@@ -11,7 +11,11 @@ class Document extends Model
     protected $fillable = [
         'document_number',
         'from_id',
+        'from_name',
+        'from_position',
         'to_id',
+        'to_name',
+        'to_position',
         'document_type_id',
         'thru',
         'subject',

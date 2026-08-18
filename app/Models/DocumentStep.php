@@ -13,6 +13,7 @@ class DocumentStep extends Model
     protected $fillable = [
         'document_id',
         'user_id',
+        'assigned_user_id',
         'office_id',
         'step_type',
         'step_label',

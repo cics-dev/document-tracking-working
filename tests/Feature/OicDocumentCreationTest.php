@@ -24,7 +24,7 @@ class OicDocumentCreationTest extends TestCase
         $role->permissions()->attach(Permission::where('key', 'send_documents')->firstOrFail());
         $office = Office::create(['name' => 'Draft Office', 'abbreviation' => 'DO', 'office_type' => 'ADMIN']);
         $head = User::factory()->create(['office_id' => $office->id, 'role_id' => $role->id]);
-        $oic = User::factory()->create(['office_id' => $office->id]);
+        $oic = User::factory()->create(['name' => 'Elena Garcia', 'office_id' => $office->id, 'signature' => 'signatures/elena.png']);
         $office->update(['head_id' => $head->id, 'acting_head_id' => $oic->id]);
         $type = DocumentType::create(['name' => 'Office Memorandum', 'abbreviation' => 'OM', 'recipient_mode' => 'none']);
         DB::table('role_document_types')->insert([
@@ -54,6 +54,14 @@ class OicDocumentCreationTest extends TestCase
         $this->actingAs($oic);
         Livewire::test(CreateDocument::class, ['draft_id' => $draft->id])
             ->assertSet('subject', 'Prepared by the head')
-            ->assertStatus(200);
+            ->set('content', 'Ready to send')
+            ->call('submitDocument', 'send')
+            ->assertHasNoErrors();
+
+        $sent = $draft->fresh();
+        $this->assertSame('Sent', $sent->status);
+        $this->assertSame('Elena Garcia', $sent->from_name);
+        $this->assertSame('Officer-in-Charge, Draft Office', $sent->from_position);
+        $this->assertSame($oic->id, $sent->created_by);
     }
 }

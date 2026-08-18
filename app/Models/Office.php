@@ -25,6 +25,15 @@ class Office extends Model
         return $this->actingHead ?? $this->head;
     }
 
+    public function workflowAssigneePosition(): ?string
+    {
+        if ($this->actingHead) {
+            return 'Officer-in-Charge'.($this->name ? ', '.$this->name : '');
+        }
+
+        return $this->head?->position;
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);

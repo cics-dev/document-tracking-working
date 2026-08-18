@@ -166,14 +166,14 @@ class ViewDocument extends Component
             }
         }
 
-        $toPosition = $this->document->toOffice?->head?->position ?? 'N/A';
-        if ($toPosition !== 'University President' && $toPosition != 'N/A') {
+        $toPosition = $this->document->to_position ?? $this->document->toOffice?->head?->position ?? 'N/A';
+        if ($toPosition !== 'University President' && $toPosition != 'N/A' && ! str_contains($toPosition, (string) $this->document->toOffice?->name)) {
             $toPosition .= ', '.$this->document->toOffice?->name;
         }
 
-        $fromPosition = $this->document->fromOffice->head->position ?? 'N/A';
+        $fromPosition = $this->document->from_position ?? $this->document->fromOffice->head->position ?? 'N/A';
         $fromLogo = $this->document->fromOffice->office_logo;
-        if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
+        if ($fromPosition !== 'University President' && $fromPosition != 'N/A' && ! str_contains($fromPosition, (string) $this->document->fromOffice?->name)) {
             $fromPosition .= ', '.$this->document->fromOffice->name;
         }
 
@@ -204,9 +204,9 @@ class ViewDocument extends Component
             'subject' => $this->document->subject,
             'content' => $this->document->content,
             'thru' => $this->document->thru,
-            'toName' => $this->document->toOffice->head->name ?? $this->document->to_text,
+            'toName' => $this->document->to_name ?? $this->document->toOffice->head->name ?? $this->document->to_text,
             'toPosition' => $toPosition,
-            'fromName' => $this->document->fromOffice->head->name ?? 'N/A',
+            'fromName' => $this->document->from_name ?? $this->document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
             'documentType' => $this->document->documentType->name ?? 'N/A',
@@ -477,14 +477,14 @@ class ViewDocument extends Component
             ];
         });
 
-        $toPosition = $attachment_document->toOffice?->head?->position ?? 'N/A';
-        if ($toPosition !== 'University President' && $toPosition != 'N/A') {
+        $toPosition = $attachment_document->to_position ?? $attachment_document->toOffice?->head?->position ?? 'N/A';
+        if ($toPosition !== 'University President' && $toPosition != 'N/A' && ! str_contains($toPosition, (string) $attachment_document->toOffice?->name)) {
             $toPosition .= ', '.$attachment_document->toOffice?->name;
         }
 
-        $fromPosition = $attachment_document->fromOffice->head->position ?? 'N/A';
+        $fromPosition = $attachment_document->from_position ?? $attachment_document->fromOffice->head->position ?? 'N/A';
         $fromLogo = $attachment_document->fromOffice->office_logo;
-        if ($fromPosition !== 'University President' && $fromPosition != 'N/A') {
+        if ($fromPosition !== 'University President' && $fromPosition != 'N/A' && ! str_contains($fromPosition, (string) $attachment_document->fromOffice?->name)) {
             $fromPosition .= ', '.$attachment_document->fromOffice->name;
         }
 
@@ -495,9 +495,9 @@ class ViewDocument extends Component
             'subject' => $attachment_document->subject,
             'content' => $attachment_document->content,
             'thru' => $attachment_document->thru,
-            'toName' => $attachment_document->toOffice->head->name ?? $attachment_document->to_text,
+            'toName' => $attachment_document->to_name ?? $attachment_document->toOffice->head->name ?? $attachment_document->to_text,
             'toPosition' => $toPosition,
-            'fromName' => $attachment_document->fromOffice->head->name ?? 'N/A',
+            'fromName' => $attachment_document->from_name ?? $attachment_document->fromOffice->head->name ?? 'N/A',
             'fromPosition' => $fromPosition,
             'office_logo' => $fromLogo,
             'documentType' => $attachment_document->documentType->name ?? 'N/A',

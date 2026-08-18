@@ -44,7 +44,7 @@
                     <div x-data="{ open: false }" class="relative">
                         <div
                             class="bg-blue-100 border-l-4 border-blue-500 text-blue-900 p-4 rounded shadow text-sm w-[280px] h-[120px] relative">
-                            <strong>From:</strong> {{ $slip->user->office->abbreviation }}<br>
+                            <strong>From:</strong> {{ $slip->office?->abbreviation ?? $slip->user->office->abbreviation }}<br>
                             <strong>Status:</strong> {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}<br>
                             <strong>Remarks:</strong> 
                             <p class="truncate w-[260px]">
@@ -69,10 +69,12 @@
                             >
                             <div @click.away="open = false" class="bg-white rounded-lg shadow-lg p-6 max-w-lg">
                                 <x-routing-slip
-                                    recipient="{{ $slip->user->office->name }}"
+                                    recipient="{{ $slip->office?->name ?? $slip->user->office->name }}"
                                     remarks="{{ $slip->comments }}"
-                                    head="{{ $slip->user->name }}"
+                                    head="{{ $slip->signatory_name ?? $slip->office?->head?->name ?? $slip->user->name }}"
                                     date="{{ $slip->processed_at }}"
+                                    signature="{{ $slip->signature_path }}"
+                                    :signed-for="$slip->signed_for"
                                 />
                             </div>
                         </div>
