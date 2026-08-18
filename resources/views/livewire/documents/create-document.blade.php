@@ -455,6 +455,11 @@
                 <span wire:loading wire:target="previewDocument">Loading...</span>
             </flux:button>
             
+            @if($headIsTemporarilyRelieved)
+                <div class="max-w-md text-sm text-amber-700 dark:text-amber-300">
+                    This office currently has an OIC. You may save and preview this draft; the OIC must send it.
+                </div>
+            @else
             <flux:button 
                 type="submit" 
                 wire:click.prevent="submitDocument('send')" 
@@ -467,6 +472,7 @@
                 <span wire:loading.remove wire:target="submitDocument('send')">@if (($selectedDocumentType?->document_level ?? 'Inter') !== 'Intra') Send @else Save @endif</span>
                 <span wire:loading wire:target="submitDocument('send')">Processing...</span>
             </flux:button>
+            @endif
         </div>
     </div>
 

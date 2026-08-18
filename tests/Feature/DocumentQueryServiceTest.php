@@ -15,6 +15,27 @@ class DocumentQueryServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_sent_list_merges_documents_created_by_the_user_with_documents_from_every_office_they_act_for(): void
+    {
+        $type = DocumentType::create(['name' => 'Office Letter', 'abbreviation' => 'OL']);
+        $homeOffice = Office::create(['name' => 'Home Office', 'abbreviation' => 'HO', 'office_type' => 'ADMIN']);
+        $actingOffice = Office::create(['name' => 'Acting Office', 'abbreviation' => 'AO', 'office_type' => 'ADMIN']);
+        $otherOffice = Office::create(['name' => 'Other Office', 'abbreviation' => 'OO', 'office_type' => 'ADMIN']);
+        $oic = User::factory()->create(['office_id' => $homeOffice->id]);
+        $actingOffice->update(['acting_head_id' => $oic->id]);
+        $otherUser = User::factory()->create(['office_id' => $otherOffice->id]);
+
+        $officeDocument = Document::create(['document_number' => 'AO-OL-1', 'from_id' => $actingOffice->id, 'document_type_id' => $type->id, 'subject' => 'Office history', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent']);
+        $createdDocument = Document::create(['document_number' => 'OO-OL-1', 'from_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Created personally', 'content' => 'Test', 'created_by' => $oic->id, 'status' => 'Sent']);
+        $unrelatedDocument = Document::create(['document_number' => 'OO-OL-2', 'from_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Unrelated', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent']);
+
+        $ids = app(DocumentQueryService::class)->listFor($oic, 'Sent')->pluck('id');
+
+        $this->assertTrue($ids->contains($officeDocument->id));
+        $this->assertTrue($ids->contains($createdDocument->id));
+        $this->assertFalse($ids->contains($unrelatedDocument->id));
+    }
+
     public function test_received_list_keeps_processed_steps_and_only_shows_ready_pending_steps(): void
     {
         $type = DocumentType::create(['name' => 'Workflow Letter', 'abbreviation' => 'WL']);

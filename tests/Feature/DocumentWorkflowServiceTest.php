@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\DocumentTypeController;
 use App\Models\Document;
 use App\Models\DocumentStep;
 use App\Models\DocumentType;
 use App\Models\Office;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -118,6 +121,33 @@ class DocumentWorkflowServiceTest extends TestCase
 
         $this->assertSame($headRole->id, $oic->effectiveRoleId());
         $this->assertNull($oic->fresh()->role_id);
+    }
+
+    public function test_oic_inherits_every_access_right_from_the_designated_head_role(): void
+    {
+        [$document, $head] = $this->documentWithStep('routing');
+        $oicRole = Role::create(['role' => 'Staff', 'description' => 'OIC stored role']);
+        $headRole = Role::create(['role' => 'Office Head', 'description' => 'Inherited role']);
+        $headPermission = Permission::firstOrCreate(['key' => 'send_documents'], ['label' => 'Send documents']);
+        $staffPermission = Permission::firstOrCreate(['key' => 'manage_users'], ['label' => 'Manage users']);
+        $headRole->permissions()->attach($headPermission);
+        $oicRole->permissions()->attach($staffPermission);
+        $headDocumentType = DocumentType::create(['name' => 'Head Document', 'abbreviation' => 'HD']);
+        $staffDocumentType = DocumentType::create(['name' => 'Staff Document', 'abbreviation' => 'SD']);
+        DB::table('role_document_types')->insert([
+            ['role_id' => $headRole->id, 'document_type_id' => $headDocumentType->id, 'is_allowed' => true],
+            ['role_id' => $oicRole->id, 'document_type_id' => $staffDocumentType->id, 'is_allowed' => true],
+        ]);
+        $head->update(['role_id' => $headRole->id]);
+        $oic = User::factory()->create(['office_id' => $head->office_id, 'role_id' => $oicRole->id]);
+        Office::findOrFail($head->office_id)->update(['acting_head_id' => $oic->id]);
+
+        $this->assertTrue($oic->hasAccess('send_documents'));
+        $this->assertFalse($oic->hasAccess('manage_users'));
+        $allowedDocumentTypeIds = app(DocumentTypeController::class)->index($oic)->pluck('id');
+        $this->assertTrue($allowedDocumentTypeIds->contains($headDocumentType->id));
+        $this->assertFalse($allowedDocumentTypeIds->contains($staffDocumentType->id));
+        $this->assertSame($oicRole->id, $oic->fresh()->role_id);
     }
 
     public function test_oic_can_inherit_permissions_for_an_office_different_from_their_home_office(): void

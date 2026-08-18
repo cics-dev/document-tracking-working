@@ -28,12 +28,14 @@ class DocumentQueryService
             'steps.office.head',
             'steps.office.actingHead',
             'cfs.user.office.head',
-        ]);
+            ]);
+
+        $officeIds = $user->workflowOfficeIds();
 
         return match ($mode) {
             'all' => $query,
-            'Sent' => $query->where(function (Builder $query) use ($user) {
-                $query->where('from_id', $user->office_id)
+            'Sent' => $query->where(function (Builder $query) use ($user, $officeIds) {
+                $query->whereIn('from_id', $officeIds)
                     ->orWhere('created_by', $user->id);
             }),
             'received' => $this->receivedBy($query, $user),

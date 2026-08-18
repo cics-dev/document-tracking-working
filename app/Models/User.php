@@ -81,7 +81,13 @@ class User extends Authenticatable
 
     public function hasAccess(string $key): bool
     {
-        return $this->role?->permissions()->where('key', $key)->exists() ?? false;
+        $roleId = $this->effectiveRoleId();
+
+        return $roleId !== null
+            && Role::query()
+                ->whereKey($roleId)
+                ->whereHas('permissions', fn ($query) => $query->where('key', $key))
+                ->exists();
     }
 
     public function role()

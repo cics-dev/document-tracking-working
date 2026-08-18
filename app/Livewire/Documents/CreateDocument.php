@@ -135,7 +135,9 @@ class CreateDocument extends Component
             ->filter()
             ->values();
 
-        return view('livewire.documents.create-document', compact('selectedDocumentType', 'flowConditions', 'cfOfficeRecords'))
+        $headIsTemporarilyRelieved = $this->headIsTemporarilyRelieved();
+
+        return view('livewire.documents.create-document', compact('selectedDocumentType', 'flowConditions', 'cfOfficeRecords', 'headIsTemporarilyRelieved'))
             ->layout('layouts.app');
     }
 
@@ -384,6 +386,12 @@ class CreateDocument extends Component
     {
         $isSend = $action === 'send';
         $status = $isSend ? 'Sent' : 'Draft';
+
+        if ($isSend && $this->headIsTemporarilyRelieved()) {
+            throw ValidationException::withMessages([
+                'document' => 'This office currently has an OIC. The designated head may prepare and preview drafts, but only the OIC may send documents.',
+            ]);
+        }
 
         $this->ensureDocumentTypeAllowed();
         if ($isSend) {
@@ -889,6 +897,15 @@ class CreateDocument extends Component
             return;
         }
 
+        if ($this->redirect_mode === 'edit') {
+            abort_unless(
+                $document->status === 'Draft'
+                && ($document->created_by === Auth::id() || in_array($document->from_id, Auth::user()->workflowOfficeIds(), true)),
+                403,
+                'You do not have permission to edit this draft.'
+            );
+        }
+
         $this->original_document_id = $document->id;
         $this->document_to_id = $document->to_id;
         $this->document_type_id = $document->document_type_id;
@@ -960,6 +977,18 @@ class CreateDocument extends Component
         $count = $root->revisions()->count();
 
         return $matches[1].$matches[2].chr(ord('a') + $count).$matches[3];
+    }
+
+    private function headIsTemporarilyRelieved(): bool
+    {
+        $office = $this->document_from_id
+            ? Office::find($this->document_from_id)
+            : Auth::user()?->office;
+
+        return $office !== null
+            && $office->head_id === Auth::id()
+            && $office->acting_head_id !== null
+            && $office->acting_head_id !== Auth::id();
     }
 
     public function viewAttachment($id, $type)
