@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('document_number')->unique()->nullable();
             $table->foreignId('from_id')->constrained('offices')->restrictOnDelete();
+            $table->foreignId('from_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('from_name')->nullable();
             $table->string('from_position')->nullable();
             $table->foreignId('to_id')->nullable()->constrained('offices')->nullOnDelete();

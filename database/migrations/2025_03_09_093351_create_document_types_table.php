@@ -26,6 +26,10 @@ return new class extends Migration
             $table->boolean('requires_signatories')->default(false);
             $table->boolean('is_publicly_creatable')->default(false);
             $table->text('content_template')->nullable();
+            $table->string('print_layout')->default('memorandum');
+            $table->string('sender_signature_policy')->default('approved');
+            $table->string('approver_display_mode')->default('labeled');
+            $table->boolean('allow_oic_signature')->default(true);
             $table->timestamps();
         });
     }
