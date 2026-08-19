@@ -9,12 +9,14 @@ use App\Livewire\DocumentTypes\ManageDocumentTypes;
 use App\Livewire\Offices\CreateOffice;
 use App\Livewire\Roles\ManageRoles;
 use App\Livewire\Users\CreateUser;
+use App\Models\Document;
 use App\Models\DocumentFlowStage;
 use App\Models\DocumentType;
 use App\Models\Office;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DocumentPreviewDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -32,7 +34,11 @@ class SystemManagementRenderingTest extends TestCase
         }
 
         $office = Office::create(['name' => 'Test Office', 'abbreviation' => 'TEST', 'office_type' => 'ADMIN']);
-        $user = User::factory()->create(['role_id' => $role->id, 'office_id' => $office->id]);
+        $user = User::factory()->create([
+            'role_id' => $role->id,
+            'office_id' => $office->id,
+            'signature' => 'signatures/test-sender.png',
+        ]);
         $office->update(['head_id' => $user->id]);
         $type = DocumentType::create([
             'name' => 'Dynamic Test Document', 'abbreviation' => 'DTD', 'recipient_mode' => 'office',
@@ -55,11 +61,47 @@ class SystemManagementRenderingTest extends TestCase
             Livewire::test($component)->assertStatus(200);
         }
 
+        Livewire::test(ManageDocumentTypes::class)
+            ->call('edit', $type->id)
+            ->assertSet('print_layout', 'memorandum')
+            ->set('print_layout', 'letter')
+            ->assertSet('sender_signature_policy', 'approved')
+            ->set('sender_signature_policy', 'always')
+            ->set('approver_display_mode', 'hidden')
+            ->set('allow_oic_signature', false)
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertDatabaseHas('document_types', [
+            'id' => $type->id,
+            'print_layout' => 'letter',
+            'sender_signature_policy' => 'always',
+            'approver_display_mode' => 'hidden',
+            'allow_oic_signature' => false,
+        ]);
+
+        $document = Document::create([
+            'document_number' => 'DTD-1', 'from_id' => $office->id, 'to_id' => $office->id,
+            'document_type_id' => $type->id, 'subject' => 'Layout test', 'content' => 'Test',
+            'created_by' => $user->id,
+        ]);
+        $previewData = app(DocumentPreviewDataService::class)->build($document);
+        $this->assertSame('letter', $previewData['printLayout']);
+        $this->assertSame('always', $previewData['senderSignaturePolicy']);
+        $this->assertSame('hidden', $previewData['approverDisplayMode']);
+        $this->assertSame('signatures/test-sender.png', $previewData['fromSignature']);
+
         Livewire::test(CreateDocument::class)
             ->set('document_type_id', (string) $type->id)
             ->call('handleUpdateDocumentType')
             ->call('addSignatory', ['role' => 'Reviewed by', 'office_id' => $office->id, 'locked' => false])
+            ->assertSet('signatories.0.role_type', 'Reviewed by')
+            ->set('signatories.0.role_type', 'Recommending Approval')
+            ->assertSet('signatories.0.role', 'Recommending Approval')
+            ->set('signatories.0.role_type', 'custom')
+            ->assertSet('signatories.0.role', '')
             ->assertSet('document_to_id', $office->id)
+            ->assertSee('Custom label')
+            ->assertSee('Enter custom label...')
             ->assertSee('Runtime rendering check')
             ->assertStatus(200);
     }

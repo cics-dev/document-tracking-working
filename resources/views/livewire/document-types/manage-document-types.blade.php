@@ -52,8 +52,25 @@
                 <flux:error name="document_level" />
             </flux:field>
             <flux:input wire:model="number_prefix" label="Number Prefix Template" placeholder="{office_with_type}-{type}" />
+            <flux:select wire:model="print_layout" label="Print Layout">
+                <flux:select.option value="memorandum">Memorandum</flux:select.option>
+                <flux:select.option value="letter">Letter</flux:select.option>
+                <flux:select.option value="indorsement">Indorsement</flux:select.option>
+                <flux:select.option value="special_order">Special Order</flux:select.option>
+            </flux:select>
+            <flux:select wire:model="sender_signature_policy" label="Sender Signature">
+                <flux:select.option value="approved">Only when approved</flux:select.option>
+                <flux:select.option value="always">Always</flux:select.option>
+                <flux:select.option value="never">Never</flux:select.option>
+            </flux:select>
+            <flux:select wire:model="approver_display_mode" label="Approver Display">
+                <flux:select.option value="action_box">Approved / Disapproved action box</flux:select.option>
+                <flux:select.option value="labeled">Show “Approved by” label</flux:select.option>
+                <flux:select.option value="signature_only">Signature and name only</flux:select.option>
+                <flux:select.option value="hidden">Hidden on paper (workflow only)</flux:select.option>
+            </flux:select>
             <flux:textarea wire:model="content_template" label="Initial Content Template" placeholder="Use {TO} and {SUBJECT}" />
-            <div class="space-y-2"><flux:checkbox wire:model="show_thru" label="Show Thru field" /><flux:checkbox wire:model="show_carbon_copy" label="Allow CF" /><flux:checkbox wire:model="allow_attachments" label="Allow uploading attachments" /><flux:checkbox wire:model="requires_signatories" label="Require signatories" /><flux:checkbox wire:model="is_publicly_creatable" label="Allow all users to create" /></div>
+            <div class="space-y-2"><flux:checkbox wire:model="show_thru" label="Show Thru field" /><flux:checkbox wire:model="show_carbon_copy" label="Allow CF" /><flux:checkbox wire:model="allow_attachments" label="Allow uploading attachments" /><flux:checkbox wire:model="requires_signatories" label="Require signatories" /><flux:checkbox wire:model="allow_oic_signature" label="Allow OIC to sign for the office head" /><flux:checkbox wire:model="is_publicly_creatable" label="Allow all users to create" /></div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
             <flux:button type="submit" variant="primary" icon="check">{{ $editingId ? 'Update Document Type' : 'Add Document Type' }}</flux:button>

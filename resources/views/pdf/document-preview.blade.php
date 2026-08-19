@@ -224,14 +224,13 @@
 </head>
 <body>
     @php
-        $printLayout = match ($documentType ?? null) {
-            'Indorsement Letter' => 'indorsement',
-            'External Communication Response Letter' => 'letter',
-            'Special Order' => 'special_order',
-            default => 'memorandum',
-        };
+        $printLayout = $printLayout ?? 'memorandum';
+        $senderSignaturePolicy = $senderSignaturePolicy ?? 'approved';
+        $fromSignedFor = $fromSignedFor ?? false;
         $documentTitle = $documentType === 'Intra-Office Memorandum' ? 'College Memorandum' : ($documentType ?? 'Document');
-        $showApprovalAction = in_array($documentType ?? null, ['Request Letter Memorandum', 'Indorsement Letter'], true);
+        $approverDisplayMode = $approverDisplayMode ?? 'labeled';
+        $showApprovalAction = $approverDisplayMode === 'action_box';
+        $showApprovedByLabel = $approverDisplayMode === 'labeled';
         $showSignatories = ($documentType ?? null) !== 'Inter-Office Memorandum';
         $recipientLabel = in_array($documentType ?? null, ['Intra-Office Memorandum', 'Inter-Office Memorandum'], true) ? 'To' : 'For';
         $documentLevel = ($documentType ?? null) === 'Intra-Office Memorandum' ? 'Intra' : 'Inter';
@@ -243,6 +242,8 @@
                 $status = $document->status ?? null;
             }
         }
+        $showSenderSignature = $senderSignaturePolicy === 'always'
+            || ($senderSignaturePolicy === 'approved' && $status === 'Approved');
     @endphp
     @if ($printLayout === 'indorsement')
         <div class="document-container">
@@ -353,17 +354,15 @@
                 @endif
                 @if ($printLayout !== 'special_order')
                     <tr>
-                        <td class="label" style="{{ $status === 'Approved' ? 'padding-top:35px;' : '' }}">FROM</td>
+                        <td class="label" style="{{ $showSenderSignature ? 'padding-top:35px;' : '' }}">FROM</td>
                         <td>
-                            @if($status === 'Approved')
-                                @if(isset($document))
-                                    @php
-                                        $fromHeadSig = is_array($document) ? ($document['from_office']['head']['signature'] ?? null) : ($document->fromOffice->head->signature ?? null);
-                                    @endphp
-                                    <img 
-                                        src="{{ public_path('storage/'.($fromHeadSig ?: 'assets/img/fakesig1.png')) }}" 
-                                        alt="Signature" 
-                                        style="height: 30px; padding-left: 20px"
+                            @if($showSenderSignature)
+                                @if(!empty($fromSignature))
+                                    @if($fromSignedFor)<span style="font-style: italic; vertical-align: bottom; padding-left: 20px">for</span>@endif
+                                    <img
+                                        src="{{ public_path('storage/'.$fromSignature) }}"
+                                        alt="Signature"
+                                        style="height: 30px"
                                     ><br>
                                 @endif
                             @endif
@@ -395,12 +394,13 @@
     <div class="signatory">
         @php
             $signatoryGroups = collect($signatories)->groupBy('role');
-            $approvalRole = $showApprovalAction ? $signatoryGroups->keys()->last() : null;
+            $approvalRole = $showApprovalAction && $signatoryGroups->has('Approved by') ? 'Approved by' : null;
         @endphp
         @foreach($signatoryGroups as $role => $grouped)
+                @continue($approverDisplayMode === 'hidden' && $role === 'Approved by')
                 @if(!$showApprovalAction || $role !== $approvalRole)
                     <div class="signatory-group">
-                        @if (!empty($role))
+                        @if (!empty($role) && ($role !== 'Approved by' || $showApprovedByLabel))
                             <p class="signatory-label">{{ $role }}:</p>
                         @endif
 
@@ -425,6 +425,11 @@
                         </div>
                     </div>
                 @else
+                    @php
+                        $approvalSignatory = $grouped->first();
+                        $approvalDecision = $approvalSignatory['status'] ?? 'Pending';
+                        $approvalRemarks = trim((string) ($approvalSignatory['comments'] ?? ''));
+                    @endphp
                     <br><br>   
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
@@ -441,7 +446,7 @@
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                                 <input type="checkbox" name="status" value="Approved" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
-                                                    {{ $status == 'Approved' ? 'checked' : '' }}>
+                                                    {{ $approvalDecision === 'Approved' ? 'checked' : '' }}>
                                                 APPROVED
                                             </label>
                                         </td>
@@ -451,7 +456,7 @@
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                                 <input type="checkbox" name="checkbox1" value="Rejected" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
-                                                    {{ $status == 'Rejected' ? 'checked' : '' }}>
+                                                    {{ $approvalDecision === 'Rejected' ? 'checked' : '' }}>
                                                 DISAPPROVED
                                             </label>
                                         </td>
@@ -460,9 +465,13 @@
                                     <tr>
                                         <td style="padding-right: 1.5rem;">
                                             <label style="font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                                <input type="checkbox" name="checkbox1" value="1" style="transform: scale(2); vertical-align: middle; margin-right: 6px;">
+                                                <input type="checkbox" name="comments" value="1" style="transform: scale(2); vertical-align: middle; margin-right: 6px;"
+                                                    {{ $approvalRemarks !== '' ? 'checked' : '' }}>
                                                 OTHER COMMENT/S:
                                             </label>
+                                            @if($approvalRemarks !== '')
+                                                <div style="margin: 10px 0 0 34px; font-size: 13px; line-height: 1.35; white-space: pre-wrap;">{{ $approvalRemarks }}</div>
+                                            @endif
                                         </td>
                                     </tr>
                                     <tr><td style="height: 12px;"></td></tr>

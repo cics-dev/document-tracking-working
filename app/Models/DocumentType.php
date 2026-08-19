@@ -9,12 +9,14 @@ class DocumentType extends Model
     protected $fillable = [
         'name', 'abbreviation', 'recipient_mode', 'recipient_label', 'recipient_office_id',
         'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments',
-        'requires_signatories', 'is_publicly_creatable', 'content_template',
+        'requires_signatories', 'is_publicly_creatable', 'content_template', 'print_layout',
+        'sender_signature_policy', 'approver_display_mode', 'allow_oic_signature',
     ];
 
     protected $casts = [
         'show_thru' => 'boolean', 'show_carbon_copy' => 'boolean', 'allow_attachments' => 'boolean',
         'requires_signatories' => 'boolean', 'is_publicly_creatable' => 'boolean',
+        'allow_oic_signature' => 'boolean',
     ];
 
     public function documents()

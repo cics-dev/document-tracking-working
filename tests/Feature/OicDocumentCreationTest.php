@@ -9,6 +9,7 @@ use App\Models\Office;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DocumentPreviewDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -17,6 +18,46 @@ use Tests\TestCase;
 class OicDocumentCreationTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_oic_signature_is_marked_for_when_named_sender_is_the_head(): void
+    {
+        $office = Office::create(['name' => 'President Office', 'abbreviation' => 'OP', 'office_type' => 'ADMIN']);
+        $head = User::factory()->create([
+            'name' => 'Nelson Cabral', 'position' => 'University President',
+            'office_id' => $office->id, 'signature' => 'signatures/president.png',
+        ]);
+        $oic = User::factory()->create([
+            'name' => 'Acting Official', 'office_id' => $office->id,
+            'signature' => 'signatures/oic.png',
+        ]);
+        $operator = User::factory()->create([
+            'name' => 'Document Operator', 'office_id' => $office->id,
+            'signature' => 'signatures/operator.png',
+        ]);
+        $office->update(['head_id' => $head->id, 'acting_head_id' => $oic->id]);
+        $type = DocumentType::create(['name' => 'Office Memorandum', 'abbreviation' => 'OM']);
+        $document = Document::create([
+            'document_number' => 'OP-OM-1-2026', 'from_id' => $office->id, 'from_user_id' => $head->id,
+            'from_name' => $head->name, 'from_position' => $head->position,
+            'document_type_id' => $type->id, 'subject' => 'Signed for the President',
+            'content' => 'Test', 'created_by' => $operator->id, 'status' => 'Sent',
+        ]);
+        $document->logs()->create([
+            'user_id' => $operator->id, 'action' => 'Sent', 'description' => 'Document Sent',
+        ]);
+
+        $preview = app(DocumentPreviewDataService::class)->build($document);
+
+        $this->assertSame('Nelson Cabral', $preview['fromName']);
+        $this->assertSame('signatures/oic.png', $preview['fromSignature']);
+        $this->assertTrue($preview['fromSignedFor']);
+
+        $type->update(['allow_oic_signature' => false]);
+        $preview = app(DocumentPreviewDataService::class)->build($document->fresh());
+
+        $this->assertSame('signatures/president.png', $preview['fromSignature']);
+        $this->assertFalse($preview['fromSignedFor']);
+    }
 
     public function test_head_can_prepare_a_draft_but_only_the_oic_can_open_it_for_sending(): void
     {
@@ -62,6 +103,7 @@ class OicDocumentCreationTest extends TestCase
         $this->assertSame('Sent', $sent->status);
         $this->assertSame('Elena Garcia', $sent->from_name);
         $this->assertSame('Officer-in-Charge, Draft Office', $sent->from_position);
+        $this->assertSame($oic->id, $sent->from_user_id);
         $this->assertSame($oic->id, $sent->created_by);
     }
 }

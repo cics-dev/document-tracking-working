@@ -10,6 +10,7 @@ use App\Models\Office;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DocumentPreviewDataService;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
@@ -44,12 +45,54 @@ class DocumentWorkflowServiceTest extends TestCase
     public function test_final_signatory_step_approves_document(): void
     {
         [$document, $actor] = $this->documentWithStep('signatory');
+        $document->documentType()->update(['approver_display_mode' => 'hidden']);
+        $document->steps()->firstOrFail()->update(['step_label' => 'Approved by']);
 
         $result = app(DocumentWorkflowService::class)->approve($document, $actor);
 
         $this->assertTrue($result['completed']);
         $this->assertDatabaseHas('document_steps', ['id' => $result['step']->id, 'status' => 'Approved']);
         $this->assertDatabaseHas('documents', ['id' => $document->id, 'status' => 'Approved']);
+        $preview = app(DocumentPreviewDataService::class)->build($document->fresh());
+        $this->assertSame('hidden', $preview['approverDisplayMode']);
+        $this->assertStringContainsString('Approved by', $preview['signatories']);
+    }
+
+    public function test_approved_by_decision_exposes_approval_signature_and_remarks_to_pdf(): void
+    {
+        [$document, $actor] = $this->documentWithStep('signatory');
+        $document->documentType()->update(['approver_display_mode' => 'action_box']);
+        $actor->update(['signature' => 'signatures/approver.png']);
+        $document->steps()->firstOrFail()->update(['step_label' => 'Approved by']);
+
+        app(DocumentWorkflowService::class)->approve($document, $actor, 'Approved subject to availability.');
+
+        $preview = app(DocumentPreviewDataService::class)->build($document->fresh());
+        $approval = collect(json_decode($preview['signatories'], true))->firstWhere('role', 'Approved by');
+
+        $this->assertSame('action_box', $preview['approverDisplayMode']);
+        $this->assertSame('Approved', $approval['status']);
+        $this->assertSame('Approved subject to availability.', $approval['comments']);
+        $this->assertSame('signatures/approver.png', $approval['signature']);
+        $this->assertNotEmpty($approval['signed']);
+    }
+
+    public function test_disapproved_by_decision_exposes_rejection_signature_and_remarks_to_pdf(): void
+    {
+        [$document, $actor] = $this->documentWithStep('signatory');
+        $document->documentType()->update(['approver_display_mode' => 'action_box']);
+        $actor->update(['signature' => 'signatures/disapprover.png']);
+        $document->steps()->firstOrFail()->update(['step_label' => 'Approved by']);
+
+        app(DocumentWorkflowService::class)->reject($document, $actor, 'Budget is insufficient.');
+
+        $preview = app(DocumentPreviewDataService::class)->build($document->fresh());
+        $approval = collect(json_decode($preview['signatories'], true))->firstWhere('role', 'Approved by');
+
+        $this->assertSame('Rejected', $approval['status']);
+        $this->assertSame('Budget is insufficient.', $approval['comments']);
+        $this->assertSame('signatures/disapprover.png', $approval['signature']);
+        $this->assertNotEmpty($approval['signed']);
     }
 
     public function test_rejecting_a_routing_step_returns_document(): void
@@ -124,6 +167,24 @@ class DocumentWorkflowServiceTest extends TestCase
         } catch (ValidationException) {
             $this->assertTrue(true);
         }
+    }
+
+    public function test_document_type_can_require_the_designated_head_instead_of_the_oic(): void
+    {
+        [$document, $head] = $this->documentWithStep('signatory');
+        $document->documentType()->update(['allow_oic_signature' => false]);
+        $head->update(['signature' => 'signatures/head.png']);
+        $oic = User::factory()->create(['office_id' => $head->office_id, 'signature' => 'signatures/oic.png']);
+        Office::findOrFail($head->office_id)->update(['acting_head_id' => $oic->id]);
+        $step = $document->steps()->firstOrFail();
+
+        $this->assertTrue($step->isAssignedTo($head));
+        $this->assertFalse($step->isAssignedTo($oic));
+
+        app(DocumentWorkflowService::class)->approve($document, $head);
+
+        $this->assertSame($head->id, $step->fresh()->user_id);
+        $this->assertSame($head->signature, $step->fresh()->signature_path);
     }
 
     public function test_oic_signs_for_the_snapshotted_head_without_replacing_the_signatory(): void

@@ -199,7 +199,8 @@ class CreateDocument extends Component
                 ->where('stage_type', 'signatory')->where('is_required', true);
             if ($requiredConfiguredSignatories->isNotEmpty()) {
                 $this->signatories = $requiredConfiguredSignatories->map(fn ($stage) => [
-                    'role' => $stage['label'], 'office_id' => $stage['office_id'], 'locked' => true,
+                    'role' => $stage['label'], 'role_type' => $stage['label'],
+                    'office_id' => $stage['office_id'], 'locked' => true,
                 ])->values()->all();
             }
         } elseif ($type?->recipient_mode === 'text') {
@@ -267,13 +268,36 @@ class CreateDocument extends Component
 
     public function addSignatory($data = null)
     {
-        $newSignatory = $data ?? ['role' => '', 'office_id' => '', 'locked' => false];
+        $newSignatory = $data ?? ['role' => '', 'role_type' => '', 'office_id' => '', 'locked' => false];
+        if (! array_key_exists('role_type', $newSignatory)) {
+            $newSignatory['role_type'] = in_array($newSignatory['role'] ?? '', ['Reviewed by', 'Recommending Approval'], true)
+                ? $newSignatory['role']
+                : 'custom';
+        }
         $lastIndex = count($this->signatories) - 1;
 
         if ($lastIndex >= 0 && ($this->signatories[$lastIndex]['locked'] ?? false)) {
             array_splice($this->signatories, $lastIndex, 0, [$newSignatory]);
         } else {
             $this->signatories[] = $newSignatory;
+        }
+    }
+
+    public function updatedSignatories($value, string $key): void
+    {
+        if (! str_ends_with($key, '.role_type')) {
+            return;
+        }
+
+        $index = (int) strstr($key, '.', true);
+        if (! isset($this->signatories[$index]) || ($this->signatories[$index]['locked'] ?? false)) {
+            return;
+        }
+
+        if (in_array($value, ['Reviewed by', 'Recommending Approval'], true)) {
+            $this->signatories[$index]['role'] = $value;
+        } elseif ($value === 'custom') {
+            $this->signatories[$index]['role'] = '';
         }
     }
 
@@ -313,7 +337,7 @@ class CreateDocument extends Component
     public function previewDocument()
     {
         $fromOffice = $this->document_from_id ? Office::with('head', 'actingHead')->find($this->document_from_id) : Auth::user()->office->loadMissing('head', 'actingHead');
-        $fromUser = $fromOffice?->workflow_assignee ?? Auth::user();
+        $fromUser = $fromOffice ? ($this->documentTypeAssignee($fromOffice) ?? Auth::user()) : Auth::user();
         $toName = 'N/A';
         $toPosition = 'N/A';
 
@@ -368,10 +392,15 @@ class CreateDocument extends Component
             'toName' => $toName,
             'toPosition' => $toPosition,
             'fromName' => $fromName,
+            'fromSignature' => $fromUser->signature,
+            'fromSignedFor' => false,
             'office_logo' => $fromUser->office->office_logo,
             'fromPosition' => $fromPosition,
             'issuingOfficeName' => $fromOffice?->name,
             'documentType' => $typeObj['name'] ?? 'N/A',
+            'printLayout' => $typeObj['print_layout'] ?? 'memorandum',
+            'senderSignaturePolicy' => $typeObj['sender_signature_policy'] ?? 'approved',
+            'approverDisplayMode' => $typeObj['approver_display_mode'] ?? 'labeled',
             'documentNumber' => $docNumber,
             'unit' => Auth::user()->office->abbreviation,
             'signatories' => $signatoriesData->toJson(),
@@ -390,7 +419,7 @@ class CreateDocument extends Component
         $isSend = $action === 'send';
         $status = $isSend ? 'Sent' : 'Draft';
 
-        if ($isSend && $this->headIsTemporarilyRelieved()) {
+        if ($isSend && ($this->selectedType()?->allow_oic_signature ?? true) && $this->headIsTemporarilyRelieved()) {
             throw ValidationException::withMessages([
                 'document' => 'This office currently has an OIC. The designated head may prepare and preview drafts, but only the OIC may send documents.',
             ]);
@@ -409,7 +438,7 @@ class CreateDocument extends Component
         $fromOffice = $this->document_from_id
             ? Office::with('head', 'actingHead')->find($this->document_from_id)
             : Auth::user()->office->loadMissing('head', 'actingHead');
-        $fromUser = $fromOffice?->workflow_assignee ?? Auth::user();
+        $fromUser = $fromOffice ? ($this->documentTypeAssignee($fromOffice) ?? Auth::user()) : Auth::user();
         $docNumber = null;
 
         if ($isSend && ! $this->is_manual_document_number && empty($this->document_number)) {
@@ -427,6 +456,7 @@ class CreateDocument extends Component
 
         $data = [
             'from_id' => $fromUser->office->id,
+            'from_user_id' => $fromUser->id,
             'from_name' => $isSend ? $fromUser->name : null,
             'from_position' => $isSend ? ($fromUser->office->workflowAssigneePosition() ?? $fromUser->position) : null,
             'to_id' => $this->selectedType()?->recipient_mode === 'office' ? $this->document_to_id : null,
@@ -769,15 +799,17 @@ class CreateDocument extends Component
 
             // Labels without configured stages remain available for ad-hoc signatories.
             $office = Office::with('head', 'actingHead')->find($officeId);
-            if (! $office?->workflow_assignee) {
-                throw ValidationException::withMessages(['signatories' => "{$role} has no assigned office head or OIC."]);
+            $assignee = $office ? $this->documentTypeAssignee($office) : null;
+            if (! $assignee) {
+                throw ValidationException::withMessages(['signatories' => "{$role} has no eligible office head or OIC."]);
             }
             $document->steps()->create([
-                'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
-                'assigned_user_id' => $office->workflow_assignee->id,
+                'user_id' => $assignee->id, 'office_id' => $office->id,
+                'assigned_user_id' => $assignee->id,
                 'step_type' => 'signatory', 'step_label' => $role,
-                'signatory_name' => $office->workflow_assignee->name,
-                'signatory_position' => $office->workflowAssigneePosition(),
+                'signatory_name' => $assignee->name,
+                'signatory_position' => ($this->selectedType()?->allow_oic_signature ?? true)
+                    ? $office->workflowAssigneePosition() : $assignee->position,
                 'sequence' => $sequence++, 'status' => 'Pending',
             ]);
         }
@@ -833,22 +865,33 @@ class CreateDocument extends Component
     private function createConfiguredStep(Document $document, DocumentFlowStage $stage, int $sequence): void
     {
         $office = $stage->office;
-        if (! $office?->workflow_assignee) {
-            throw ValidationException::withMessages(['document_type_id' => "{$stage->label} has no assigned office head or OIC."]);
+        $assignee = $office ? $this->documentTypeAssignee($office) : null;
+        if (! $assignee) {
+            throw ValidationException::withMessages(['document_type_id' => "{$stage->label} has no eligible office head or OIC."]);
         }
         $namedOfficial = $stage->stage_type === 'routing'
-            ? ($office->head ?? $office->workflow_assignee)
-            : $office->workflow_assignee;
+            ? ($office->head ?? $assignee)
+            : $assignee;
         $document->steps()->create([
-            'user_id' => $office->workflow_assignee->id, 'office_id' => $office->id,
+            'user_id' => $assignee->id, 'office_id' => $office->id,
             'assigned_user_id' => $namedOfficial->id,
             'step_type' => $stage->stage_type, 'step_label' => $stage->label,
             'signatory_name' => $namedOfficial->name,
             'signatory_position' => $stage->stage_type === 'routing'
                 ? $namedOfficial->position
-                : $office->workflowAssigneePosition(),
+                : (($this->selectedType()?->allow_oic_signature ?? true)
+                    ? $office->workflowAssigneePosition() : $assignee->position),
             'sequence' => $sequence, 'status' => 'Pending',
         ]);
+    }
+
+    private function documentTypeAssignee(Office $office)
+    {
+        if (! ($this->selectedType()?->allow_oic_signature ?? true)) {
+            return $office->head && ! $office->head->trashed() ? $office->head : null;
+        }
+
+        return $office->workflow_assignee;
     }
 
     private function configuredStageSelected(DocumentFlowStage $stage): bool
@@ -960,6 +1003,9 @@ class CreateDocument extends Component
         foreach ($document->steps()->where('step_type', 'signatory')->get() as $s) {
             $incomingSignatories[] = [
                 'role' => $s->step_label,
+                'role_type' => in_array($s->step_label, ['Reviewed by', 'Recommending Approval'], true)
+                    ? $s->step_label
+                    : 'custom',
                 'office_id' => $s->user->office->id ?? null,
                 'locked' => false,
             ];

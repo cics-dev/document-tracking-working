@@ -284,7 +284,18 @@
                 @foreach ($signatories as $index => $signatory)
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                         <div class="md:col-span-4">
-                            <flux:input wire:model.live="signatories.{{ $index }}.role" placeholder="e.g. Reviewed by" :disabled="(bool) ($signatory['locked'] ?? false)" />
+                            @if($signatory['locked'] ?? false)
+                                <flux:input wire:model="signatories.{{ $index }}.role" disabled />
+                            @else
+                                <flux:select wire:model.live="signatories.{{ $index }}.role_type" placeholder="Select role">
+                                    <flux:select.option value="Reviewed by">Reviewed by</flux:select.option>
+                                    <flux:select.option value="Recommending Approval">Recommending Approval</flux:select.option>
+                                    <flux:select.option value="custom">Custom label</flux:select.option>
+                                </flux:select>
+                                @if(($signatory['role_type'] ?? '') === 'custom')
+                                    <flux:input wire:model.live="signatories.{{ $index }}.role" class="mt-2" placeholder="Enter custom label..." />
+                                @endif
+                            @endif
                             <flux:error name="signatories.{{ $index }}.role" />
                         </div>
 

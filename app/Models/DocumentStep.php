@@ -58,7 +58,10 @@ class DocumentStep extends Model
             return $this->user;
         }
 
-        $assignee = $this->office?->workflow_assignee ?? $this->user;
+        $allowOicSignature = $this->document?->documentType?->allow_oic_signature ?? true;
+        $assignee = $allowOicSignature
+            ? ($this->office?->workflow_assignee ?? $this->user)
+            : ($this->office?->head ?? $this->user);
 
         return $assignee && ! $assignee->trashed() ? $assignee : null;
     }

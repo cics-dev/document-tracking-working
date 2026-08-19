@@ -16,6 +16,7 @@ class Document extends Model
     protected $fillable = [
         'document_number',
         'from_id',
+        'from_user_id',
         'from_name',
         'from_position',
         'to_id',
@@ -104,6 +105,11 @@ class Document extends Model
     public function fromOffice()
     {
         return $this->belongsTo(Office::class, 'from_id')->withTrashed();
+    }
+
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'from_user_id')->withTrashed();
     }
 
     public function toOffice()

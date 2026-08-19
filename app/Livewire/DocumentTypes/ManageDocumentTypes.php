@@ -38,6 +38,14 @@ class ManageDocumentTypes extends Component
 
     public string $content_template = '';
 
+    public string $print_layout = 'memorandum';
+
+    public string $sender_signature_policy = 'approved';
+
+    public string $approver_display_mode = 'labeled';
+
+    public bool $allow_oic_signature = true;
+
     public function mount(): void
     {
         abort_unless(auth()->user()?->hasAccess('manage_document_flows'), 403);
@@ -56,6 +64,10 @@ class ManageDocumentTypes extends Component
             'show_thru' => ['boolean'], 'show_carbon_copy' => ['boolean'], 'allow_attachments' => ['boolean'],
             'requires_signatories' => ['boolean'], 'is_publicly_creatable' => ['boolean'],
             'content_template' => ['nullable', 'string'],
+            'print_layout' => ['required', Rule::in(['memorandum', 'letter', 'indorsement', 'special_order'])],
+            'sender_signature_policy' => ['required', Rule::in(['always', 'approved', 'never'])],
+            'approver_display_mode' => ['required', Rule::in(['action_box', 'labeled', 'signature_only', 'hidden'])],
+            'allow_oic_signature' => ['boolean'],
         ]);
 
         $behavior = collect($validated)->except(['name', 'abbreviation'])->map(fn ($value) => is_string($value) ? trim($value) : $value)->all();
@@ -81,7 +93,7 @@ class ManageDocumentTypes extends Component
         $this->editingId = $type->id;
         $this->name = $type->name;
         $this->abbreviation = $type->abbreviation;
-        foreach (['recipient_mode', 'recipient_label', 'recipient_office_id', 'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments', 'requires_signatories', 'is_publicly_creatable', 'content_template'] as $field) {
+        foreach (['recipient_mode', 'recipient_label', 'recipient_office_id', 'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments', 'requires_signatories', 'is_publicly_creatable', 'content_template', 'print_layout', 'sender_signature_policy', 'approver_display_mode', 'allow_oic_signature'] as $field) {
             $this->{$field} = $type->{$field} ?? $this->{$field};
         }
     }
@@ -105,6 +117,10 @@ class ManageDocumentTypes extends Component
         $this->show_thru = true;
         $this->show_carbon_copy = true;
         $this->allow_attachments = true;
+        $this->print_layout = 'memorandum';
+        $this->sender_signature_policy = 'approved';
+        $this->approver_display_mode = 'labeled';
+        $this->allow_oic_signature = true;
         $this->resetValidation();
     }
 

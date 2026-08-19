@@ -140,7 +140,9 @@ class ViewDocument extends Component
         $this->canGenerate = $this->generationRules !== [];
 
         if (! $this->canAct && $this->myStep?->status === 'Pending' && $this->myStep->office?->acting_head_id) {
-            $this->display_text = 'This step is currently assigned to the office OIC.';
+            $this->display_text = ($this->document->documentType?->allow_oic_signature ?? true)
+                ? 'This step is currently assigned to the office OIC.'
+                : 'This document type requires the designated office head to sign.';
         }
 
         $this->document_query = app(DocumentPreviewDataService::class)->build($this->document);
@@ -162,7 +164,8 @@ class ViewDocument extends Component
             default => 'Sign!',
         };
 
-        $requiresInput = in_array($stepType, ['routing', 'action']);
+        $requiresInput = in_array($stepType, ['routing', 'action'], true)
+            || ($stepType === 'signatory' && $this->myStep?->step_label === 'Approved by');
 
         $data = [
             'title' => 'Are you sure?',
