@@ -11,6 +11,7 @@ use Livewire\Component;
 class ManageAccessRights extends Component
 {
     public array $rights = [];
+
     public array $documentTypes = [];
 
     public function mount(): void

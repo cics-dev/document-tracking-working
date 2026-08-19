@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -43,9 +42,9 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $president->office()->update([
-            'head_id' => $president->id
+            'head_id' => $president->id,
         ]);
-        
+
         $vpsas = User::create([
             'name' => 'Cyrus Pil P. Cadavedo',
             'email' => 'vpsas@example.com',
@@ -66,9 +65,9 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $vpsas->office()->update([
-            'head_id' => $vpsas->id
+            'head_id' => $vpsas->id,
         ]);
-        
+
         $vpaa = User::create([
             'name' => 'Maria Christina G. Wee',
             'email' => 'vpaa@example.com',
@@ -89,9 +88,9 @@ class UserSeeder extends Seeder
             'gender' => 'Female',
         ]);
         $vpaa->office()->update([
-            'head_id' => $vpaa->id
+            'head_id' => $vpaa->id,
         ]);
-        
+
         $vpaf = User::create([
             'name' => 'Josephine L. Sulasula',
             'email' => 'vpaf@example.com',
@@ -112,15 +111,15 @@ class UserSeeder extends Seeder
             'gender' => 'Female',
         ]);
         $vpaf->office()->update([
-            'head_id' => $vpaf->id
+            'head_id' => $vpaf->id,
         ]);
-        
+
         $vprde = User::create([
             'name' => 'Rolando P. Malalay',
             'email' => 'vprde@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Research Development and Extension',
-            'role_id' => 3, 
+            'role_id' => 3,
             'signature' => 'assets/img/fakesig5.png',
             'office_id' => 5, // set if needed
         ]);
@@ -135,9 +134,9 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $vprde->office()->update([
-            'head_id' => $vprde->id
+            'head_id' => $vprde->id,
         ]);
-        
+
         $cics_dean = User::create([
             'name' => 'Ferdinand V. Andrade',
             'email' => 'cics_dean@example.com',
@@ -157,9 +156,9 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $cics_dean->office()->update([
-            'head_id' => $cics_dean->id
+            'head_id' => $cics_dean->id,
         ]);
-        
+
         $drrmo = User::create([
             'name' => 'Michael M. Cabiles',
             'email' => 'drrmo@example.com',
@@ -179,7 +178,7 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $drrmo->office()->update([
-            'head_id' => $drrmo->id
+            'head_id' => $drrmo->id,
         ]);
 
         $records = User::create([
@@ -201,7 +200,7 @@ class UserSeeder extends Seeder
             'gender' => 'Unknown',
         ]);
         $records->office()->update([
-            'head_id' => $records->id
+            'head_id' => $records->id,
         ]);
 
         $sao = User::create([
@@ -223,7 +222,7 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $sao->office()->update([
-            'head_id' => $sao->id
+            'head_id' => $sao->id,
         ]);
 
         $budget = User::create([
@@ -245,7 +244,7 @@ class UserSeeder extends Seeder
             'gender' => 'Unknown',
         ]);
         $budget->office()->update([
-            'head_id' => $budget->id
+            'head_id' => $budget->id,
         ]);
 
         $motorpool = User::create([
@@ -267,7 +266,7 @@ class UserSeeder extends Seeder
             'gender' => 'Unknown',
         ]);
         $motorpool->office()->update([
-            'head_id' => $motorpool->id
+            'head_id' => $motorpool->id,
         ]);
 
         $legal = User::create([
@@ -289,7 +288,7 @@ class UserSeeder extends Seeder
             'gender' => 'Unknown',
         ]);
         $legal->office()->update([
-            'head_id' => $legal->id
+            'head_id' => $legal->id,
         ]);
 
         $igp = User::create([
@@ -311,7 +310,7 @@ class UserSeeder extends Seeder
             'gender' => 'Unknown',
         ]);
         $igp->office()->update([
-            'head_id' => $igp->id
+            'head_id' => $igp->id,
         ]);
 
         $cao = User::create([
@@ -333,7 +332,7 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $cao->office()->update([
-            'head_id' => $cao->id
+            'head_id' => $cao->id,
         ]);
 
         $sao_f = User::create([
@@ -393,7 +392,7 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $ictu->office()->update([
-            'head_id' => $ictu->id
+            'head_id' => $ictu->id,
         ]);
 
         $registrar = User::create([
@@ -415,7 +414,7 @@ class UserSeeder extends Seeder
             'gender' => 'Female',
         ]);
         $registrar->office()->update([
-            'head_id' => $registrar->id
+            'head_id' => $registrar->id,
         ]);
 
         $pio = User::create([
@@ -437,7 +436,7 @@ class UserSeeder extends Seeder
             'gender' => 'Male',
         ]);
         $pio->office()->update([
-            'head_id' => $pio->id
+            'head_id' => $pio->id,
         ]);
     }
 }

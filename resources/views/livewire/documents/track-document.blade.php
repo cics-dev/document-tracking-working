@@ -52,12 +52,8 @@
 
 @php
     $rawStatus = $document->status ?? 'Draft';
-    $displayStatus = ucfirst(strtolower($rawStatus));
-    if ($displayStatus === 'In Process') {
-        $displayStatus = 'In Process';
-    }
-
-    $steps = $document->steps ? $document->steps->sortBy('sequence')->values() : collect();
+    $displayStatus = str($rawStatus)->headline();
+    $steps = $document->steps->sortBy('sequence')->values();
 @endphp
 
 <div class="container">
@@ -103,17 +99,11 @@
             @foreach($steps as $index => $step)
                 @php
                     $isProcessed = !empty($step->processed_at);
-                    $isRejected = in_array($step->status, ['rejected', 'returned']);
+                    $isRejected = in_array(strtolower($step->status), ['rejected', 'returned'], true);
                     $isPending = !$isProcessed && !$isRejected;
                     
-                    // Check if it's currently active (next pending step)
-                    $isActive = false;
-                    if ($isPending) {
-                        $firstPending = $steps->first(fn($s) => empty($s->processed_at));
-                        if ($firstPending && $firstPending->id === $step->id) {
-                            $isActive = true;
-                        }
-                    }
+                    $firstPending = $steps->first(fn($candidate) => empty($candidate->processed_at));
+                    $isActive = $isPending && $firstPending?->id === $step->id;
 
                     $iconClass = 'fa-clock';
                     $stepStateClass = '';
@@ -132,7 +122,7 @@
                     <div class="status-icon {{ $stepStateClass }}">
                         <i class="fas {{ $iconClass }}"></i>
                     </div>
-                    <div class="status-label {{ $isActive ? 'active' : '' }}">{{ $step->active_user->office->abbreviation }}</div>
+                    <div class="status-label {{ $isActive ? 'active' : '' }}">{{ $step->active_user?->office?->abbreviation ?? 'Unassigned' }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">{{ $step->step_label }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">
                         @if($isProcessed)
@@ -185,7 +175,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('share-btn')?.addEventListener('click', () => {
-            const url = `${window.location.origin}/tracking/${document.getElementById('document-number').textContent}`;
+            const url = window.location.href;
             if (navigator.share) {
                 navigator.share({ title: 'Document Tracking', url: url });
             } else {

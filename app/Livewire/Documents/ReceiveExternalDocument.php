@@ -2,15 +2,14 @@
 
 namespace App\Livewire\Documents;
 
-use Livewire\Component;
-use Livewire\WithFileUploads;
-use Livewire\Attributes\Validate;
-use Livewire\Attributes\Computed;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class ReceiveExternalDocument extends Component
 {
@@ -53,7 +52,7 @@ class ReceiveExternalDocument extends Component
     {
         $this->attachment = null;
     }
-    
+
     public function cancel()
     {
         return redirect()->route('documents.list-external-documents');
@@ -88,10 +87,10 @@ class ReceiveExternalDocument extends Component
                 // Explode the string "EC-5-2025" to get "5"
                 // Format is: Prefix-Sequence-Year
                 $parts = explode('-', $latestDoc->document_number);
-                
+
                 // Safety check: ensure we actually have 3 parts
                 if (count($parts) === 3) {
-                    $nextSequence = (int)$parts[1] + 1;
+                    $nextSequence = (int) $parts[1] + 1;
                 } else {
                     // Fallback if format is messed up
                     $nextSequence = 1;

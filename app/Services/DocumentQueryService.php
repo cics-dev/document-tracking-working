@@ -28,7 +28,7 @@ class DocumentQueryService
             'steps.office.head',
             'steps.office.actingHead',
             'cfs.user.office.head',
-            ]);
+        ]);
 
         $officeIds = $user->workflowOfficeIds();
 

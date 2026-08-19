@@ -8,8 +8,8 @@ use App\Models\DocumentLog;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 
 class DashboardController extends Controller
 {

@@ -4,11 +4,12 @@ namespace App\Livewire\Offices;
 
 use App\Http\Controllers\OfficeController;
 use App\Models\Office;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\UserAccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -69,7 +70,7 @@ class CreateOffice extends Component
             $this->abbreviation = $office->abbreviation;
             $this->office_type = $office->office_type;
             $this->office_head = $office->head_id;
-            $this->acting_head = $office->acting_head_id??'';
+            $this->acting_head = $office->acting_head_id ?? '';
 
             $this->edit_mode = true;
         } else {
@@ -108,19 +109,24 @@ class CreateOffice extends Component
             $office = Office::findOrFail($this->office_id);
             abort_unless($office->head_id === auth()->id(), 403);
             $office->update(['acting_head_id' => $this->acting_head ?: null]);
+
             return redirect()->route('dashboard');
         }
 
         abort_unless($this->can_manage_details, 403);
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'abbreviation' => ['required', 'string', 'max:50', \Illuminate\Validation\Rule::unique('offices', 'abbreviation')->ignore($this->office_id)],
-            'office_type' => ['required', \Illuminate\Validation\Rule::in(['ACAD', 'ADMIN'])],
+            'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices', 'abbreviation')->ignore($this->office_id)],
+            'office_type' => ['required', Rule::in(['ACAD', 'ADMIN'])],
             'office_head' => ['nullable', function ($attribute, $value, $fail) {
-                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) $fail('The selected office head is invalid.');
+                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) {
+                    $fail('The selected office head is invalid.');
+                }
             }],
             'acting_head' => ['nullable', function ($attribute, $value, $fail) {
-                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) $fail('The selected officer-in-charge is invalid.');
+                if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) {
+                    $fail('The selected officer-in-charge is invalid.');
+                }
             }],
             'office_logo' => ['nullable', 'image', 'max:2048'],
         ]);
@@ -176,9 +182,15 @@ class CreateOffice extends Component
                 : app(OfficeController::class)->store($request);
 
             $assignments = [];
-            if ($creatingHead) $assignments['head_id'] = app(UserAccountService::class)->save($this->newHead, null, $office->id)->id;
-            if ($creatingOic) $assignments['acting_head_id'] = app(UserAccountService::class)->save($this->newOic, null, $office->id)->id;
-            if ($assignments) $office->update($assignments);
+            if ($creatingHead) {
+                $assignments['head_id'] = app(UserAccountService::class)->save($this->newHead, null, $office->id)->id;
+            }
+            if ($creatingOic) {
+                $assignments['acting_head_id'] = app(UserAccountService::class)->save($this->newOic, null, $office->id)->id;
+            }
+            if ($assignments) {
+                $office->update($assignments);
+            }
         });
 
         redirect()->route('offices.list-offices');

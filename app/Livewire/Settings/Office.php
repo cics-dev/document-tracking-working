@@ -13,11 +13,17 @@ class Office extends Component
     use WithFileUploads;
 
     public OfficeModel $office;
+
     public string $name = '';
+
     public string $abbreviation = '';
+
     public string $office_type = '';
+
     public $acting_head = '';
+
     public $office_logo;
+
     public ?string $current_logo = null;
 
     public function mount(): void

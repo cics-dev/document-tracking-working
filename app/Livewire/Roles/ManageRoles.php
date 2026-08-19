@@ -16,10 +16,15 @@ class ManageRoles extends Component
     use WithPagination;
 
     public ?int $roleId = null;
+
     public string $role = '';
+
     public string $description = '';
+
     public string $search = '';
+
     public array $rights = [];
+
     public array $documentTypes = [];
 
     public function mount(): void
@@ -68,6 +73,7 @@ class ManageRoles extends Component
 
         if ($record->users_count > 0) {
             $this->addError('delete', 'This role is assigned to users and cannot be deleted. Reassign those users first.');
+
             return;
         }
 

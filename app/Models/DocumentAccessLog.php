@@ -10,7 +10,7 @@ class DocumentAccessLog extends Model
         'documentable_id',   // The ID of the doc
         'documentable_type', // The class name (App\Models\Document, etc.)
         'user_id',
-        'action'
+        'action',
     ];
 
     /**
@@ -20,7 +20,7 @@ class DocumentAccessLog extends Model
     {
         return $this->morphTo();
     }
-    
+
     public function user()
     {
         return $this->belongsTo(User::class)->withTrashed();

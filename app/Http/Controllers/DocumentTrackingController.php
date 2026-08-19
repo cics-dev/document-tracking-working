@@ -3,101 +3,82 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use App\Models\DocumentLog;
+use App\Services\DocumentQueryService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentTrackingController extends Controller
 {
-    public function getTrackingStatus(Document $document)
+    public function getTrackingStatus(Document $document, DocumentQueryService $documents): JsonResponse
     {
-        try {
-            $document->load(['logs', 'fromOffice', 'toOffice', 'documentType', 'steps.user.office']);
+        abort_unless($documents->canView(Auth::user(), $document->document_number), 403);
 
-            // Get status dates from logs
-            $statusDates = [
-                'filed' => $this->getStatusDate($document, 'filed'),
-                'Sent' => $this->getStatusDate($document, 'Sent'),
-                'Processing' => $this->getStatusDate($document, 'Processing'),
-                'Completed' => $this->getStatusDate($document, 'Completed'),
-            ];
+        $document->load(['logs', 'fromOffice', 'toOffice', 'documentType', 'steps.user.office']);
 
-            // Build timeline data
-            $timeline = $this->buildTimelineData($document);
-
-            // Get recent activity logs
-            $activityLogs = $document->logs()
-                ->orderBy('created_at', 'desc')
+        return response()->json([
+            'status' => $document->status,
+            'assignedTo' => $this->assignedTo($document),
+            'subject' => $document->subject,
+            'statusDates' => collect([
+                'filed' => 'filed',
+                'Sent' => 'sent',
+                'Processing' => 'processing',
+                'Completed' => 'completed',
+            ])->map(fn (string $status) => $this->statusDate($document, $status)),
+            'timeline' => $this->timeline($document),
+            'activityLogs' => $document->logs
+                ->sortByDesc('created_at')
                 ->take(10)
-                ->get()
-                ->map(function ($log) {
-                    return [
-                        'action' => $log->action,
-                        'description' => $log->description,
-                        'created_at' => $log->created_at->format('F d, Y h:i A'),
-                    ];
-                });
-
-            return response()->json([
-                'status' => $document->status,
-                'assignedTo' => $this->assignedTo($document),
-                'subject' => $document->subject,
-                'statusDates' => $statusDates,
-                'timeline' => $timeline,
-                'activityLogs' => $activityLogs,
-                'last_updated' => $document->updated_at->toISOString(),
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to fetch tracking data',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+                ->map(fn (DocumentLog $log) => [
+                    'action' => $log->action,
+                    'description' => $log->description,
+                    'created_at' => $log->created_at->format('F d, Y h:i A'),
+                ])->values(),
+            'last_updated' => $document->updated_at->toISOString(),
+        ]);
     }
 
-    private function getStatusDate($document, $status)
+    private function statusDate(Document $document, string $status): string
     {
         $log = $document->logs
-            ->first(fn ($log) => strtolower($log->action) === $status);
+            ->first(fn (DocumentLog $log) => strtolower($log->action) === $status);
 
-        return $log ? $log->created_at->format('M d, h:i A') : '-';
+        return $log?->created_at->format('M d, h:i A') ?? '-';
     }
 
-    private function buildTimelineData($document)
+    private function timeline(Document $document): array
     {
-        $timeline = [];
-
-        // Document creation
-        $timeline[] = [
+        $timeline = [[
             'date' => $document->created_at->format('M d, Y'),
             'title' => 'Document Created',
             'description' => 'Document drafted and prepared for submission',
-        ];
+        ]];
 
-        // Status logs
         foreach ($document->logs as $log) {
-            if (! in_array(strtolower($log->action), ['sent', 'signed', 'reviewed', 'returned', 'rejected'], true)) {
+            $action = strtolower($log->action);
+
+            if (! in_array($action, ['sent', 'signed', 'reviewed', 'returned', 'rejected'], true)) {
                 continue;
             }
 
-            $title = 'Document '.ucfirst($log->action);
-            $description = $log->description ?: $this->getStatusDescription($log->action, $document);
-
             $timeline[] = [
                 'date' => $log->created_at->format('M d, h:i A'),
-                'title' => $title,
-                'description' => $description,
+                'title' => 'Document '.ucfirst($action),
+                'description' => $log->description ?: $this->statusDescription($action, $document),
             ];
         }
 
         return $timeline;
     }
 
-    private function getStatusDescription($status, $document)
+    private function statusDescription(string $status, Document $document): string
     {
         $descriptions = [
             'filed' => 'Document officially filed in the system',
-            'Sent' => 'Document forwarded to '.$this->assignedTo($document).' for review',
-            'Processing' => 'Document is being reviewed and processed',
-            'Completed' => 'Document processing has been completed',
+            'sent' => 'Document forwarded to '.$this->assignedTo($document).' for review',
+            'processing' => 'Document is being reviewed and processed',
+            'completed' => 'Document processing has been completed',
         ];
 
         return $descriptions[$status] ?? 'Document status updated';

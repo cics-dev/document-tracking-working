@@ -12,6 +12,7 @@ class DocumentAttachmentPreviewController extends Controller
     {
         abort_unless(app(DocumentQueryService::class)->canView(auth()->user(), $documentAttachment->document->document_number), 403);
         abort_unless($documentAttachment->is_upload, 404);
+
         return $preview->response($documentAttachment->file_url);
     }
 }

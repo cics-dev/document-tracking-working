@@ -27,38 +27,24 @@ use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/offline', function () {
-    return view('offline');
-})->name('offline');
-
-Route::get('/help', function () {
-    return view('help');
-})->name('help');
-
-Route::get('/landing', function () {
-    return view('landing');
-});
-
-Route::get('/', function () {
-    return view('landing');
-})->name('landing');
-
-Route::get('/learn', function () {
-    return view('learn');
-})->name('learn');
-
-Route::get('/home', function () {
-    return view('welcome');
-})->middleware('auth')->name('home');
+Route::view('/offline', 'offline')->name('offline');
+Route::view('/help', 'help')->name('help');
+Route::view('/landing', 'landing');
+Route::view('/', 'landing')->name('landing');
+Route::view('/learn', 'learn')->name('learn');
+Route::view('/home', 'welcome')->middleware('auth')->name('home');
 
 Route::get('dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/document/preview', [DocumentPreviewController::class, 'preview'])->name('document.preview');
+    Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
+        ->name('documents.tracking-status');
+
     Route::get('/access-rights', ManageAccessRights::class)->name('access-rights');
     Route::get('/roles', ManageRoles::class)->name('roles');
     Route::get('/document-flows', ManageDocumentFlows::class)->name('document-flows');
@@ -96,8 +82,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
     Route::get('settings/office', OfficeSettings::class)->name('settings.office');
 });
-
-Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
-    ->name('documents.tracking-status');
 
 require __DIR__.'/auth.php';

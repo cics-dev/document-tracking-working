@@ -4,49 +4,40 @@ namespace App\Http\Controllers;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use RuntimeException;
-use Throwable;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentPreviewController extends Controller
 {
-    public function preview(Request $request)
+    public function preview(Request $request): BinaryFileResponse
     {
-        $key = array_key_first($request->all());
-        $data = session()->get($key);
+        $key = array_key_first($request->query());
+        abort_unless(is_string($key) && $key !== '', 404, 'Preview session expired or not found.');
 
-        if (!$data) {
-            abort(404, 'Preview session expired or not found.');
-        }
+        $data = session()->pull($key);
+
+        abort_unless(is_array($data), 404, 'Preview session expired or not found.');
 
         $data = $this->normalizePreviewData($data);
-        $temporaryFiles = [];
-
         $generatedPdf = $this->temporaryFile('generated_');
-        $temporaryFiles[] = $generatedPdf;
 
         Pdf::loadView('pdf.document-preview', $data)
             ->setPaper([0, 0, 612.00, 936.00])
             ->save($generatedPdf);
 
-        session()->forget($key);
-
-        // Cleanup the single generated preview file on shutdown
-        register_shutdown_function(function () use ($temporaryFiles): void {
-            foreach ($temporaryFiles as $file) {
-                if (is_file($file)) {
-                    @unlink($file);
-                }
+        register_shutdown_function(function () use ($generatedPdf): void {
+            if (is_file($generatedPdf)) {
+                @unlink($generatedPdf);
             }
         });
 
         $filename = $data['action'] === 'preview'
             ? 'document-preview.pdf'
-            : ($data['documentNumber'] ?? 'Document') . '.pdf';
+            : ($data['documentNumber'] ?? 'Document').'.pdf';
 
         return response()->file($generatedPdf, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Disposition' => 'inline; filename="'.str_replace('"', '', $filename).'"',
         ]);
     }
 

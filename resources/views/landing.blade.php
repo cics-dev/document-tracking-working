@@ -2363,7 +2363,7 @@
                     });
                     
                     const data = await response.json();
-                    return data.response || 'Sorry, I wasn’t able to get a response from the server.';
+                    return data.response || data.message || 'Sorry, I wasn’t able to get a response from the server.';
                 } catch (error) {
                     console.error('Chat error:', error);
                     return 'There was an issue connecting to the AI server.';

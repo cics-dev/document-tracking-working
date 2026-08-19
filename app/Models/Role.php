@@ -8,7 +8,7 @@ class Role extends Model
 {
     public $fillable = [
         'role',
-        'description'
+        'description',
     ];
 
     public function role_document_types()

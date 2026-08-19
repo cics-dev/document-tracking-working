@@ -8,12 +8,21 @@ use Livewire\Component;
 class SidebarNotifications extends Component
 {
     public int $unreadAll = 0;
+
     public int $unreadReceived = 0;
+
+    public int $unreadSent = 0;
+
     public int $unreadExternal = 0;
+
     public int $unreadTotal = 0;
+
     public bool $showToast = false;
 
-    public function mount(): void { $this->applyCounts(app(NotificationCountService::class)->for(auth()->user())); }
+    public function mount(): void
+    {
+        $this->applyCounts(app(NotificationCountService::class)->for(auth()->user()));
+    }
 
     public function refreshNotifications(): void
     {
@@ -27,13 +36,22 @@ class SidebarNotifications extends Component
         }
     }
 
-    public function dismissToast(): void { $this->showToast = false; }
+    public function dismissToast(): void
+    {
+        $this->showToast = false;
+    }
 
     private function applyCounts(array $counts): void
     {
-        $this->unreadAll = $counts['all']; $this->unreadReceived = $counts['received'];
-        $this->unreadExternal = $counts['external']; $this->unreadTotal = $counts['total'];
+        $this->unreadAll = $counts['all'];
+        $this->unreadReceived = $counts['received'];
+        $this->unreadSent = $counts['sent'];
+        $this->unreadExternal = $counts['external'];
+        $this->unreadTotal = $counts['total'];
     }
 
-    public function render() { return view('livewire.notifications.sidebar-notifications'); }
+    public function render()
+    {
+        return view('livewire.notifications.sidebar-notifications');
+    }
 }

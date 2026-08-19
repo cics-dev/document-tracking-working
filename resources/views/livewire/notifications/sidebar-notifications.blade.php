@@ -57,7 +57,7 @@
         <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate :badge="$unreadReceived ?: null" :badge-color="$unreadReceived ? 'red' : null">{{ __('Received Documents') }}</flux:navlist.item>
     @endif
     @if(auth()->user()->hasAccess('send_documents'))
-        <flux:navlist.item icon="inbox-stack" :href="route('documents.list-documents', 'Sent')" :current="request()->is('documents/sent')" wire:navigate>{{ __('Sent Documents') }}</flux:navlist.item>
+        <flux:navlist.item icon="inbox-stack" :href="route('documents.list-documents', 'Sent')" :current="request()->is('documents/sent')" wire:navigate :badge="$unreadSent ?: null" :badge-color="$unreadSent ? 'red' : null">{{ __('Sent Documents') }}</flux:navlist.item>
         <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Document') }}</flux:navlist.item>
     @endif
     @if(auth()->user()->hasAccess('receive_external_documents') || auth()->user()->hasAccess('send_external_documents'))
