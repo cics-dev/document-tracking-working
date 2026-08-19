@@ -4,7 +4,7 @@
     @if(session('status'))<div class="my-4 rounded bg-green-100 p-3 text-green-800">{{ session('status') }}</div>@endif
 
     <div class="my-6 max-w-xl">
-        <flux:select wire:model.live="documentTypeId" label="Document Type">
+        <flux:select wire:model.live="documentTypeId" label="Document Type" placeholder="Choose document type...">
             @foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach
         </flux:select>
     </div>
@@ -13,9 +13,9 @@
         <form wire:submit="save" class="h-fit space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">{{ $stageId ? 'Edit Stage' : 'Add Stage' }}</h2>
             <div><flux:label>Office <span class="text-red-500">*</span></flux:label><x-searchable-filter-select model="officeId" :live="false" :options="$offices->map(fn($o) => ['value'=>(string)$o->id,'label'=>$o->name,'search'=>$o->abbreviation])->all()" placeholder="Choose office..." search-placeholder="Search offices..." /><flux:error name="officeId" /></div>
-            <flux:select wire:model.live="stageType" label="Stage Type"><flux:select.option value="routing">Routing</flux:select.option><flux:select.option value="signatory">Signatory</flux:select.option><flux:select.option value="action">Action / Generation</flux:select.option></flux:select>
+            <flux:select wire:model.live="stageType" label="Stage Type" placeholder="Choose stage type..."><flux:select.option value="routing">Routing</flux:select.option><flux:select.option value="signatory">Signatory</flux:select.option><flux:select.option value="action">Action / Generation</flux:select.option></flux:select>
             @if($stageType === 'signatory')
-                <flux:select wire:model="label" label="Stage Label">
+                <flux:select wire:model="label" label="Stage Label" placeholder="Choose signatory label...">
                     <flux:select.option value="Recommending Approval">Recommending Approval</flux:select.option>
                     <flux:select.option value="Approved by">Approved by</flux:select.option>
                 </flux:select>
@@ -27,13 +27,13 @@
             <flux:textarea wire:model="description" label="Help Description" placeholder="e.g. For gymnasium or any school facility usage" rows="3" />
             <flux:description>This appears behind a question-mark in Create Document.</flux:description>
             <flux:error name="description" />
-            <flux:select wire:model.live="workflowConditionId" label="Condition"><flux:select.option value="">Always</flux:select.option>@foreach($conditions->where('is_active', true) as $item)<flux:select.option value="{{ $item->id }}">{{ $item->label }}</flux:select.option>@endforeach</flux:select>
+            <flux:select wire:model.live="workflowConditionId" label="Condition" placeholder="Optional — defaults to Always">@foreach($conditions->where('is_active', true) as $item)<flux:select.option value="{{ $item->id }}">{{ $item->label }}</flux:select.option>@endforeach</flux:select>
             @if($workflowConditionId)
-                <flux:select wire:model="conditionOperator" label="Operator"><flux:select.option value="equals">Equals</flux:select.option><flux:select.option value="not_equals">Does not equal</flux:select.option><flux:select.option value="greater_than">Greater than</flux:select.option><flux:select.option value="less_than">Less than</flux:select.option><flux:select.option value="contains">Contains</flux:select.option></flux:select>
+                <flux:select wire:model="conditionOperator" label="Operator" placeholder="Choose operator..."><flux:select.option value="equals">Equals</flux:select.option><flux:select.option value="not_equals">Does not equal</flux:select.option><flux:select.option value="greater_than">Greater than</flux:select.option><flux:select.option value="less_than">Less than</flux:select.option><flux:select.option value="contains">Contains</flux:select.option></flux:select>
                 @if($this->selectedCondition()?->input_type === 'boolean')
                     <flux:select wire:model="conditionValue" label="Expected Value" placeholder="Choose Yes or No"><flux:select.option value="1">Yes</flux:select.option><flux:select.option value="0">No</flux:select.option></flux:select>
                 @elseif($this->selectedCondition()?->input_type === 'select')
-                    <flux:select wire:model="conditionValue" label="Expected Value">@foreach($this->selectedCondition()?->options ?? [] as $option)<flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>@endforeach</flux:select>
+                    <flux:select wire:model="conditionValue" label="Expected Value" placeholder="Choose expected value...">@foreach($this->selectedCondition()?->options ?? [] as $option)<flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>@endforeach</flux:select>
                 @else
                     <flux:input wire:model="conditionValue" :type="$this->selectedCondition()?->input_type === 'number' ? 'number' : 'text'" label="Expected Value" />
                 @endif
@@ -57,16 +57,16 @@
             <h2 class="font-semibold">Add Workflow Condition</h2>
             <flux:field><flux:label>Key <span class="text-red-500">*</span></flux:label><flux:input wire:model="newConditionKey" required placeholder="e.g. uses_external_funding" /><flux:error name="newConditionKey" /></flux:field>
             <flux:field><flux:label>Question / Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="newConditionLabel" required /><flux:error name="newConditionLabel" /></flux:field>
-            <flux:select wire:model="newConditionType" label="Input Type"><flux:select.option value="boolean">Yes / No</flux:select.option><flux:select.option value="select">Dropdown</flux:select.option><flux:select.option value="text">Text</flux:select.option><flux:select.option value="number">Number</flux:select.option></flux:select>
+            <flux:select wire:model="newConditionType" label="Input Type" placeholder="Choose input type..."><flux:select.option value="boolean">Yes / No</flux:select.option><flux:select.option value="select">Dropdown</flux:select.option><flux:select.option value="text">Text</flux:select.option><flux:select.option value="number">Number</flux:select.option></flux:select>
             @if($newConditionType === 'select')<flux:input wire:model="newConditionOptions" label="Options (comma separated)" />@endif
             <flux:button type="submit" variant="primary">Add Condition</flux:button>
             @if($conditions->isNotEmpty())<div class="border-t pt-3">@foreach($conditions as $item)<div class="flex items-center justify-between py-1 text-sm"><span>{{ $item->label }} <span class="text-gray-500">({{ $item->input_type }})</span></span><flux:button type="button" size="sm" wire:click="toggleCondition({{ $item->id }})">{{ $item->is_active ? 'Disable' : 'Enable' }}</flux:button></div>@endforeach</div>@endif
         </form>
         <form wire:submit="addGenerationRule" class="space-y-4 rounded-lg border bg-white p-5 shadow-sm">
             <h2 class="font-semibold">Add Document Generation Rule</h2>
-            <flux:select wire:model.live="generationContext" label="Source Context"><flux:select.option value="internal">Internal document</flux:select.option><flux:select.option value="external">External document</flux:select.option></flux:select>
-            @if($generationContext === 'internal')<flux:field><flux:label>Source Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationSourceTypeId" required>@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationSourceTypeId" /></flux:field>@endif
-            <flux:field><flux:label>Generated Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationTargetTypeId" required>@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationTargetTypeId" /></flux:field>
+            <flux:select wire:model.live="generationContext" label="Source Context" placeholder="Choose source context..."><flux:select.option value="internal">Internal document</flux:select.option><flux:select.option value="external">External document</flux:select.option></flux:select>
+            @if($generationContext === 'internal')<flux:field><flux:label>Source Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationSourceTypeId" required placeholder="Choose source document type...">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationSourceTypeId" /></flux:field>@endif
+            <flux:field><flux:label>Generated Document Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="generationTargetTypeId" required placeholder="Choose generated document type...">@foreach($types as $type)<flux:select.option value="{{ $type->id }}">{{ $type->name }}</flux:select.option>@endforeach</flux:select><flux:error name="generationTargetTypeId" /></flux:field>
             <flux:field><flux:label>Button Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="generationLabel" required placeholder="Generate ECLR" /><flux:error name="generationLabel" /></flux:field>
             <flux:input wire:model="generationStatus" label="Required Source Status" placeholder="Approved (blank for any)" />
             <flux:checkbox wire:model="generationRequiresAssignment" label="Only the assigned action/recipient office can generate" />

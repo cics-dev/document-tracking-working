@@ -358,11 +358,13 @@
                         <td>
                             @if($showSenderSignature)
                                 @if(!empty($fromSignature))
-                                    @if($fromSignedFor)<span style="font-style: italic; vertical-align: bottom; padding-left: 20px">for</span>@endif
+                                    @if($fromSignedFor)
+                                        <span style="font-style: italic; vertical-align: bottom; padding-left: 20px">for</span>
+                                    @endif
                                     <img
                                         src="{{ public_path('storage/'.$fromSignature) }}"
                                         alt="Signature"
-                                        style="height: 30px"
+                                        style="height: 30px; {{ !$fromSignedFor ? 'padding-left: 20px;' : '' }}"
                                     ><br>
                                 @endif
                             @endif

@@ -229,7 +229,7 @@
                     @if($condition['input_type'] === 'boolean')
                         <flux:checkbox wire:model.live="conditionValues.{{ $condition['id'] }}" :label="$condition['label']" />
                     @elseif($condition['input_type'] === 'select')
-                        <flux:select wire:model="conditionValues.{{ $condition['id'] }}" :label="$condition['label']">
+                        <flux:select wire:model="conditionValues.{{ $condition['id'] }}" :label="$condition['label']" placeholder="Choose an option...">
                             @foreach($condition['options'] ?? [] as $option)
                                 <flux:select.option value="{{ $option }}">{{ $option }}</flux:select.option>
                             @endforeach

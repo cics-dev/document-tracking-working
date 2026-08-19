@@ -19,19 +19,19 @@ class ManageDocumentFlows extends Component
 
     public string $officeId = '';
 
-    public string $stageType = 'routing';
+    public string $stageType = '';
 
     public string $label = '';
 
     public string $description = '';
 
-    public bool $isRequired = true;
+    public bool $isRequired = false;
 
     public bool $isSelectable = false;
 
     public string $workflowConditionId = '';
 
-    public string $conditionOperator = 'equals';
+    public string $conditionOperator = '';
 
     public string $conditionValue = '';
 
@@ -39,11 +39,11 @@ class ManageDocumentFlows extends Component
 
     public string $newConditionLabel = '';
 
-    public string $newConditionType = 'boolean';
+    public string $newConditionType = '';
 
     public string $newConditionOptions = '';
 
-    public string $generationContext = 'internal';
+    public string $generationContext = '';
 
     public string $generationSourceTypeId = '';
 
@@ -53,14 +53,13 @@ class ManageDocumentFlows extends Component
 
     public string $generationStatus = 'Approved';
 
-    public bool $generationRequiresAssignment = true;
+    public bool $generationRequiresAssignment = false;
 
     public array $generationRoles = [];
 
     public function mount(): void
     {
         $this->authorizeAccess();
-        $this->documentTypeId = (string) (DocumentType::orderBy('name')->value('id') ?? '');
     }
 
     public function edit(int $id): void
@@ -80,7 +79,7 @@ class ManageDocumentFlows extends Component
 
     public function updatedWorkflowConditionId(): void
     {
-        $this->conditionOperator = 'equals';
+        $this->conditionOperator = '';
         $this->conditionValue = '';
         $this->resetValidation(['conditionValue', 'conditionOperator']);
     }
@@ -88,18 +87,13 @@ class ManageDocumentFlows extends Component
     public function updatedStageType(string $value): void
     {
         if ($value === 'signatory' && ! in_array($this->label, ['Approved by', 'Recommending Approval'], true)) {
-            $this->label = 'Recommending Approval';
+            $this->label = '';
         }
     }
 
     public function save(): void
     {
         $this->authorizeAccess();
-        if ($this->stageType === 'signatory') {
-            $this->label = in_array($this->label, ['Approved by', 'Recommending Approval'], true)
-                ? $this->label
-                : 'Recommending Approval';
-        }
         $data = $this->validate([
             'documentTypeId' => ['required', 'exists:document_types,id'],
             'officeId' => ['required', 'exists:offices,id'],
@@ -111,7 +105,9 @@ class ManageDocumentFlows extends Component
             'isRequired' => ['boolean'],
             'isSelectable' => ['boolean'],
             'workflowConditionId' => ['nullable', 'exists:workflow_conditions,id'],
-            'conditionOperator' => ['required', Rule::in(['equals', 'not_equals', 'greater_than', 'less_than', 'contains'])],
+            'conditionOperator' => $this->workflowConditionId === ''
+                ? ['nullable']
+                : ['required', Rule::in(['equals', 'not_equals', 'greater_than', 'less_than', 'contains'])],
             'conditionValue' => $this->conditionValueRules(),
         ]);
 
@@ -123,7 +119,7 @@ class ManageDocumentFlows extends Component
                 : $this->nextInternalOrder($data['documentTypeId'], $data['stageType']),
             'is_required' => $data['isRequired'], 'is_selectable' => $data['isSelectable'],
             'workflow_condition_id' => $data['workflowConditionId'] !== '' ? $data['workflowConditionId'] : null,
-            'condition_operator' => $data['conditionOperator'],
+            'condition_operator' => $data['conditionOperator'] ?: 'equals',
             'condition_value' => $data['conditionValue'] === '' ? null : $data['conditionValue'],
         ]);
         session()->flash('status', $this->stageId ? 'Flow stage updated.' : 'Flow stage added.');
@@ -141,11 +137,11 @@ class ManageDocumentFlows extends Component
     public function resetStage(): void
     {
         $this->reset('stageId', 'officeId', 'label', 'description');
-        $this->stageType = 'routing';
-        $this->isRequired = true;
+        $this->stageType = '';
+        $this->isRequired = false;
         $this->isSelectable = false;
         $this->workflowConditionId = '';
-        $this->conditionOperator = 'equals';
+        $this->conditionOperator = '';
         $this->conditionValue = '';
         $this->resetValidation();
     }
@@ -200,7 +196,7 @@ class ManageDocumentFlows extends Component
         ]);
         WorkflowCondition::create(['key' => $data['newConditionKey'], 'label' => $data['newConditionLabel'], 'input_type' => $data['newConditionType'], 'options' => collect(explode(',', $data['newConditionOptions']))->map(fn ($v) => trim($v))->filter()->values()->all() ?: null]);
         $this->reset('newConditionKey', 'newConditionLabel', 'newConditionOptions');
-        $this->newConditionType = 'boolean';
+        $this->newConditionType = '';
         session()->flash('status', 'Workflow condition added.');
     }
 
@@ -222,7 +218,8 @@ class ManageDocumentFlows extends Component
             'required_status' => $data['generationStatus'] ?: null, 'requires_assigned_office' => $data['generationRequiresAssignment'], 'is_active' => true,
         ]);
         $rule->roles()->sync($data['generationRoles']);
-        $this->reset('generationSourceTypeId', 'generationTargetTypeId', 'generationLabel', 'generationRoles');
+        $this->reset('generationContext', 'generationSourceTypeId', 'generationTargetTypeId', 'generationLabel', 'generationRoles');
+        $this->generationRequiresAssignment = false;
         session()->flash('status', 'Generation rule added.');
     }
 

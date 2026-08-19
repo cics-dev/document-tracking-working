@@ -20,8 +20,7 @@
             </div>
             
             <div class="w-full min-w-0">
-                <flux:select wire:model.live="statusFilter" placeholder="Filter status">
-                    <flux:select.option value="">All Statuses</flux:select.option>
+                <flux:select wire:model.live="statusFilter" placeholder="All statuses">
                     <flux:select.option value="Draft">Draft</flux:select.option>
                     <flux:select.option value="Sent">Sent</flux:select.option>
                     <flux:select.option value="In Process">In Process</flux:select.option>

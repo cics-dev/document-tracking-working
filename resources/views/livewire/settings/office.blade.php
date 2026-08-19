@@ -12,7 +12,7 @@
                     <div class="md:col-span-8"><flux:field><flux:label>Office Name <span class="text-red-500">*</span></flux:label><flux:input wire:model="name" required /><flux:error name="name" /></flux:field></div>
                     <div class="md:col-span-4"><flux:field><flux:label>Abbreviation <span class="text-red-500">*</span></flux:label><flux:input wire:model="abbreviation" required /><flux:error name="abbreviation" /></flux:field></div>
                     <div class="md:col-span-6">
-                        <flux:label>Office Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="office_type" required>
+                        <flux:label>Office Type <span class="text-red-500">*</span></flux:label><flux:select wire:model="office_type" required placeholder="Choose office type...">
                             <flux:select.option value="ACAD">Academic</flux:select.option>
                             <flux:select.option value="ADMIN">Administration</flux:select.option>
                         </flux:select>

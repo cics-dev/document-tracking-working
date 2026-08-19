@@ -16,21 +16,21 @@ class ManageDocumentTypes extends Component
 
     public string $abbreviation = '';
 
-    public string $recipient_mode = 'office';
+    public string $recipient_mode = '';
 
     public string $recipient_label = 'To';
 
     public string $recipient_office_id = '';
 
-    public string $document_level = 'Inter';
+    public string $document_level = '';
 
     public string $number_prefix = '';
 
-    public bool $show_thru = true;
+    public bool $show_thru = false;
 
-    public bool $show_carbon_copy = true;
+    public bool $show_carbon_copy = false;
 
-    public bool $allow_attachments = true;
+    public bool $allow_attachments = false;
 
     public bool $requires_signatories = false;
 
@@ -38,13 +38,13 @@ class ManageDocumentTypes extends Component
 
     public string $content_template = '';
 
-    public string $print_layout = 'memorandum';
+    public string $print_layout = '';
 
-    public string $sender_signature_policy = 'approved';
+    public string $sender_signature_policy = '';
 
-    public string $approver_display_mode = 'labeled';
+    public string $approver_display_mode = '';
 
-    public bool $allow_oic_signature = true;
+    public bool $allow_oic_signature = false;
 
     public function mount(): void
     {
@@ -111,16 +111,16 @@ class ManageDocumentTypes extends Component
     public function resetForm(): void
     {
         $this->reset('editingId', 'name', 'abbreviation', 'recipient_office_id', 'number_prefix', 'requires_signatories', 'is_publicly_creatable', 'content_template');
-        $this->recipient_mode = 'office';
+        $this->recipient_mode = '';
         $this->recipient_label = 'To';
-        $this->document_level = 'Inter';
-        $this->show_thru = true;
-        $this->show_carbon_copy = true;
-        $this->allow_attachments = true;
-        $this->print_layout = 'memorandum';
-        $this->sender_signature_policy = 'approved';
-        $this->approver_display_mode = 'labeled';
-        $this->allow_oic_signature = true;
+        $this->document_level = '';
+        $this->show_thru = false;
+        $this->show_carbon_copy = false;
+        $this->allow_attachments = false;
+        $this->print_layout = '';
+        $this->sender_signature_policy = '';
+        $this->approver_display_mode = '';
+        $this->allow_oic_signature = false;
         $this->resetValidation();
     }
 

@@ -62,6 +62,28 @@ class SystemManagementRenderingTest extends TestCase
         }
 
         Livewire::test(ManageDocumentTypes::class)
+            ->assertSet('recipient_mode', '')
+            ->assertSet('document_level', '')
+            ->assertSet('print_layout', '')
+            ->assertSet('sender_signature_policy', '')
+            ->assertSet('approver_display_mode', '')
+            ->assertSet('show_thru', false)
+            ->assertSet('show_carbon_copy', false)
+            ->assertSet('allow_attachments', false)
+            ->assertSet('allow_oic_signature', false)
+            ->assertSee('Choose print layout...');
+
+        Livewire::test(ManageDocumentFlows::class)
+            ->assertSet('documentTypeId', '')
+            ->assertSet('stageType', '')
+            ->assertSet('isRequired', false)
+            ->assertSet('isSelectable', false)
+            ->assertSet('newConditionType', '')
+            ->assertSet('generationContext', '')
+            ->assertSet('generationRequiresAssignment', false)
+            ->assertSee('Choose stage type...');
+
+        Livewire::test(ManageDocumentTypes::class)
             ->call('edit', $type->id)
             ->assertSet('print_layout', 'memorandum')
             ->set('print_layout', 'letter')

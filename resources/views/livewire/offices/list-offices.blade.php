@@ -14,8 +14,7 @@
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search office or abbreviation..." />
         </div>
         <div class="w-full md:w-48">
-            <flux:select wire:model.live="typeFilter" placeholder="Filter office type">
-                <flux:select.option value="">All Types</flux:select.option>
+            <flux:select wire:model.live="typeFilter" placeholder="All office types">
                 <flux:select.option value="ACAD">Academic</flux:select.option>
                 <flux:select.option value="ADMIN">Administration</flux:select.option>
             </flux:select>

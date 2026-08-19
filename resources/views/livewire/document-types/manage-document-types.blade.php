@@ -13,7 +13,7 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <flux:field><flux:label>Document Type Name <span class="text-red-500">*</span></flux:label><flux:input wire:model="name" required placeholder="e.g. Office Memorandum" /><flux:error name="name" /></flux:field>
             <flux:field><flux:label>Abbreviation <span class="text-red-500">*</span></flux:label><flux:input wire:model="abbreviation" required placeholder="e.g. IOM" /><flux:error name="abbreviation" /></flux:field>
-            <flux:field><flux:label>Recipient Input <span class="text-red-500">*</span></flux:label><flux:select wire:model="recipient_mode" required><flux:select.option value="office">Office selector</flux:select.option><flux:select.option value="text">Free text</flux:select.option><flux:select.option value="none">None</flux:select.option></flux:select><flux:error name="recipient_mode" /></flux:field>
+            <flux:field><flux:label>Recipient Input <span class="text-red-500">*</span></flux:label><flux:select wire:model="recipient_mode" required placeholder="Choose recipient input..."><flux:select.option value="office">Office selector</flux:select.option><flux:select.option value="text">Free text</flux:select.option><flux:select.option value="none">None</flux:select.option></flux:select><flux:error name="recipient_mode" /></flux:field>
             <flux:field><flux:label>Recipient Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="recipient_label" required placeholder="To or For" /><flux:error name="recipient_label" /></flux:field>
             <flux:field x-data="{ showHelp: false }">
                 <div class="flex items-center gap-2">
@@ -45,25 +45,25 @@
                         </div>
                     </div>
                 </div>
-                <flux:select wire:model="document_level" required>
+                <flux:select wire:model="document_level" required placeholder="Choose document level...">
                     <flux:select.option value="Inter">Inter Office</flux:select.option>
                     <flux:select.option value="Intra">Intra Office</flux:select.option>
                 </flux:select>
                 <flux:error name="document_level" />
             </flux:field>
             <flux:input wire:model="number_prefix" label="Number Prefix Template" placeholder="{office_with_type}-{type}" />
-            <flux:select wire:model="print_layout" label="Print Layout">
+            <flux:select wire:model="print_layout" label="Print Layout" placeholder="Choose print layout...">
                 <flux:select.option value="memorandum">Memorandum</flux:select.option>
                 <flux:select.option value="letter">Letter</flux:select.option>
                 <flux:select.option value="indorsement">Indorsement</flux:select.option>
                 <flux:select.option value="special_order">Special Order</flux:select.option>
             </flux:select>
-            <flux:select wire:model="sender_signature_policy" label="Sender Signature">
+            <flux:select wire:model="sender_signature_policy" label="Sender Signature" placeholder="Choose signature policy...">
                 <flux:select.option value="approved">Only when approved</flux:select.option>
                 <flux:select.option value="always">Always</flux:select.option>
                 <flux:select.option value="never">Never</flux:select.option>
             </flux:select>
-            <flux:select wire:model="approver_display_mode" label="Approver Display">
+            <flux:select wire:model="approver_display_mode" label="Approver Display" placeholder="Choose approver display...">
                 <flux:select.option value="action_box">Approved / Disapproved action box</flux:select.option>
                 <flux:select.option value="labeled">Show “Approved by” label</flux:select.option>
                 <flux:select.option value="signature_only">Signature and name only</flux:select.option>
