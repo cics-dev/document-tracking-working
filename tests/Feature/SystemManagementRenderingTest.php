@@ -176,4 +176,56 @@ class SystemManagementRenderingTest extends TestCase
             ->assertSet('signatories.0.office_id', $presidentOffice->id)
             ->assertSet('signatories.0.locked', true);
     }
+
+    public function test_intra_creation_selects_the_intra_type_and_does_not_require_signatories(): void
+    {
+        $role = Role::create(['role' => 'sender', 'description' => 'Sender']);
+        $role->permissions()->attach(Permission::firstOrCreate(
+            ['key' => 'send_documents'],
+            ['label' => 'Send Documents']
+        ));
+        $office = Office::create(['name' => 'Records Office', 'abbreviation' => 'REC', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['role_id' => $role->id, 'office_id' => $office->id]);
+        $office->update(['head_id' => $sender->id]);
+        $type = DocumentType::create([
+            'name' => 'Intra-Office Memorandum',
+            'abbreviation' => 'Intra',
+            'document_level' => 'Intra',
+            'recipient_mode' => 'none',
+            'requires_signatories' => true,
+        ]);
+        DB::table('role_document_types')->insert([
+            'role_id' => $role->id,
+            'document_type_id' => $type->id,
+            'is_allowed' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DocumentFlowStage::create([
+            'document_type_id' => $type->id,
+            'office_id' => $office->id,
+            'stage_type' => 'signatory',
+            'label' => 'Approved by',
+            'sequence' => 10,
+            'is_required' => true,
+            'is_selectable' => false,
+        ]);
+
+        $this->actingAs($sender);
+
+        Livewire::withQueryParams(['level' => 'Intra'])
+            ->test(CreateDocument::class)
+            ->assertSet('document_type_id', (string) $type->id)
+            ->assertSet('document_type', 'Intra')
+            ->assertSet('signatories', [])
+            ->assertDontSee('Signatories')
+            ->set('subject', 'Internal notice')
+            ->set('content', 'For office information only.')
+            ->call('submitDocument', 'send')
+            ->assertHasNoErrors();
+
+        $document = Document::where('subject', 'Internal notice')->firstOrFail();
+        $this->assertSame('Intra', $document->document_level);
+        $this->assertCount(0, $document->steps);
+    }
 }

@@ -266,7 +266,7 @@
         </div>
         @endif
 
-        @if ($selectedDocumentType->requires_signatories || collect($flowStages)->where('stage_type', 'signatory')->isNotEmpty())
+        @if (! $this->isIntraDocument() && ($selectedDocumentType->requires_signatories || collect($flowStages)->where('stage_type', 'signatory')->isNotEmpty()))
         <div class="mb-8">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-1">

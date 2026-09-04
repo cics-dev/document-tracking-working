@@ -7,8 +7,8 @@
         </div>
 
         @if($mode == 'Sent')
-            <flux:button href="{{ route('documents.create-document') }}" variant="primary" icon="plus" class="w-full md:w-auto">
-                Create Document
+            <flux:button href="{{ route('documents.create-document', $documentTypeTab === 'intra' ? ['level' => 'Intra'] : []) }}" variant="primary" icon="plus" class="w-full md:w-auto">
+                {{ $documentTypeTab === 'intra' ? 'Create Intra Document' : 'Create Document' }}
             </flux:button>
         @endif
     </div>

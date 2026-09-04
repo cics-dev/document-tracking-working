@@ -112,7 +112,22 @@ class CreateDocument extends Component
         $this->offices = collect($officesData)->keyBy('id');
         $this->allOffices = Office::with('head', 'actingHead')->orderBy('name')->get()->keyBy('id');
 
-        $this->handleSessionData() ?: $this->handlePassedData($number, $draft_id);
+        $loadedExistingDocument = $this->handleSessionData();
+        if (! $loadedExistingDocument) {
+            $this->handlePassedData($number, $draft_id);
+        }
+
+        if (! $loadedExistingDocument && ! $this->redirect_mode && request()->string('level')->lower()->value() === 'intra') {
+            $intraType = collect($this->types)
+                ->where('document_level', 'Intra')
+                ->sortBy(fn (DocumentType $type) => strcasecmp($type->abbreviation, 'Intra') === 0 ? 0 : 1)
+                ->first();
+
+            if ($intraType) {
+                $this->document_type_id = (string) $intraType->id;
+                $this->handleUpdateDocumentType();
+            }
+        }
     }
 
     public function loadInitialContent()
@@ -211,6 +226,11 @@ class CreateDocument extends Component
         return $type instanceof DocumentType ? $type : ($this->document_type_id ? DocumentType::find($this->document_type_id) : null);
     }
 
+    public function isIntraDocument(): bool
+    {
+        return ($this->selectedType()?->document_level ?? 'Inter') === 'Intra';
+    }
+
     public function updatedConditionValues(): void
     {
         foreach ($this->flowStages as $stage) {
@@ -224,6 +244,12 @@ class CreateDocument extends Component
 
     private function syncRequiredConfiguredSignatories(): void
     {
+        if ($this->isIntraDocument()) {
+            $this->signatories = [];
+
+            return;
+        }
+
         $manualSignatories = collect($this->signatories)
             ->reject(fn ($signatory) => (bool) ($signatory['locked'] ?? false));
 
@@ -582,7 +608,7 @@ class CreateDocument extends Component
             $rules['document_to_text'] = 'required';
         }
 
-        if ($this->selectedType()?->requires_signatories || ! empty($this->signatories)) {
+        if (! $this->isIntraDocument() && ($this->selectedType()?->requires_signatories || ! empty($this->signatories))) {
             $rules['signatories'] = $this->selectedType()?->requires_signatories ? 'required|array|min:1' : 'array';
             $rules['signatories.*.role'] = 'required';
             $rules['signatories.*.office_id'] = 'required';
