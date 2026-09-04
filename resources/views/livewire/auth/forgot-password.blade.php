@@ -37,9 +37,16 @@
                         <flux:button
                             variant="primary"
                             type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="sendPasswordResetLink"
                             class="w-full py-2.5 px-4 bg-blue-600 hover:bg-green-600 text-white font-medium rounded-md transition hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            {{ __('Email password reset link') }}
+                            <span wire:loading.remove wire:target="sendPasswordResetLink">
+                                {{ __('Email password reset link') }}
+                            </span>
+                            <span wire:loading wire:target="sendPasswordResetLink">
+                                {{ __('Sending...') }}
+                            </span>
                         </flux:button>
                     </div>
                 </form>

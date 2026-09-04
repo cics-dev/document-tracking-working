@@ -181,6 +181,7 @@ class CreateDocument extends Component
         $this->selectedFlowStages = collect($this->flowStages)
             ->filter(fn ($stage) => $stage['is_required'] && (empty($stage['workflow_condition_id']) || $this->flowConditionArrayMatches($stage)))
             ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
+        $this->syncRequiredConfiguredSignatories();
 
         $type = $this->selectedType();
         if (! $type?->show_carbon_copy) {
@@ -195,14 +196,6 @@ class CreateDocument extends Component
             $this->document_to_id = $recipientOffice?->id;
             $this->document_to_text = null;
 
-            $requiredConfiguredSignatories = collect($this->flowStages)
-                ->where('stage_type', 'signatory')->where('is_required', true);
-            if ($requiredConfiguredSignatories->isNotEmpty()) {
-                $this->signatories = $requiredConfiguredSignatories->map(fn ($stage) => [
-                    'role' => $stage['label'], 'role_type' => $stage['label'],
-                    'office_id' => $stage['office_id'], 'locked' => true,
-                ])->values()->all();
-            }
         } elseif ($type?->recipient_mode === 'text') {
             $this->document_to_id = null;
         } elseif ($type?->recipient_mode === 'none') {
@@ -225,6 +218,32 @@ class CreateDocument extends Component
                 $this->selectedFlowStages[(string) $stage['id']] = $this->flowConditionArrayMatches($stage);
             }
         }
+
+        $this->syncRequiredConfiguredSignatories();
+    }
+
+    private function syncRequiredConfiguredSignatories(): void
+    {
+        $manualSignatories = collect($this->signatories)
+            ->reject(fn ($signatory) => (bool) ($signatory['locked'] ?? false));
+
+        $requiredSignatories = collect($this->flowStages)
+            ->where('stage_type', 'signatory')
+            ->where('is_required', true)
+            ->filter(fn ($stage) => empty($stage['workflow_condition_id'])
+                || ! ($stage['workflow_condition']['is_active'] ?? false)
+                || $this->flowConditionArrayMatches($stage))
+            ->map(fn ($stage) => [
+                'role' => $stage['label'],
+                'role_type' => $stage['label'],
+                'office_id' => $stage['office_id'],
+                'locked' => true,
+            ]);
+
+        $this->signatories = $manualSignatories
+            ->concat($requiredSignatories)
+            ->values()
+            ->all();
     }
 
     public function conditionLocksStage(array $stage): bool

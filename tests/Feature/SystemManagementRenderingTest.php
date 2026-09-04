@@ -127,4 +127,53 @@ class SystemManagementRenderingTest extends TestCase
             ->assertSee('Runtime rendering check')
             ->assertStatus(200);
     }
+
+    public function test_required_flow_signatory_is_loaded_without_a_fixed_recipient(): void
+    {
+        $role = Role::create(['role' => 'sender', 'description' => 'Sender']);
+        $role->permissions()->attach(Permission::firstOrCreate(
+            ['key' => 'send_documents'],
+            ['label' => 'Send Documents']
+        ));
+        $senderOffice = Office::create(['name' => 'Sender Office', 'abbreviation' => 'SEND', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['role_id' => $role->id, 'office_id' => $senderOffice->id]);
+        $senderOffice->update(['head_id' => $sender->id]);
+
+        $presidentOffice = Office::create(['name' => 'Office of the University President', 'abbreviation' => 'OP']);
+        $president = User::factory()->create(['office_id' => $presidentOffice->id]);
+        $presidentOffice->update(['head_id' => $president->id]);
+
+        $type = DocumentType::create([
+            'name' => 'Inter-Office Memorandum',
+            'abbreviation' => 'IOM',
+            'recipient_mode' => 'office',
+            'recipient_office_id' => null,
+            'requires_signatories' => true,
+        ]);
+        DB::table('role_document_types')->insert([
+            'role_id' => $role->id,
+            'document_type_id' => $type->id,
+            'is_allowed' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DocumentFlowStage::create([
+            'document_type_id' => $type->id,
+            'office_id' => $presidentOffice->id,
+            'stage_type' => 'signatory',
+            'label' => 'Approved by',
+            'sequence' => 10,
+            'is_required' => true,
+            'is_selectable' => true,
+        ]);
+
+        $this->actingAs($sender);
+
+        Livewire::test(CreateDocument::class)
+            ->set('document_type_id', (string) $type->id)
+            ->call('handleUpdateDocumentType')
+            ->assertSet('signatories.0.role', 'Approved by')
+            ->assertSet('signatories.0.office_id', $presidentOffice->id)
+            ->assertSet('signatories.0.locked', true);
+    }
 }

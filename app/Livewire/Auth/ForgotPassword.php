@@ -20,14 +20,13 @@ class ForgotPassword extends Component
             'email' => ['required', 'string', 'email'],
         ]);
 
-        $status = Password::sendResetLink($this->only('email'));
+        Password::sendResetLink($this->only('email'));
 
-        if ($status !== Password::RESET_LINK_SENT) {
-            session()->flash('status', __($status));
-
-            return;
-        }
-
-        session()->flash('status', __('A reset link has been sent to your email address.'));
+        // Always show the same response so this form cannot be used to discover
+        // which email addresses have an account.
+        session()->flash(
+            'status',
+            __('If an account exists for that email address, a password reset link has been sent.')
+        );
     }
 }
