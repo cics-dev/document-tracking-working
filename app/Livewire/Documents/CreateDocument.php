@@ -1072,9 +1072,14 @@ class CreateDocument extends Component
 
         $existingRoutingSteps = $document->steps()->where('step_type', 'routing')->get();
         foreach (collect($this->flowStages)->where('stage_type', 'routing') as $stage) {
-            $this->selectedFlowStages[(string) $stage['id']] = $existingRoutingSteps->contains(fn ($step) => (int) $step->office_id === (int) $stage['office_id']
+            $wasPreviouslyRouted = $existingRoutingSteps->contains(fn ($step) => (int) $step->office_id === (int) $stage['office_id']
                 && $step->step_label === $stage['label']
             );
+            $this->selectedFlowStages[(string) $stage['id']] = $wasPreviouslyRouted;
+
+            if ($wasPreviouslyRouted && ($stage['workflow_condition']['key'] ?? null) === 'has_budget_implications') {
+                $this->conditionValues[(string) $stage['workflow_condition_id']] = true;
+            }
         }
 
         if ($document->status === 'Draft') {

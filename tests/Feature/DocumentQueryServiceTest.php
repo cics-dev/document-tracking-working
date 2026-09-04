@@ -101,6 +101,47 @@ class DocumentQueryServiceTest extends TestCase
         $this->assertFalse(app(DocumentQueryService::class)->receivedBy(Document::query(), $secondUser)->whereKey($document)->exists());
     }
 
+    public function test_approved_document_remains_visible_to_the_office_with_the_pending_action_step(): void
+    {
+        $type = DocumentType::create(['name' => 'Request Letter Memorandum', 'abbreviation' => 'RLM']);
+        $senderOffice = Office::create(['name' => 'Sender', 'abbreviation' => 'S', 'office_type' => 'ADMIN']);
+        $financeOffice = Office::create(['name' => 'SAO Finance', 'abbreviation' => 'SAO-F', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['office_id' => $senderOffice->id]);
+        $finance = User::factory()->create(['office_id' => $financeOffice->id]);
+        $financeOffice->update(['head_id' => $finance->id]);
+        $document = Document::create([
+            'document_number' => 'S-RLM-3-2026', 'from_id' => $senderOffice->id,
+            'document_type_id' => $type->id, 'subject' => 'Approved for generation', 'content' => 'Test content',
+            'created_by' => $sender->id, 'status' => 'Approved',
+        ]);
+        DocumentStep::create([
+            'document_id' => $document->id, 'user_id' => $finance->id, 'office_id' => $financeOffice->id,
+            'step_type' => 'action', 'step_label' => 'Generate IOM', 'sequence' => 1, 'status' => 'Pending',
+        ]);
+
+        $this->assertTrue(app(DocumentQueryService::class)->receivedBy(Document::query(), $finance)->whereKey($document)->exists());
+    }
+
+    public function test_approved_document_does_not_expose_an_unfinished_signatory_step(): void
+    {
+        $type = DocumentType::create(['name' => 'Approval Letter', 'abbreviation' => 'AL']);
+        $senderOffice = Office::create(['name' => 'Sender', 'abbreviation' => 'S', 'office_type' => 'ADMIN']);
+        $signatoryOffice = Office::create(['name' => 'Signatory', 'abbreviation' => 'SIG', 'office_type' => 'ADMIN']);
+        $sender = User::factory()->create(['office_id' => $senderOffice->id]);
+        $signatory = User::factory()->create(['office_id' => $signatoryOffice->id]);
+        $document = Document::create([
+            'document_number' => 'S-AL-1-2026', 'from_id' => $senderOffice->id,
+            'document_type_id' => $type->id, 'subject' => 'Invalid approved state', 'content' => 'Test content',
+            'created_by' => $sender->id, 'status' => 'Approved',
+        ]);
+        DocumentStep::create([
+            'document_id' => $document->id, 'user_id' => $signatory->id, 'office_id' => $signatoryOffice->id,
+            'step_type' => 'signatory', 'step_label' => 'Approved by', 'sequence' => 1, 'status' => 'Pending',
+        ]);
+
+        $this->assertFalse(app(DocumentQueryService::class)->receivedBy(Document::query(), $signatory)->whereKey($document)->exists());
+    }
+
     public function test_returned_document_does_not_advance_to_the_next_step_and_keeps_the_returners_signature(): void
     {
         [$document, $firstUser, $secondUser] = $this->documentWithTwoSteps('routing');
