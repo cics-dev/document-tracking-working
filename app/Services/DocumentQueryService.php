@@ -66,6 +66,7 @@ class DocumentQueryService
                             $steps->where('status', '!=', 'Pending')
                                 ->orWhere(function (Builder $steps) {
                                     $steps->where('status', 'Pending')
+                                        ->whereIn('documents.status', ['Sent', 'In Process'])
                                         ->whereNotExists(function ($previousSteps) {
                                             $previousSteps->selectRaw('1')
                                                 ->from('document_steps as previous_steps')

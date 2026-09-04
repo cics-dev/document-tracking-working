@@ -8,6 +8,7 @@ use App\Models\DocumentType;
 use App\Models\Office;
 use App\Models\User;
 use App\Services\DocumentQueryService;
+use App\Services\DocumentWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -100,6 +101,32 @@ class DocumentQueryServiceTest extends TestCase
         $this->assertFalse(app(DocumentQueryService::class)->receivedBy(Document::query(), $secondUser)->whereKey($document)->exists());
     }
 
+    public function test_returned_document_does_not_advance_to_the_next_step_and_keeps_the_returners_signature(): void
+    {
+        [$document, $firstUser, $secondUser] = $this->documentWithTwoSteps('routing');
+        $firstUser->update(['signature' => 'signatures/returner.png']);
+
+        app(DocumentWorkflowService::class)->reject($document, $firstUser, 'Please revise.');
+
+        $service = app(DocumentQueryService::class);
+        $this->assertFalse($service->receivedBy(Document::query(), $secondUser)->whereKey($document)->exists());
+        $this->assertTrue($service->receivedBy(Document::query(), $firstUser)->whereKey($document)->exists());
+        $this->assertSame('signatures/returner.png', $document->steps()->where('sequence', 1)->firstOrFail()->signature_path);
+    }
+
+    public function test_rejected_document_does_not_advance_to_the_next_step_and_keeps_the_rejecters_signature(): void
+    {
+        [$document, $firstUser, $secondUser] = $this->documentWithTwoSteps('signatory');
+        $firstUser->update(['signature' => 'signatures/rejecter.png']);
+
+        app(DocumentWorkflowService::class)->reject($document, $firstUser, 'Not approved.');
+
+        $service = app(DocumentQueryService::class);
+        $this->assertFalse($service->receivedBy(Document::query(), $secondUser)->whereKey($document)->exists());
+        $this->assertTrue($service->receivedBy(Document::query(), $firstUser)->whereKey($document)->exists());
+        $this->assertSame('signatures/rejecter.png', $document->steps()->where('sequence', 1)->firstOrFail()->signature_path);
+    }
+
     public function test_president_can_see_an_il_when_the_president_step_is_ready(): void
     {
         $type = DocumentType::create(['name' => 'Indorsement Letter', 'abbreviation' => 'IL']);
@@ -143,5 +170,33 @@ class DocumentQueryServiceTest extends TestCase
 
         $document->steps()->where('sequence', 1)->update(['status' => 'Reviewed', 'processed_at' => now()]);
         $this->assertTrue($service->receivedBy(Document::query(), $president)->whereKey($document)->exists());
+    }
+
+    /** @return array{Document, User, User} */
+    private function documentWithTwoSteps(string $firstStepType): array
+    {
+        $type = DocumentType::create(['name' => 'Decision Letter', 'abbreviation' => 'DL']);
+        $firstOffice = Office::create(['name' => 'Decision Office', 'abbreviation' => 'DO', 'office_type' => 'ADMIN']);
+        $secondOffice = Office::create(['name' => 'Next Office', 'abbreviation' => 'NO', 'office_type' => 'ADMIN']);
+        $firstUser = User::factory()->create(['office_id' => $firstOffice->id]);
+        $secondUser = User::factory()->create(['office_id' => $secondOffice->id]);
+        $firstOffice->update(['head_id' => $firstUser->id]);
+        $secondOffice->update(['head_id' => $secondUser->id]);
+
+        $document = Document::create([
+            'document_number' => 'DO-DL-1-2026', 'from_id' => $firstOffice->id,
+            'document_type_id' => $type->id, 'subject' => 'Decision workflow', 'content' => 'Test',
+            'created_by' => $firstUser->id, 'status' => 'Sent',
+        ]);
+        DocumentStep::create([
+            'document_id' => $document->id, 'user_id' => $firstUser->id, 'office_id' => $firstOffice->id,
+            'step_type' => $firstStepType, 'step_label' => 'Decision', 'sequence' => 1,
+        ]);
+        DocumentStep::create([
+            'document_id' => $document->id, 'user_id' => $secondUser->id, 'office_id' => $secondOffice->id,
+            'step_type' => 'signatory', 'step_label' => 'Next approval', 'sequence' => 2,
+        ]);
+
+        return [$document, $firstUser, $secondUser];
     }
 }

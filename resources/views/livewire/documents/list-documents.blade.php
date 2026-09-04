@@ -156,7 +156,7 @@
                                     <flux:button href="{{ route('documents.edit-draft', $document->id) }}" size="sm" icon="pencil-square" variant="subtle" class="text-blue-600">Edit</flux:button>
                                 @endif
 
-                                @if($document->status == 'Rejected')
+                                @if($document->isRevisableBy(auth()->user()))
                                     <flux:button href="{{ route('documents.create-revision', $document->document_number) }}" size="sm" icon="arrow-path" variant="filled" class="bg-blue-600 hover:bg-blue-700 text-white">Revise</flux:button>
                                 @endif
 

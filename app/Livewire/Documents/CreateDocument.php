@@ -1081,9 +1081,11 @@ class CreateDocument extends Component
             $this->redirect_mode = 'edit';
             $this->revision_document_number = $document->document_number;
         } else {
-            if ($document->status !== 'Rejected' || $document->created_by !== Auth::id()) {
-                abort(403, 'Only the original creator may revise a rejected document.');
-            }
+            abort_unless(
+                $document->isRevisableBy(Auth::user()),
+                403,
+                'Only the original writer may revise a rejected or returned document.'
+            );
 
             $this->redirect_mode = 'revision';
             $root = $document->revisionRoot();

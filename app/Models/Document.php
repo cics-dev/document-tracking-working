@@ -74,12 +74,22 @@ class Document extends Model
 
     public function revisions()
     {
-        return $this->hasMany(Document::class, 'original_document_id');
+        return $this->hasMany(Document::class, 'original_document_id')->where('is_revision', true);
     }
 
     public function revisionRoot(): Document
     {
+        if (! $this->is_revision) {
+            return $this;
+        }
+
         return $this->originalRevisedDocument?->revisionRoot() ?? $this;
+    }
+
+    public function isRevisableBy(User $user): bool
+    {
+        return in_array($this->status, ['Rejected', 'Returned'], true)
+            && $this->created_by === $user->id;
     }
 
     public function nextPendingStep(): ?DocumentStep
