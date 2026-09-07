@@ -18,6 +18,7 @@ use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocumentTrackingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TetrisScoreController;
 
 
@@ -52,9 +53,9 @@ Route::get('/learn', function () {
 // Keep the legacy home URL pointed at the authenticated dashboard.
 Route::redirect('/home', '/dashboard')->middleware('auth')->name('home');
 
-Route::get('dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', DashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::get('/document/preview', [DocumentPreviewController::class, 'preview']);
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
