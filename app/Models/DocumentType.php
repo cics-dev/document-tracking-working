@@ -6,8 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentType extends Model
 {
+    protected $attributes = [
+        'chip_color' => '#dbeafe',
+    ];
+
     protected $fillable = [
-        'name', 'abbreviation', 'recipient_mode', 'recipient_label', 'recipient_office_id',
+        'name', 'abbreviation', 'chip_color', 'recipient_mode', 'recipient_label', 'recipient_office_id',
         'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments',
         'requires_signatories', 'is_publicly_creatable', 'content_template', 'print_layout',
         'sender_signature_policy', 'approver_display_mode', 'allow_oic_signature',

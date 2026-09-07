@@ -164,16 +164,13 @@ class ViewDocument extends Component
             default => 'Sign!',
         };
 
-        $requiresInput = in_array($stepType, ['routing', 'action'], true)
-            || ($stepType === 'signatory' && $this->myStep?->step_label === 'Approved by');
-
         $data = [
             'title' => 'Are you sure?',
             'text' => "You won't be able to revert this!",
             'icon' => 'warning',
-            'input' => $requiresInput ? 'text' : null,
-            'inputLabel' => $requiresInput ? 'Remarks' : null,
-            'inputPlaceholder' => $requiresInput ? 'Enter your remarks here...' : null,
+            'input' => 'text',
+            'inputLabel' => 'Remarks',
+            'inputPlaceholder' => 'Enter your remarks here...',
             'showCancelButton' => true,
             'confirmButtonColor' => '#d33',
             'cancelButtonColor' => '#3085d6',

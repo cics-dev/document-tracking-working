@@ -15,11 +15,11 @@
         <div x-data="{ open: false }">
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[120px] relative">
                 <strong>Routing Slip from: {{ $slip->office?->abbreviation ?? $slip->user->office->abbreviation }}</strong><br>
-                <strong>Status: {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}</strong><br>
-                <strong>Remarks:</strong>
-                <p class="truncate w-[260px]">
-                    {{ $slip->comments }}
-                </p>
+                <strong>Status: {{ $slip->status === 'Returned' ? 'Returned'.(filled($slip->comments) ? ' with remarks' : '') : 'Reviewed' }}</strong><br>
+                @if(filled($slip->comments))
+                    <strong>Remarks:</strong>
+                    <p class="truncate w-[260px]">{{ $slip->comments }}</p>
+                @endif
 
                 <button @click="open = true" class="absolute top-2 right-2 text-yellow-700 hover:text-yellow-900">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

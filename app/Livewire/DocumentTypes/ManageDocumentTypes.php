@@ -16,6 +16,8 @@ class ManageDocumentTypes extends Component
 
     public string $abbreviation = '';
 
+    public string $chip_color = '#dbeafe';
+
     public string $recipient_mode = '';
 
     public string $recipient_label = 'To';
@@ -56,6 +58,7 @@ class ManageDocumentTypes extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('document_types', 'name')->ignore($this->editingId)],
             'abbreviation' => ['required', 'string', 'max:50', Rule::unique('document_types', 'abbreviation')->ignore($this->editingId)],
+            'chip_color' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'recipient_mode' => ['required', Rule::in(['office', 'text', 'none'])],
             'recipient_label' => ['required', 'string', 'max:50'],
             'recipient_office_id' => ['nullable', 'exists:offices,id'],
@@ -93,6 +96,7 @@ class ManageDocumentTypes extends Component
         $this->editingId = $type->id;
         $this->name = $type->name;
         $this->abbreviation = $type->abbreviation;
+        $this->chip_color = $type->chip_color;
         foreach (['recipient_mode', 'recipient_label', 'recipient_office_id', 'document_level', 'number_prefix', 'show_thru', 'show_carbon_copy', 'allow_attachments', 'requires_signatories', 'is_publicly_creatable', 'content_template', 'print_layout', 'sender_signature_policy', 'approver_display_mode', 'allow_oic_signature'] as $field) {
             $this->{$field} = $type->{$field} ?? $this->{$field};
         }
@@ -114,6 +118,7 @@ class ManageDocumentTypes extends Component
         $this->recipient_mode = '';
         $this->recipient_label = 'To';
         $this->document_level = '';
+        $this->chip_color = '#dbeafe';
         $this->show_thru = false;
         $this->show_carbon_copy = false;
         $this->allow_attachments = false;

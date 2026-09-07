@@ -83,6 +83,28 @@ class RoleManagementTest extends TestCase
             ->assertSee("Update {$newRole->description}");
     }
 
+    public function test_public_document_type_is_shown_as_enabled_for_every_role(): void
+    {
+        $this->actingAs($this->accessAdmin());
+        $role = Role::create(['role' => 'public-type-user', 'description' => 'Public Type User']);
+        $type = DocumentType::create([
+            'name' => 'Public Office Memorandum',
+            'abbreviation' => 'POM',
+            'is_publicly_creatable' => true,
+        ]);
+
+        Livewire::test(ManageAccessRights::class)
+            ->assertSee('Public Office Memorandum')
+            ->assertSee('All users')
+            ->assertSeeHtml('data-public-document-type="'.$type->id.'"')
+            ->assertSeeHtml('checked disabled');
+
+        $this->assertDatabaseMissing('role_document_types', [
+            'role_id' => $role->id,
+            'document_type_id' => $type->id,
+        ]);
+    }
+
     public function test_role_can_be_created_with_access_rights_and_document_types(): void
     {
         $this->actingAs($this->accessAdmin());

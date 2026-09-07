@@ -13,6 +13,15 @@
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <flux:field><flux:label>Document Type Name <span class="text-red-500">*</span></flux:label><flux:input wire:model="name" required placeholder="e.g. Office Memorandum" /><flux:error name="name" /></flux:field>
             <flux:field><flux:label>Abbreviation <span class="text-red-500">*</span></flux:label><flux:input wire:model="abbreviation" required placeholder="e.g. IOM" /><flux:error name="abbreviation" /></flux:field>
+            <flux:field>
+                <flux:label>Chip Color <span class="text-red-500">*</span></flux:label>
+                <div class="flex items-center gap-3">
+                    <input type="color" wire:model.live="chip_color" class="h-10 w-16 cursor-pointer rounded border border-gray-300 bg-white p-1" aria-label="Choose document type chip color">
+                    <span class="rounded-md border border-black/10 px-3 py-1 text-sm font-medium text-gray-800" style="background-color: {{ $chip_color }}">{{ strtoupper($abbreviation ?: 'TYPE') }}</span>
+                    <span class="font-mono text-xs text-gray-500">{{ strtoupper($chip_color) }}</span>
+                </div>
+                <flux:error name="chip_color" />
+            </flux:field>
             <flux:field><flux:label>Recipient Input <span class="text-red-500">*</span></flux:label><flux:select wire:model="recipient_mode" required placeholder="Choose recipient input..."><flux:select.option value="office">Office selector</flux:select.option><flux:select.option value="text">Free text</flux:select.option><flux:select.option value="none">None</flux:select.option></flux:select><flux:error name="recipient_mode" /></flux:field>
             <flux:field><flux:label>Recipient Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="recipient_label" required placeholder="To or For" /><flux:error name="recipient_label" /></flux:field>
             <flux:field x-data="{ showHelp: false }">
@@ -89,7 +98,7 @@
                 @forelse ($types as $type)
                     <tr>
                         <td class="px-5 py-3 font-medium text-gray-900">{{ $type->name }}</td>
-                        <td class="px-5 py-3 text-gray-600">{{ $type->abbreviation }}</td>
+                        <td class="px-5 py-3"><span class="inline-flex rounded-md border border-black/10 px-2 py-1 text-xs font-medium text-gray-800" style="background-color: {{ $type->chip_color }}">{{ $type->abbreviation }}</span></td>
                         <td class="px-5 py-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $type->id }})" icon="pencil-square">Edit</flux:button><flux:button size="sm" wire:click="delete({{ $type->id }})" wire:confirm="Delete this document type?" variant="danger" icon="trash">Delete</flux:button></div></td>
                     </tr>
                 @empty

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Documents\ListDocuments;
 use App\Livewire\Notifications\SidebarNotifications;
 use App\Models\Document;
 use App\Models\DocumentType;
@@ -90,15 +91,22 @@ class NotificationPollingTest extends TestCase
         $otherUser = User::factory()->create(['office_id' => $otherOffice->id]);
         $type = DocumentType::create(['name' => 'Office Memo', 'abbreviation' => 'OM']);
 
-        Document::create(['document_number' => 'OM-RECEIVED', 'from_id' => $otherOffice->id, 'to_id' => $office->id, 'document_type_id' => $type->id, 'subject' => 'Received', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent']);
-        Document::create(['document_number' => 'OM-CREATED', 'from_id' => $otherOffice->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Created by user', 'content' => 'Test', 'created_by' => $user->id, 'status' => 'Sent']);
-        Document::create(['document_number' => 'OM-OFFICE', 'from_id' => $office->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Sent by office', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent']);
-        Document::create(['document_number' => 'OM-UNRELATED', 'from_id' => $otherOffice->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Unrelated', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent']);
+        Document::create(['document_number' => 'OM-RECEIVED', 'from_id' => $otherOffice->id, 'to_id' => $office->id, 'document_type_id' => $type->id, 'subject' => 'Received', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent', 'document_level' => 'Inter']);
+        Document::create(['document_number' => 'OM-CREATED', 'from_id' => $otherOffice->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Created by user', 'content' => 'Test', 'created_by' => $user->id, 'status' => 'Sent', 'document_level' => 'Inter']);
+        Document::create(['document_number' => 'OM-OFFICE', 'from_id' => $office->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Sent by office', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent', 'document_level' => 'Inter']);
+        Document::create(['document_number' => 'OM-UNRELATED', 'from_id' => $otherOffice->id, 'to_id' => $otherOffice->id, 'document_type_id' => $type->id, 'subject' => 'Unrelated', 'content' => 'Test', 'created_by' => $otherUser->id, 'status' => 'Sent', 'document_level' => 'Inter']);
 
         $counts = app(NotificationCountService::class)->for($user);
 
         $this->assertSame(1, $counts['received']);
-        $this->assertSame(2, $counts['sent']);
-        $this->assertSame(3, $counts['total']);
+        $this->assertSame(1, $counts['sent']);
+        $this->assertSame(2, $counts['total']);
+
+        $this->actingAs($user);
+        $sentList = Livewire::test(ListDocuments::class, ['mode' => 'Sent'])
+            ->assertSee('OM-CREATED')
+            ->assertSee('OM-OFFICE');
+
+        $this->assertSame(1, substr_count($sentList->html(), 'bg-blue-600 animate-pulse'));
     }
 }

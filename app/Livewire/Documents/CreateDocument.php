@@ -419,6 +419,9 @@ class CreateDocument extends Component
                 'role' => $sig['role'],
                 'user_name' => $office?->workflow_assignee?->name ?? '',
                 'position' => $office?->workflowAssigneePosition() ?? '',
+                'signature' => null,
+                'signed_for' => false,
+                'signed' => null,
             ];
         });
 
@@ -820,7 +823,13 @@ class CreateDocument extends Component
 
         $configuredSignatories = $stages->where('stage_type', 'signatory');
         $signatories = collect($this->signatories);
-        foreach ($configuredSignatories->where('is_required', true) as $required) {
+        $applicableRequiredSignatories = $configuredSignatories
+            ->where('is_required', true)
+            ->filter(fn ($stage) => ! $stage->workflow_condition_id
+                || ! $stage->workflowCondition?->is_active
+                || $this->flowConditionMatches($stage));
+
+        foreach ($applicableRequiredSignatories as $required) {
             if (! $signatories->contains(fn ($item) => (int) ($item['office_id'] ?? 0) === $required->office_id && strcasecmp($item['role'] ?? '', $required->label) === 0)) {
                 $signatories->push(['role' => $required->label, 'office_id' => $required->office_id]);
             }
@@ -837,6 +846,10 @@ class CreateDocument extends Component
             }
 
             if ($configured) {
+                if (! $this->flowConditionMatches($configured)) {
+                    continue;
+                }
+
                 $this->createConfiguredStep($document, $configured, $sequence++);
 
                 continue;

@@ -24,8 +24,17 @@
         <div class="grid gap-2">
             @foreach ($types as $type)
                 <label class="flex items-start gap-2 text-sm">
-                    <input type="checkbox" value="{{ $type->id }}" wire:model="{{ $documentTypesModel }}" class="mt-1">
-                    <span>{{ $type->name }}</span>
+                    @if($type->is_publicly_creatable)
+                        <input type="checkbox" checked disabled data-public-document-type="{{ $type->id }}" class="mt-1">
+                    @else
+                        <input type="checkbox" value="{{ $type->id }}" wire:model="{{ $documentTypesModel }}" class="mt-1">
+                    @endif
+                    <span>
+                        {{ $type->name }}
+                        @if($type->is_publicly_creatable)
+                            <span class="ml-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">All users</span>
+                        @endif
+                    </span>
                 </label>
             @endforeach
         </div>

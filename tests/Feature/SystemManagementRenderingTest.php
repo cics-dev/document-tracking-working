@@ -67,6 +67,7 @@ class SystemManagementRenderingTest extends TestCase
             ->assertSet('print_layout', '')
             ->assertSet('sender_signature_policy', '')
             ->assertSet('approver_display_mode', '')
+            ->assertSet('chip_color', '#dbeafe')
             ->assertSet('show_thru', false)
             ->assertSet('show_carbon_copy', false)
             ->assertSet('allow_attachments', false)
@@ -89,6 +90,7 @@ class SystemManagementRenderingTest extends TestCase
             ->set('print_layout', 'letter')
             ->assertSet('sender_signature_policy', 'approved')
             ->set('sender_signature_policy', 'always')
+            ->set('chip_color', '#ffe4e6')
             ->set('approver_display_mode', 'hidden')
             ->set('allow_oic_signature', false)
             ->call('save')
@@ -97,6 +99,7 @@ class SystemManagementRenderingTest extends TestCase
             'id' => $type->id,
             'print_layout' => 'letter',
             'sender_signature_policy' => 'always',
+            'chip_color' => '#ffe4e6',
             'approver_display_mode' => 'hidden',
             'allow_oic_signature' => false,
         ]);
@@ -126,6 +129,21 @@ class SystemManagementRenderingTest extends TestCase
             ->assertSee('Enter custom label...')
             ->assertSee('Runtime rendering check')
             ->assertStatus(200);
+
+        Livewire::test(CreateDocument::class)
+            ->set('document_type_id', (string) $type->id)
+            ->call('handleUpdateDocumentType')
+            ->call('addSignatory', ['role' => 'Reviewed by', 'office_id' => $office->id, 'locked' => false])
+            ->call('previewDocument')
+            ->assertDispatched('open-preview-tab');
+
+        $previewKey = collect(session()->all())
+            ->search(fn ($value) => is_array($value) && ($value['action'] ?? null) === 'preview');
+
+        $this->assertIsString($previewKey);
+        $this->get('/document/preview?'.$previewKey)
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_required_flow_signatory_is_loaded_without_a_fixed_recipient(): void

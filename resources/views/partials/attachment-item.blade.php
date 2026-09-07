@@ -45,11 +45,11 @@
                         <div
                             class="bg-blue-100 border-l-4 border-blue-500 text-blue-900 p-4 rounded shadow text-sm w-[280px] h-[120px] relative">
                             <strong>From:</strong> {{ $slip->office?->abbreviation ?? $slip->user->office->abbreviation }}<br>
-                            <strong>Status:</strong> {{ $slip->status === 'Returned' ? 'Returned with remarks' : 'Reviewed' }}<br>
-                            <strong>Remarks:</strong> 
-                            <p class="truncate w-[260px]">
-                                {{ $slip->comments }}
-                            </p>
+                            <strong>Status:</strong> {{ $slip->status === 'Returned' ? 'Returned'.(filled($slip->comments) ? ' with remarks' : '') : 'Reviewed' }}<br>
+                            @if(filled($slip->comments))
+                                <strong>Remarks:</strong>
+                                <p class="truncate w-[260px]">{{ $slip->comments }}</p>
+                            @endif
 
                             <button @click="open = true"
                                 class="absolute top-2 right-2 text-blue-700 hover:text-blue-900">

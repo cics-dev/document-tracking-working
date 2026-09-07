@@ -102,11 +102,15 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse ($documents as $document)
-                    <tr class="hover:bg-gray-50/50 transition-colors {{ $document->viewed_at || $mode == 'Sent' ? '' : 'bg-blue-50/30' }}">
+                    @php
+                        $isUnreadNotification = !$document->is_viewed_by_me
+                            && ($mode !== 'Sent' || $document->created_by !== auth()->id());
+                    @endphp
+                    <tr class="hover:bg-gray-50/50 transition-colors {{ $isUnreadNotification ? 'bg-blue-50/30' : '' }}">
                         
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
-                                @if(!$document->is_viewed_by_me && $mode != 'Sent')
+                                @if($isUnreadNotification)
                                     <span class="size-2 rounded-full bg-blue-600 animate-pulse"></span>
                                 @endif
                                 <span class="font-medium text-gray-900">{{ $document->document_number ?? '—' }}</span>
@@ -128,7 +132,7 @@
                         @endif
 
                         <td class="px-6 py-4 text-center">
-                            <flux:badge size="sm" variant="outline" color="zinc">{{ $document->documentType->abbreviation ?? 'N/A' }}</flux:badge>
+                            <span class="inline-flex rounded-md border border-black/10 px-2 py-1 text-xs font-medium text-gray-800" style="background-color: {{ $document->documentType?->chip_color ?? '#dbeafe' }}">{{ $document->documentType->abbreviation ?? 'N/A' }}</span>
                         </td>
 
                         <td class="px-6 py-4 text-center">

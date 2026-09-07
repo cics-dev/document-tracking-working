@@ -32,6 +32,9 @@ class DocumentWorkflowService
 
     private function process(Document $document, User $actor, ?string $remarks, bool $isRejection): array
     {
+        $remarks = is_string($remarks) ? trim($remarks) : $remarks;
+        $remarks = $remarks === '' ? null : $remarks;
+
         return DB::transaction(function () use ($document, $actor, $remarks, $isRejection) {
             $document = Document::query()->lockForUpdate()->findOrFail($document->id);
 
@@ -104,13 +107,17 @@ class DocumentWorkflowService
     {
         $action = match ([$step->step_type, $isRejection]) {
             ['routing', false] => 'reviewed the document',
-            ['routing', true] => 'returned the document with remarks',
+            ['routing', true] => 'returned the document',
             ['action', false] => 'completed action on the document',
-            ['action', true] => 'rejected action on the document with remarks',
-            ['signatory', true] => 'rejected the document with remarks',
+            ['action', true] => 'rejected action on the document',
+            ['signatory', true] => 'rejected the document',
             default => 'signed the document',
         };
 
-        return trim(sprintf('%s %s%s', $actor->office?->name ?? $actor->name, $action, $remarks ? ': '.$remarks : ''));
+        if ($isRejection && $remarks !== null) {
+            $action .= ' with remarks';
+        }
+
+        return trim(sprintf('%s %s%s', $actor->office?->name ?? $actor->name, $action, $remarks !== null ? ': '.$remarks : ''));
     }
 }

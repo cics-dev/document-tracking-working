@@ -54,6 +54,9 @@
     $rawStatus = $document->status ?? 'Draft';
     $displayStatus = str($rawStatus)->headline();
     $steps = $document->steps->sortBy('sequence')->values();
+    $rejectedStepIndex = $steps->search(
+        fn($step) => in_array(strtolower($step->status), ['rejected', 'returned'], true)
+    );
 @endphp
 
 <div class="container">
@@ -101,18 +104,21 @@
                     $isProcessed = !empty($step->processed_at);
                     $isRejected = in_array(strtolower($step->status), ['rejected', 'returned'], true);
                     $isPending = !$isProcessed && !$isRejected;
+                    $isAfterRejected = $rejectedStepIndex !== false && $index > $rejectedStepIndex;
                     
                     $firstPending = $steps->first(fn($candidate) => empty($candidate->processed_at));
-                    $isActive = $isPending && $firstPending?->id === $step->id;
+                    $isActive = $rejectedStepIndex === false && $isPending && $firstPending?->id === $step->id;
 
                     $iconClass = 'fa-clock';
                     $stepStateClass = '';
-                    if ($isProcessed) {
-                        $iconClass = 'fa-check';
-                        $stepStateClass = 'completed';
-                    } elseif ($isRejected) {
+                    if ($isRejected) {
                         $iconClass = 'fa-times';
                         $stepStateClass = 'rejected';
+                    } elseif ($isAfterRejected) {
+                        $iconClass = null;
+                    } elseif ($isProcessed) {
+                        $iconClass = 'fa-check';
+                        $stepStateClass = 'completed';
                     } elseif ($isActive) {
                         $iconClass = 'fa-hourglass-half';
                         $stepStateClass = 'active';
@@ -120,15 +126,17 @@
                 @endphp
                 <div class="status-step">
                     <div class="status-icon {{ $stepStateClass }}">
-                        <i class="fas {{ $iconClass }}"></i>
+                        @if($iconClass)
+                            <i class="fas {{ $iconClass }}"></i>
+                        @endif
                     </div>
                     <div class="status-label {{ $isActive ? 'active' : '' }}">{{ $step->active_user?->office?->abbreviation ?? 'Unassigned' }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">{{ $step->step_label }}</div>
                     <div class="status-date {{ $isActive ? 'active' : '' }}">
-                        @if($isProcessed)
-                            {{ \Carbon\Carbon::parse($step->processed_at)->format('M d, h:i A') }}
-                        @elseif($isRejected)
+                        @if($isRejected)
                             Rejected
+                        @elseif($isProcessed)
+                            {{ \Carbon\Carbon::parse($step->processed_at)->format('M d, h:i A') }}
                         @else
                             Pending
                         @endif

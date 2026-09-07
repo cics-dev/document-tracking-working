@@ -105,6 +105,25 @@ class DocumentWorkflowServiceTest extends TestCase
         $this->assertDatabaseHas('documents', ['id' => $document->id, 'status' => 'Returned']);
     }
 
+    public function test_blank_comments_are_saved_as_null_for_every_workflow_action(): void
+    {
+        foreach ([
+            ['routing', false],
+            ['signatory', false],
+            ['routing', true],
+            ['signatory', true],
+        ] as $index => [$stepType, $reject]) {
+            [$document, $actor] = $this->documentWithStep($stepType, '-'.$index);
+
+            $result = $reject
+                ? app(DocumentWorkflowService::class)->reject($document, $actor, '   ')
+                : app(DocumentWorkflowService::class)->approve($document, $actor, '   ');
+
+            $this->assertNull($result['step']->fresh()->comments);
+            $this->assertStringNotContainsString('with remarks', $result['description']);
+        }
+    }
+
     public function test_officer_in_charge_can_process_a_pending_office_step(): void
     {
         [$document, $head] = $this->documentWithStep('routing');
@@ -263,15 +282,15 @@ class DocumentWorkflowServiceTest extends TestCase
     }
 
     /** @return array{Document, User} */
-    private function documentWithStep(string $stepType): array
+    private function documentWithStep(string $stepType, string $suffix = ''): array
     {
-        $office = Office::create(['name' => 'Workflow Office', 'abbreviation' => 'WO', 'office_type' => 'ADMIN']);
+        $office = Office::create(['name' => 'Workflow Office'.$suffix, 'abbreviation' => 'WO'.$suffix, 'office_type' => 'ADMIN']);
         $actor = User::factory()->create(['office_id' => $office->id]);
         $office->update(['head_id' => $actor->id]);
-        $type = DocumentType::create(['name' => 'Workflow Letter', 'abbreviation' => 'WL']);
+        $type = DocumentType::create(['name' => 'Workflow Letter'.$suffix, 'abbreviation' => 'WL'.$suffix]);
 
         $document = Document::create([
-            'document_number' => 'WO-WL-1-2026',
+            'document_number' => 'WO-WL-1-2026'.$suffix,
             'from_id' => $office->id,
             'to_id' => $office->id,
             'document_type_id' => $type->id,

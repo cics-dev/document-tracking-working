@@ -27,7 +27,12 @@ class NotificationCountService
             'received' => $canReceive
                 ? $documents->listFor($user, 'received')->whereDoesntHave('accessLogs', $viewed)->count() : 0,
             'sent' => $canSend
-                ? $documents->listFor($user, 'Sent')->whereDoesntHave('accessLogs', $viewed)->count() : 0,
+                ? $documents->listFor($user, 'Sent')
+                    ->where(fn ($query) => $query
+                        ->whereNull('documents.created_by')
+                        ->orWhere('documents.created_by', '!=', $user->id))
+                    ->whereDoesntHave('accessLogs', $viewed)
+                    ->count() : 0,
             'external' => ($user->hasAccess('receive_external_documents') || $user->hasAccess('send_external_documents'))
                 ? $external->whereDoesntHave('accessLogs', $viewed)->count() : 0,
         ];
@@ -58,7 +63,14 @@ class NotificationCountService
 
                 if ($canSend) {
                     $method = $canReceive ? 'orWhereIn' : 'whereIn';
-                    $query->{$method}('documents.id', $documents->listFor($user, 'Sent')->select('documents.id'));
+                    $query->{$method}(
+                        'documents.id',
+                        $documents->listFor($user, 'Sent')
+                            ->where(fn ($query) => $query
+                                ->whereNull('documents.created_by')
+                                ->orWhere('documents.created_by', '!=', $user->id))
+                            ->select('documents.id')
+                    );
                 }
             })
             ->whereDoesntHave('accessLogs', $viewed)

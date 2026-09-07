@@ -409,7 +409,7 @@
                         <div class="signatory-row">
                             @foreach($grouped as $signatory)
                                 <div class="signatory-box">
-                                    @if($signatory['signed'])
+                                    @if(!empty($signatory['signed']))
                                         @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
                                         @if(isset($signatory['signature']) && $signatory['signature'])
                                         <img 
@@ -482,7 +482,7 @@
                                             <div class="signatory-row" style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; width: 200px;">
                                                 @foreach($grouped as $signatory)
                                                     <div class="signatory-box" style="text-align: center; width: 200px; padding-left: 40px;">
-                                                        @if($signatory['signed'])
+                                                        @if(!empty($signatory['signed']))
                                                             @if(!empty($signatory['signed_for']))<span style="font-style: italic; vertical-align: top;">for</span>@endif
                                                             @if(isset($signatory['signature']) && $signatory['signature'])
                                                             <img 

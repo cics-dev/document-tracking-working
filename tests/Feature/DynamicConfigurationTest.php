@@ -76,6 +76,58 @@ class DynamicConfigurationTest extends TestCase
         }
     }
 
+    public function test_required_signatory_is_included_only_when_its_boolean_condition_is_checked(): void
+    {
+        $type = DocumentType::create(['name' => 'Budget Request Letter', 'abbreviation' => 'BRL']);
+        $sender = $this->office('Requesting Office', 'REQ');
+        $vpaf = $this->office('Vice President for Administration and Finance', 'VPAF');
+        $condition = WorkflowCondition::create([
+            'key' => 'has_budget_implications',
+            'label' => 'Has budget implications?',
+            'input_type' => 'boolean',
+        ]);
+        DocumentFlowStage::create([
+            'document_type_id' => $type->id,
+            'office_id' => $vpaf->id,
+            'stage_type' => 'signatory',
+            'label' => 'Recommending Approval',
+            'sequence' => 10,
+            'is_required' => true,
+            'is_selectable' => false,
+            'workflow_condition_id' => $condition->id,
+            'condition_operator' => 'equals',
+            'condition_value' => '1',
+        ]);
+
+        foreach ([false, true] as $hasBudgetImplications) {
+            $document = Document::create([
+                'document_number' => 'BRL-'.(int) $hasBudgetImplications,
+                'from_id' => $sender->id,
+                'document_type_id' => $type->id,
+                'subject' => 'Conditional VPAF approval',
+                'content' => 'Test',
+                'created_by' => $sender->head_id,
+                'status' => 'Sent',
+            ]);
+            $component = new CreateDocument;
+            $component->document_type = 'BRL';
+            $component->document_type_id = (string) $type->id;
+            $component->flowStages = DocumentFlowStage::with('workflowCondition')
+                ->where('document_type_id', $type->id)->get()->toArray();
+            $component->conditionValues = [(string) $condition->id => $hasBudgetImplications];
+            $component->cf_offices = [];
+
+            $method = new ReflectionMethod(CreateDocument::class, 'processDocumentSteps');
+            $method->setAccessible(true);
+            $method->invoke($component, $document);
+
+            $this->assertSame(
+                $hasBudgetImplications,
+                $document->steps()->where('office_id', $vpaf->id)->exists()
+            );
+        }
+    }
+
     public function test_checking_a_condition_checks_and_locks_its_required_routing_stage(): void
     {
         $type = DocumentType::create(['name' => 'Request', 'abbreviation' => 'REQ']);
