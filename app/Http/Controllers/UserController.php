@@ -24,7 +24,11 @@ class UserController extends Controller
                 $request->family_name .
                 ($request->suffix != '' ? ' ' . $request->suffix : '')
             ),
+<<<<<<< HEAD
             'password' => 'password'
+=======
+            'password' => 'secret'
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         ]);
         $user = User::create($request->all());
         $user->profile()->create($request->all());
@@ -35,6 +39,7 @@ class UserController extends Controller
         }
         return [$user, $user->profile];
     }
+<<<<<<< HEAD
 
     public function update(Request $request, User $user)
     {
@@ -84,4 +89,6 @@ class UserController extends Controller
 
         return $user;
     }
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 }

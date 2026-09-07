@@ -15,11 +15,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('document_id')->constrained('documents')->onDelete('cascade');
             $table->foreignId('attachment_document_id')->nullable()->constrained('documents')->onDelete('cascade'); //only if generated
+<<<<<<< HEAD
             $table->string('name');
             $table->text('status')->nullable();
             $table->string('file_url')->nullable(); //only if uploaded
             $table->boolean('is_upload')->default(0);
             $table->string('file_type')->nullable();
+=======
+            $table->string('document_number')->unique()->nullable();
+            $table->text('status')->nullable();
+            $table->string('file_url')->nullable(); //only if uploaded
+            $table->boolean('is_upload')->default(0);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             $table->timestamps();
         });
     }

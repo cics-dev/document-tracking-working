@@ -43,7 +43,11 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
+<<<<<<< HEAD
         $this->redirectIntended(default: route('landing', absolute: false));
+=======
+        $this->redirectIntended(default: route('landing', absolute: false), navigate: true);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     /**

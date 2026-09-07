@@ -1,4 +1,5 @@
 <style>
+<<<<<<< HEAD
 
   .dashboard-card {
     background-color: #ffffff !important;
@@ -50,11 +51,25 @@
 
   .dark .history-icon {
     background-color: #1e293b;
+=======
+   body {
+    background-color: #f6f6f6;
+  }
+  .card-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
   }
 
   /* First chart styles */
   #chartdiv {
+<<<<<<< HEAD
     width: 70%;
+=======
+    width: 80%;
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     height: 480px;
     max-height: 500px;
     min-height: 500px;
@@ -67,14 +82,22 @@
 
   .chart-label {
     position: absolute;
+<<<<<<< HEAD
     top: 10px;
+=======
+    top: 4px;
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     left: 50%;
     transform: translateX(-50%);
     font-size: 14px;
     color: #555;
+<<<<<<< HEAD
     font-weight: 600;
     z-index: 10;
     pointer-events: none;
+=======
+    font-weight: 500;
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
   }
 
   /* Second chart styles */
@@ -137,6 +160,7 @@
     justify-content: center;
     margin-right: 12px;
     flex-shrink: 0;
+<<<<<<< HEAD
     overflow: hidden;
     border: 2px solid #dbeafe;
   }
@@ -157,6 +181,13 @@
     color: #ffffff;
     font-size: 13px;
     font-weight: 700;
+=======
+  }
+
+  .history-icon i {
+    color: #1976d2;
+    font-size: 18px;
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
   }
 
   .history-content {
@@ -175,6 +206,7 @@
     margin-bottom: 5px;
   }
 
+<<<<<<< HEAD
   .history-action {
     font-weight: 700;
   }
@@ -187,16 +219,21 @@
     color: #16a34a;
   }
 
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
   .history-time {
     font-size: 12px;
     color: #999;
   }
 
+<<<<<<< HEAD
   .dark .history-icon {
     background-color: #1e3a5f;
     border-color: #334155;
   }
 
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
   /* Scrollbar styling */
   .history-container::-webkit-scrollbar {
     width: 6px;
@@ -234,6 +271,7 @@
   }
 </style>
 
+<<<<<<< HEAD
 @php
     $totalDocsCount = \App\Models\Document::count();
     $extDocsCount = \App\Models\ExternalDocument::count();
@@ -405,6 +443,94 @@
         </div>
         <div style="flex: 1; padding-left: 10px;">
             <p style="font-size: 13px; color: #4CAF50;">Successfully Processed</p>
+=======
+<x-layouts.app title="Dashboard">
+  <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
+    <div class="grid auto-rows-min gap-4 md:grid-cols-5">
+      <!-- Your 5 cards here (same as before) -->
+      <!-- Blue Box -->
+      <div class="relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300" style="background-color: white;">
+        <i class="fas fa-building text-white text-4xl absolute right-6 top-1/2 transform -translate-y-1/2 group-hover:text-yellow-400 transition-colors duration-200"></i>
+        <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <div style="flex: 1; padding-left: 10px;">
+            <h3 id="document-heading" style="font-size: 18px; color: #333; margin-bottom: 2px;">Documents</h3>
+            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
+          </div>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+            <img src="https://cdn-icons-gif.flaticon.com/13099/13099823.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+          </div>
+        </div>
+        <div style="flex: 1; padding-left: 10px;">
+            <p style="font-size: 13px; color: #4CAF50;">↑ 3.48% from last month</p>
+        </div>
+      </div>
+
+      <!-- Green Box -->
+      <div class="relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300" style="background-color: white;">
+        <i class="fas fa-building text-white text-4xl absolute right-6 top-1/2 transform -translate-y-1/2 group-hover:text-yellow-400 transition-colors duration-200"></i>
+        <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <div style="flex: 1; padding-left: 10px;">
+            <h3 id="document-heading" style="font-size: 18px; color: #333; margin-bottom: 2px;">Users</h3>
+            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">266</p>
+          </div>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+            <img src="https://cdn-icons-gif.flaticon.com/7211/7211817.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+          </div>
+        </div>
+        <div style="flex: 1; padding-left: 10px;">
+            <p style="font-size: 13px; color: #F44336;">↓ 1.26% from last month</p>
+        </div>
+      </div>
+
+      <!-- Orange Box -->
+      <div class="relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300" style="background-color: white;">
+        <i class="fas fa-building text-white text-4xl absolute right-6 top-1/2 transform -translate-y-1/2 group-hover:text-yellow-400 transition-colors duration-200"></i>
+        <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <div style="flex: 1; padding-left: 10px;">
+            <h3 id="document-heading" style="font-size: 18px; color: #333; margin-bottom: 2px;">Files</h3>
+            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
+          </div>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+            <img src="https://cdn-icons-gif.flaticon.com/15309/15309697.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+          </div>
+        </div>
+        <div style="flex: 1; padding-left: 10px;">
+            <p style="font-size: 13px; color: #35a7ff;">↑ 3.48% from last month</p>
+        </div>
+      </div>
+
+      <!-- Red Box -->
+      <div class="relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300" style="background-color: white;">
+        <i class="fas fa-building text-white text-4xl absolute right-6 top-1/2 transform -translate-y-1/2 group-hover:text-yellow-400 transition-colors duration-200"></i>
+        <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <div style="flex: 1; padding-left: 10px;">
+            <h3 id="document-heading" style="font-size: 18px; color: #333; margin-bottom: 2px;">Offices</h3>
+            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">281</p>
+          </div>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+            <img src="https://cdn-icons-gif.flaticon.com/8722/8722580.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+          </div>
+        </div>
+        <div style="flex: 1; padding-left: 10px;">
+            <p style="font-size: 13px; color: #f1c50f;">↓ 1.02% from last month</p>
+        </div>
+      </div>
+
+      <!-- Yellow Box -->
+      <div class="relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300" style="background-color: white;">
+        <i class="fas fa-building text-white text-4xl absolute right-6 top-1/2 transform -translate-y-1/2 group-hover:text-yellow-400 transition-colors duration-200"></i>
+        <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
+          <div style="flex: 1; padding-left: 10px;">
+            <h3 id="document-heading" style="font-size: 18px; color: #333; margin-bottom: 2px;">Recieved</h3>
+            <p style="font-size: 19px; color: #000; margin-bottom: 8px;">350,897</p>
+          </div>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);">
+            <img src="https://cdn-icons-gif.flaticon.com/7211/7211797.gif" alt="Traffic Icon" style="width: 32px; height: 32px;">
+          </div>
+        </div>
+        <div style="flex: 1; padding-left: 10px;">
+            <p style="font-size: 13px; color: #4CAF50;">↑ 3.48% from last month</p>
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         </div>
       </div>
     </div>
@@ -413,6 +539,7 @@
     <div class="chart-container">
       <div class="charts-wrapper">
         <div id="chartdiv">
+<<<<<<< HEAD
           <div class="chart-label">ZPPSU - DTS Document Tracking Analytics</div>
           <div id="chartcanvas" style="width: 100%; height: 100%;"></div>
         </div>
@@ -556,12 +683,92 @@
       </div>
     </div>
   </div>
+=======
+         <div class="chart-label">ZPPSU - DTS Document Trackig Analytics</div>
+          </div>
+       <div id="chartdiv2">
+  <div class="history-header">Document History</div>
+  <div class="history-container">
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/4138/4138774.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">New Document Created</div>
+        <div class="history-desc">Project Proposal.docx</div>
+        <div class="history-time">Just now</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/3006/3006899.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Uploaded</div>
+        <div class="history-desc">Annual Report 2025.pdf</div>
+        <div class="history-time">2 minutes ago</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/16683/16683419.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Edited</div>
+        <div class="history-desc">Project Proposal.pptx</div>
+        <div class="history-time">1 hour ago</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+         <img src="https://cdn-icons-png.flaticon.com/128/16683/16683439.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Shared</div>
+        <div class="history-desc">Budget Plan.xlsx with Finance Team</div>
+        <div class="history-time">3 hours ago</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/14178/14178961.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Approved</div>
+        <div class="history-desc">Contract Agreement.docx</div>
+        <div class="history-time">Yesterday, 2:45 PM</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/4138/4138853.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Downloaded</div>
+        <div class="history-desc">Meeting Minutes.pdf by John Doe</div>
+        <div class="history-time">Yesterday, 10:30 AM</div>
+      </div>
+    </div>
+    <div class="history-item">
+      <div class="history-icon">
+        <img src="https://cdn-icons-png.flaticon.com/128/11107/11107601.png" alt="Document Icon" style="width: 24px; height: 24px;">
+      </div>
+      <div class="history-content">
+        <div class="history-title">Document Archived</div>
+        <div class="history-desc">Q1 Financial Report.xlsx</div>
+        <div class="history-time">May 28, 2025</div>
+      </div>
+    </div>
+  </div>
+</div>
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
   <!-- amCharts Scripts -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 
+<<<<<<< HEAD
 
   <!-- Chart Script -->
   <script>
@@ -620,12 +827,27 @@
     function createChart(divId) {
       window._dashboardChartRoot = am5.Root.new(divId);
       var root = window._dashboardChartRoot;
+=======
+  <!-- Font Awesome for icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <!-- Chart Script -->
+  <script>
+    am5.ready(function() {
+      // Create first chart
+      createChart("chartdiv");
+    });
+
+    function createChart(divId) {
+      var root = am5.Root.new(divId);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
       root._logo.set("scale", 0.0);
       root._logo.set("paddingTop", 1);
       root._logo.set("paddingRight", 1);
       root._logo.set("opacity", 0.01);
       root.setThemes([am5themes_Animated.new(root)]);
 
+<<<<<<< HEAD
       var isDarkMode = document.documentElement.classList.contains('dark');
       var textColor = isDarkMode ? am5.color(0xFFFFFF) : am5.color(0x475569);
       var gridColor = isDarkMode ? am5.color(0x3f3f46) : am5.color(0xE2E8F0);
@@ -633,12 +855,15 @@
       var tooltipText = isDarkMode ? am5.color(0xFFFFFF) : am5.color(0x000000);
       var chartBackground = isDarkMode ? am5.color(0x18181b) : am5.color(0xFFFFFF);
 
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
       var chart = root.container.children.push(
         am5xy.XYChart.new(root, {
           panX: false,
           panY: false,
           wheelX: "none",
           wheelY: "none",
+<<<<<<< HEAD
           paddingLeft: 0,
           background: am5.RoundedRectangle.new(root, {
             fill: chartBackground,
@@ -655,6 +880,14 @@
       var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {}));
       cursor.lineY.set("visible", false);
       cursor.lineX.setAll({ stroke: gridColor, strokeOpacity: 0.3 });
+=======
+          paddingLeft: 0
+        })
+      );
+
+      var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {}));
+      cursor.lineY.set("visible", false);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
       var xRenderer = am5xy.AxisRendererX.new(root, {
         minGridDistance: 30,
@@ -680,6 +913,7 @@
         renderer: am5xy.AxisRendererY.new(root, { opposite: true })
       }));
 
+<<<<<<< HEAD
       xRenderer.labels.template.setAll({ fill: textColor, text: "{realName}" });
       xRenderer.grid.template.setAll({ stroke: gridColor });
       xRenderer.ticks.template.setAll({ stroke: gridColor });
@@ -688,6 +922,8 @@
       yAxis2.get("renderer").labels.template.setAll({ fill: textColor });
       yAxis2.get("renderer").grid.template.setAll({ stroke: gridColor });
 
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
       var series = chart.series.push(am5xy.ColumnSeries.new(root, {
         name: "Series 1",
         xAxis: xAxis,
@@ -696,6 +932,7 @@
         sequencedInterpolation: true,
         categoryXField: "category",
         tooltip: am5.Tooltip.new(root, {
+<<<<<<< HEAD
           labelText: "{provider} {realName}: {valueY}",
           getFillFromSprite: false,
           background: am5.RoundedRectangle.new(root, {
@@ -703,6 +940,9 @@
             fillOpacity: 0.95
           }),
           labelTextColor: tooltipText
+=======
+          labelText: "{provider} {realName}: {valueY}"
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         })
       }));
 
@@ -727,6 +967,7 @@
         stroke: chart.get("colors").getIndex(13),
         fill: chart.get("colors").getIndex(13),
         categoryXField: "category",
+<<<<<<< HEAD
         tooltip: am5.Tooltip.new(root, {
           labelText: "{valueY}",
           getFillFromSprite: false,
@@ -736,6 +977,9 @@
           }),
           labelTextColor: tooltipText
         })
+=======
+        tooltip: am5.Tooltip.new(root, { labelText: "{valueY}" })
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
       }));
 
       lineSeries.strokes.template.set("strokeWidth", 2);
@@ -760,6 +1004,7 @@
 
       var chartData = [];
 
+<<<<<<< HEAD
       var currentYear = new Date().getFullYear();
       var startYear = 2022;
       var dbDocsCount = {{ $totalDocsCount }};
@@ -782,6 +1027,38 @@
         "Offices": generateYearData(5, {{ $officesCount > 0 ? $officesCount : 210 }}),
         "Departments": generateYearData(6, 265),
         "Office Heads": generateYearData(4, 98)
+=======
+      var data = {
+        "Documents": {
+          "2022": 5,
+          "2023": 20,
+          "2024": 15,
+          "2025": 25,
+          quantity: 430
+        },
+        "Offices": {
+          "2020": 15,
+          "2022": 21,
+          "2024": 18,
+          "2025": 22,
+          quantity: 210
+        },
+        "Departments": {
+          "2021": 25,
+          "2022": 11,
+          "2023": 17,
+          "2024": 30,
+          "2025": 20,
+          quantity: 265
+        },
+        "Office Heads": {
+          "2022": 12,
+          "2023": 15,
+          "2024": 10,
+          "2025": 8,
+          quantity: 98
+        }
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
       };
 
       for (var providerName in data) {
@@ -801,8 +1078,12 @@
           }
         }
 
+<<<<<<< HEAD
         // Sort chronologically by year (2022, 2023, 2024, 2025, 2026, 2027...)
         tempArray.sort((a, b) => parseInt(a.realName) - parseInt(b.realName));
+=======
+        tempArray.sort((a, b) => a.value - b.value);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         var midIndex = Math.floor(count / 2);
         tempArray[midIndex].quantity = providerData.quantity;
         tempArray[midIndex].count = count;

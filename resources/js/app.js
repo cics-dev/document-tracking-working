@@ -37,6 +37,7 @@ function initQuillEditor() {
         // quill.on('text-change', function () {
         //     Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'))?.set('content', quill.root.innerHTML);
         // });
+<<<<<<< HEAD
         window.addEventListener('update-quill', event => {
             const content = event.detail[0].content || '';
             quill.root.innerHTML = content;
@@ -47,6 +48,8 @@ function initQuillEditor() {
                 quillContentInput.dispatchEvent(new Event('input'));
             }
         });
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }
 

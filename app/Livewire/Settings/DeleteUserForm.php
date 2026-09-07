@@ -23,9 +23,12 @@ class DeleteUserForm extends Component
 
         $this->redirect('/', navigate: true);
     }
+<<<<<<< HEAD
 
     public function render()
     {
         return view('livewire.settings.delete-user-form')->layout('layouts.app');
     }
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 }

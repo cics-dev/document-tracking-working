@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OfficeController;
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
 use App\Http\Controllers\DocumentTrackingController;
 
 Route::apiResource('offices', OfficeController::class);
@@ -22,3 +23,7 @@ Route::get('/documents/{document}/tracking-status', function(Document $document)
         'activityLogs' => $document->getRecentLogs()
     ]);
 })->name('documents.tracking-status');
+=======
+
+Route::apiResource('offices', OfficeController::class);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045

@@ -35,7 +35,11 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'ECLR'
         ]);
         DocumentType::create([
+<<<<<<< HEAD
             'name' => 'Office Memorandum',
+=======
+            'name' => 'Memorandum',
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'abbreviation' => ''
         ]);
 
@@ -160,6 +164,7 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'IGP Office',
             'office_type' => ''
         ]);
+<<<<<<< HEAD
         
         Office::create([
             'name' => 'Office of the Chief Administrative Officer',
@@ -190,5 +195,7 @@ class OfficeSeeder extends Seeder
             'abbreviation' => 'PIO',
             'office_type' => ''
         ]);
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

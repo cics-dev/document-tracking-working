@@ -14,7 +14,11 @@ return [
     |
     */
 
+<<<<<<< HEAD
     'default' => env('MAIL_MAILER', 'smtp'),
+=======
+    'default' => env('MAIL_MAILER', 'log'),
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
     /*
     |--------------------------------------------------------------------------
@@ -43,7 +47,10 @@ return [
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
             'port' => env('MAIL_PORT', 2525),
+<<<<<<< HEAD
             'encryption' => env('MAIL_ENCRYPT', 'ssl'),
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,

@@ -45,15 +45,23 @@ class ListOffices extends Component
 
     public function editOffice($id)
     {
+<<<<<<< HEAD
         $offices = app(OfficeController::class)->index('ADMIN', false);
         $office = collect($offices)->firstWhere('id', $id);
+=======
+        $office = collect($this->offices)->firstWhere('id', $id);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         $this->officeId = $id;
         $this->name = $office['name'];
         $this->abbreviation = $office['abbreviation'];
         $this->office_type = $office['office_type'];
         $this->head_id = $office['head_id'];
         
+<<<<<<< HEAD
         return redirect()->route('offices.edit-office', $id);
+=======
+        return view('livewire.offices.edit-office');
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     public function updateOffice()
@@ -94,6 +102,10 @@ class ListOffices extends Component
 
     public function render()
     {
+<<<<<<< HEAD
         return view('livewire.offices.list-offices', ['offices'=>app(OfficeController::class)->index('ADMIN', true)])->layout('layouts.app');
+=======
+        return view('livewire.offices.list-offices', ['offices'=>app(OfficeController::class)->index('ADMIN', true)]);
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

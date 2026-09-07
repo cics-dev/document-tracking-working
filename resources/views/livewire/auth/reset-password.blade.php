@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div>
     <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 bg-[#660710]">
         <div class="particle-bg absolute inset-0 z-0 opacity-60"></div>
@@ -104,4 +105,48 @@
             }
         }
     </style>
+=======
+<div class="flex flex-col gap-6">
+    <x-auth-header :title="__('Reset password')" :description="__('Please enter your new password below')" />
+
+    <!-- Session Status -->
+    <x-auth-session-status class="text-center" :status="session('status')" />
+
+    <form wire:submit="resetPassword" class="flex flex-col gap-6">
+        <!-- Email Address -->
+        <flux:input
+            wire:model="email"
+            :label="__('Email')"
+            type="email"
+            required
+            autocomplete="email"
+        />
+
+        <!-- Password -->
+        <flux:input
+            wire:model="password"
+            :label="__('Password')"
+            type="password"
+            required
+            autocomplete="new-password"
+            :placeholder="__('Password')"
+        />
+
+        <!-- Confirm Password -->
+        <flux:input
+            wire:model="password_confirmation"
+            :label="__('Confirm password')"
+            type="password"
+            required
+            autocomplete="new-password"
+            :placeholder="__('Confirm password')"
+        />
+
+        <div class="flex items-center justify-end">
+            <flux:button type="submit" variant="primary" class="w-full">
+                {{ __('Reset password') }}
+            </flux:button>
+        </div>
+    </form>
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 </div>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Redirect root URL (/) to /landing
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -11,6 +12,8 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

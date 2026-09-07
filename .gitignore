@@ -1,13 +1,20 @@
 /.phpunit.cache
 /node_modules
+<<<<<<< HEAD
 # /public/build
+=======
+/public/build
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
 /vendor
 .env
+<<<<<<< HEAD
 .env.example
+=======
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 .env.backup
 .env.production
 .phpactor.json

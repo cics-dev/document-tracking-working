@@ -1,5 +1,9 @@
 <?php
+<<<<<<< HEAD
 /*
+=======
+
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
@@ -15,6 +19,7 @@ require __DIR__.'/../vendor/autoload.php';
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */
+<<<<<<< HEAD
 /*$app = require_once __DIR__.'/../bootstrap/app.php';
 
 $app->handleRequest(Request::capture()); */
@@ -76,3 +81,8 @@ $response = tap($kernel->handle(
 ))->send();
 
 $kernel->terminate($request, $response);
+=======
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$app->handleRequest(Request::capture());
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045

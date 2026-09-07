@@ -2,17 +2,22 @@
     <h2 class="text-lg font-bold mb-4">Document Preview</h2>
 
     @php
+<<<<<<< HEAD
         $slips = collect();
         if ($document && $document->routings) {
             $slips = $document->routings
                 ->filter(fn($routing) => $routing->reviewed_at !== null || $routing->returned_at !== null)
                 ->sortByDesc('updated_at');
         }
+=======
+        $slips = $document->routings->whereNotNull('reviewed_at')->sortByDesc('reviewed_at');
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     @endphp
 
     <div class="flex flex-wrap gap-4">
         @foreach($slips as $slip)
         <div x-data="{ open: false }">
+<<<<<<< HEAD
             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[120px] relative">
                 <strong>Routing Slip from: {{ $slip->user->office->abbreviation }}</strong><br>
                 <strong>Status: {{ $slip->returned_at?'Returned with remarks':'Reviewed' }}</strong><br>
@@ -20,6 +25,12 @@
                 <p class="truncate w-[260px]">
                     {{ $slip->comments }}
                 </p>
+=======
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 p-4 mb-4 rounded shadow text-sm w-[300px] h-[100px] relative">
+                <strong>Routing Slip from: {{ $slip->user->office->name }}</strong><br>
+                <strong>Remarks:</strong>
+                {{ $slip->comments }}
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
                 <button @click="open = true" class="absolute top-2 right-2 text-yellow-700 hover:text-yellow-900">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,6 +59,7 @@
     @else
         <p>Loading preview...</p>
     @endif
+<<<<<<< HEAD
 
     @if ($document->all_attachments && $document->all_attachments->count() > 0)
         <div class="mt-6">
@@ -76,6 +88,14 @@
     )
         {{-- @if($office_name != 'Administration' && $office_name != 'Records Section') --}}
         @if($office_name != 'Administration')
+=======
+    {{-- @if($document->document_type_id == 2 && auth()->user()->position == 'University President')
+        <div class="mt-4 text-lg font-semibold">
+            You already signed this document
+        </div> --}}
+    @if($document->document_level != 'Intra')
+        @if($office_name != 'Administration' && $office_name != 'Records Section')
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             @if(is_null($signed) && is_null($rejected))
                 <div class="mt-4 flex gap-4">
                     <button wire:click="sign" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $mySignatory != null || ($document->document_type_id == 2 && auth()->user()->position == 'University President') ? 'Sign' : 'Set as reviewed' }}</button>
@@ -87,6 +107,7 @@
                 </div>
             @endif
         @elseif ($office_name == 'Administration')
+<<<<<<< HEAD
             @if ($document->status == 'pending' || $document->status == 'sent')
                 <div class="mt-4 flex gap-4">
                     <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
@@ -134,4 +155,17 @@
         </div>
     </flux:modal>
 
+=======
+            <div class="mt-4 flex gap-4">
+                <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Generate IOM</button>
+                {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
+            </div>
+        @elseif ($office_name == 'Records Section' && $document->document_type_id == 2)
+            <div class="mt-4 flex gap-4">
+                <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send out IOM</button>
+                {{-- <button wire:click="generate" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{{ $document->status == 'pending'?'Generate IOM':'View IOM' }}</button> --}}
+            </div>
+        @endif
+    @endif
+>>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 </div>
