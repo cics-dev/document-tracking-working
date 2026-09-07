@@ -1,5 +1,7 @@
-<div>
+<div x-data="{ documentReady: false }">
     <h2 class="text-lg font-bold mb-4">Document Preview</h2>
+
+    <fieldset disabled x-bind:disabled="!documentReady" class="min-w-0 border-0 p-0">
 
     @php
         $slips = collect();
@@ -46,7 +48,16 @@
     </div>
 
     @if ($previewUrl)
-        <iframe src="{{ $previewUrl }}" class="w-full h-[800px] border rounded" frameborder="0"></iframe>
+        <div x-show="!documentReady" class="mb-3 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            Loading document data and PDF&hellip; Actions will be available when loading is complete.
+        </div>
+        <iframe
+            src="{{ $previewUrl }}"
+            class="w-full h-[800px] border rounded"
+            frameborder="0"
+            title="Document PDF preview"
+            @load="documentReady = true"
+        ></iframe>
     @else
         <p>Loading preview...</p>
     @endif
@@ -77,11 +88,11 @@
         @if(!$canGenerate)
             @if($canAct && empty($signed) && empty($rejected))
                 <div class="mt-4 flex gap-4">
-                    <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <span wire:loading.remove wire:target="sign">{{ $myStep && $myStep->step_type === 'routing' ? 'Set as reviewed' : 'Sign' }}</span>
                         <span wire:loading wire:target="sign">Processing...</span>
                     </button>
-                    <button wire:click="reject" wire:loading.attr="disabled" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    <button wire:click="reject" wire:loading.attr="disabled" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <span wire:loading.remove wire:target="reject">{{ $myStep && $myStep->step_type === 'routing' ? 'Return with remarks' : 'Reject' }}</span>
                         <span wire:loading wire:target="reject">Processing...</span>
                     </button>
@@ -94,7 +105,7 @@
         @elseif ($canGenerate)
             <div class="mt-4 flex flex-wrap gap-4">
                 @foreach($generationRules as $rule)
-                    <button wire:click="generateDocument({{ $rule['id'] }})" wire:loading.attr="disabled" class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700">{{ $rule['button_label'] }}</button>
+                    <button wire:click="generateDocument({{ $rule['id'] }})" wire:loading.attr="disabled" class="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">{{ $rule['button_label'] }}</button>
                 @endforeach
             </div>
         @endif
@@ -122,5 +133,7 @@
             @endif
         </div>
     </flux:modal>
+
+    </fieldset>
 
 </div>
