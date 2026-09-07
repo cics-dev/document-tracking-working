@@ -4,12 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<<<<<<< HEAD
         <title>DTS-ZPPSU</title>
         <link rel="icon" href="{{ asset('/assets/img/hd-logo.png') }}" type="image/x-icon">
-=======
-        <title>DTS</title>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

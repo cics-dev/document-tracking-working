@@ -11,21 +11,16 @@ class DocumentController extends Controller
 {
     public function index($mode)
     {
-<<<<<<< HEAD
         $user = Auth::user();
         $userId = $user->id;
         $userOffice = $user->office;
         $officeId = $userOffice->id;
-=======
-        $officeId = Auth::user()->office->id;
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
         if ($mode === 'all') {
             return Document::with(['documentType', 'fromOffice', 'cfs', 'signatories', 'routings'])->get();
         }
 
         else if ($mode === 'sent') {
-<<<<<<< HEAD
             if ($userOffice->name === 'Administration') {
                 $ownDocs = Document::where('from_id', $userOffice->id)
                     ->with(['documentType', 'fromOffice', 'signatories'])
@@ -46,32 +41,11 @@ class DocumentController extends Controller
             }
 
             return $userOffice->sentDocuments()
-=======
-            $userId = Auth::id();
-            $userOffice = Auth::user()->office;
-            if ($userOffice->name === 'Administration') {
-                $presidentOfficeId = Office::whereHas('users', function ($query) {
-                    $query->where('position', 'University President');
-                })->pluck('id')->first();
-            
-                if ($presidentOfficeId) {
-                    // Fetch documents addressed to the University President's office
-                    $presidentDocs = Document::where('from_id', $presidentOfficeId)
-                        ->with(['documentType', 'fromOffice', 'signatories'])
-                        ->get();
-            
-                    return $presidentDocs;
-                }
-            }
-
-            return Auth::user()->office->sentDocuments()
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                 ->with('documentType', 'toOffice')
                 ->get();
         }
 
         else if ($mode === 'received') {
-<<<<<<< HEAD
             // Helper: check sequence completion
             function filterPendingDocuments($documents, $userId) {
                 return $documents->filter(function ($document) use ($userId) {
@@ -94,92 +68,10 @@ class DocumentController extends Controller
             $docs = collect();
 
             // 1️⃣ Direct recipient
-=======
-            $userId = Auth::id();
-            $userOffice = Auth::user()->office;
-
-            function filterPendingDocuments($documents, $userId) {
-                return $documents->filter(function ($document) use ($userId) {
-                    $sequence = [];
-                    $routings = $document->routings->sortBy('created_at')->values();
-                    $signatories = $document->signatories->sortBy('sequence')->values();
-
-                    foreach ($routings as $routing) array_push($sequence, $routing);
-                    foreach ($signatories as $signatory) array_push($sequence, $signatory);
-                    $sequenceCollection = collect($sequence);
-                    
-                    if ($sequenceCollection->isEmpty()) {
-                        return true;
-                    }
-                    $mySequence = $sequenceCollection->firstWhere('user_id', $userId);
-                    
-                    if (!$mySequence) return false;
-
-                    return $sequenceCollection
-                        ->filter(function($sequence, $index) use ($mySequence, $sequenceCollection) {
-                            $myIndex = $sequenceCollection->search(function ($item) use ($mySequence) {
-                                return $item === $mySequence;
-                            });
-                            
-                            return $index < $myIndex;
-                        })
-                        ->every(function($sequence) {
-                            if (isset($sequence->reviewed_at)) {
-                                return !is_null($sequence->reviewed_at);
-                            }
-                            elseif (isset($sequence->signed_at)) {
-                                return !is_null($sequence->signed_at);
-                            }
-                            return false;
-                        });
-                    
-
-
-                    // $routings = $document->routings->sortBy('created_at')->values();
-
-                    // if ($routings->isNotEmpty()) {
-                    //     $pendingRouting = $routings->firstWhere('status', 'pending');
-                    //     dd($pendingRouting);
-                        
-                    //     if ($pendingRouting && $pendingRouting->user_id == $userId) {
-                    //         $isFirstPending = $routings
-                    //             ->takeWhile(fn($r) => $r->id != $pendingRouting->id)
-                    //             ->every(fn($r) => $r->status == 'reviewed');
-                            
-                    //         if ($isFirstPending) {
-                    //             return true;
-                    //         }
-                    //     }
-                        
-                    //     if ($pendingRouting) {
-                    //         return false;
-                    //     }
-                        
-                    //     if ($routings->where('status', 'returned')->isNotEmpty()) {
-                    //         return false;
-                    //     }
-                    // }
-
-                    // $signatories = $document->signatories->sortBy('sequence')->values();
-                    // if ($signatories->isEmpty()) {
-                    //     return true;
-                    // }
-                    // $current = $signatories->firstWhere('user_id', $userId);
-        
-                    // if (!$current) return false;
-        
-                    // return $signatories
-                    //     ->filter(fn($sig) => $sig->sequence < $current->sequence)
-                    //     ->every(fn($sig) => !is_null($sig->signed_at));
-                })->values();
-            }
-
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             $directDocs = $userOffice->receivedDocuments()
                 ->with(['documentType', 'toOffice'])
                 ->get();
 
-<<<<<<< HEAD
             // 2️⃣ Routing docs
             $routingDocs = Document::whereHas('routings', fn($q) => $q->where('user_id', $userId))
                 ->where('status', '!=', 'draft')
@@ -271,62 +163,6 @@ class DocumentController extends Controller
     }
 
 
-=======
-            $directDocs = filterPendingDocuments($directDocs, $userId);
-
-            $routingDocs = Document::whereHas('routings', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'routings'])
-            ->get();
-
-            $routingDocs = filterPendingDocuments($routingDocs, $userId);
-            
-            $directDocs = $directDocs->merge($routingDocs)->unique('id')->values();
-
-            $signatoryDocs = Document::whereHas('signatories', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'signatories'])
-            ->get();
-
-            $signatoryDocs = filterPendingDocuments($signatoryDocs, $userId);
-            
-            $directDocs = $directDocs->merge($signatoryDocs)->unique('id')->values();
-
-            $cfDocs = Document::whereHas('cfs', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->where('status', '!=', 'draft')
-            ->with(['documentType', 'fromOffice', 'cfs'])
-            ->get();
-
-            $cfDocs = filterPendingDocuments($cfDocs, $userId);
-            $directDocs = $directDocs->merge($cfDocs)->unique('id')->values();
-
-            if ($userOffice->name === 'Administration') {
-                $presidentOfficeId = Office::whereRelation('users', 'position', 'University President')->value('id');
-                $presidentUserId = Office::whereRelation('users', 'position', 'University President')->value('head_id');
-            
-                if ($presidentOfficeId) {
-                    $presidentDocs = Document::where('to_id', $presidentOfficeId)
-                        ->with(['documentType', 'fromOffice', 'signatories'])
-                        ->get();
-                }
-
-                $presidentDocs = filterPendingDocuments($presidentDocs, $presidentUserId);
-                $directDocs = $directDocs->merge($presidentDocs)->unique('id')->values();
-            }
-    
-    
-            return $directDocs;
-            // return $signatoryDocs;
-        }
-    }
-
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     public function store(Request $request)
     {
         $request->merge([
@@ -353,10 +189,6 @@ class DocumentController extends Controller
     }
 
     public function getDocument($number) {
-<<<<<<< HEAD
         return Document::with(['fromOffice', 'toOffice', 'documentType', 'signatories'])->where('document_number', $number)->first();
-=======
-        return Document::with(['fromOffice', 'toOffice', 'documentType', 'signatories'])->where('document_number', $number)->first();;
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

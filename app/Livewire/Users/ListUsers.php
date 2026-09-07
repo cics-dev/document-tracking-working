@@ -4,16 +4,12 @@ namespace App\Livewire\Users;
 
 use App\Http\Controllers\UserController;
 use Livewire\Component;
-<<<<<<< HEAD
 use App\Models\User;
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
 class ListUsers extends Component
 {
     public function render()
     {
-<<<<<<< HEAD
         return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)])->layout('layouts.app');
     }
 
@@ -41,8 +37,5 @@ class ListUsers extends Component
         $this->is_head = $user->office && $user->office->head_id == $user->id;
 
         return redirect()->route('users.edit-user', $id);
-=======
-        return view('livewire.users.list-users', ['users'=>app(UserController::class)->index(true)]);
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

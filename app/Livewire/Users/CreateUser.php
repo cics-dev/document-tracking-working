@@ -4,10 +4,7 @@ namespace App\Livewire\Users;
 
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
-<<<<<<< HEAD
 use App\Models\User;
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 use Illuminate\Http\Request;
 use Livewire\Component;use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +26,6 @@ class CreateUser extends Component
     public $office_id = '';
     public $position = '';
     public $is_head = false;
-<<<<<<< HEAD
     public $role_id = '';
     public $editMode = false;
     public $userId = null;
@@ -90,33 +86,10 @@ class CreateUser extends Component
             'offices' => app(OfficeController::class)->index('ADMIN', false),
             'roles' => \App\Models\Role::all(),
         ])->layout('layouts.app');
-=======
-
-    protected $rules = [
-        'signature' => 'nullable|image|max:2048',
-        'family_name' => 'required|string|max:255',
-        'given_name' => 'required|string|max:255',
-        'middle_name'     => 'sometimes|string|max:255',
-        'middle_initial'  => 'required_with:middle_name|string|max:10',
-        'honorifics' => 'nullable|string|max:10', // e.g., Mr., Ms., Dr., Mx.
-        'suffix'     => 'nullable|string|max:10', // e.g., Jr., Sr., III
-        'titles'     => 'nullable|string|max:100', // e.g., PhD, MIT, RN
-        'gender'     => 'required|string|max:20',
-        'email'      => 'required|email|max:255|unique:users,email',
-        'office_id'  => 'required|exists:offices,id',
-        'position'   => 'required|string|max:100',
-        'is_head'    => 'boolean',
-    ];
-    
-    public function render()
-    {
-        return view('livewire.users.create-user', ['offices' => app(OfficeController::class)->index('ADMIN', false)]);
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     public function saveUser()
     {
-<<<<<<< HEAD
         $this->validate(
             $this->rules(),
             [
@@ -128,12 +101,6 @@ class CreateUser extends Component
         $signature_path = $this->signature
         ? $this->signature->store('assets/img', 'public')
         : $this->existingSignature;
-=======
-        $this->validate($this->rules,['middle_initial.required_with' => 'Required', '*.required' => 'Required']);
-        if ($this->signature) {
-            $signature_path = $this->signature->store('assets/img', 'public');
-        }
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         $data = new Request([
             'given_name'      => $this->given_name,
             'middle_name'     => $this->middle_name,
@@ -147,7 +114,6 @@ class CreateUser extends Component
             'office_id'       => $this->office_id,
             'position'        => $this->position,
             'is_head'         => $this->is_head,
-<<<<<<< HEAD
             'role_id'         => $this->role_id,
             'signature'       => $signature_path,
         ]);
@@ -157,11 +123,6 @@ class CreateUser extends Component
         } else {
             app(UserController::class)->store($data);
         }
-=======
-            'signature'       => $signature_path,
-        ]);
-        $response = app(UserController::class)->store($data);
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         redirect()->route('users.list-users');
     }
 }

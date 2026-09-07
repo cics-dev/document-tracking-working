@@ -4,10 +4,7 @@ namespace App\Livewire\Offices;
 
 use App\Http\Controllers\OfficeController;
 use App\Models\User;
-<<<<<<< HEAD
 use App\Models\Office;
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 use Livewire\Component;
 use Illuminate\Http\Request;
 use Livewire\WithFileUploads;
@@ -22,7 +19,6 @@ class CreateOffice extends Component
     public $abbreviation = '';
     public $office_type = '';
     public $office_head = '';
-<<<<<<< HEAD
     public $office_id = null;
     public $edit_mode = false;
 
@@ -46,21 +42,11 @@ class CreateOffice extends Component
     public function cancel()
     {
         return redirect()->route('offices.list-offices');
-=======
-
-    public function mount()
-    {
-        $this->users = User::all();
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     public function render()
     {
-<<<<<<< HEAD
         return view('livewire.offices.create-office')->layout('layouts.app');
-=======
-        return view('livewire.offices.create-office');
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     public function saveOffice()
@@ -70,7 +56,6 @@ class CreateOffice extends Component
             $imagePath = $this->office_logo->store('office_images', 'public');
         }
 
-<<<<<<< HEAD
         $data = [
             'name' => $this->name,
             'abbreviation' => $this->abbreviation,
@@ -91,16 +76,6 @@ class CreateOffice extends Component
             app(OfficeController::class)->store($request);
         }
 
-=======
-        $data = new Request([
-            'name'=>$this->name,
-            'office_logo'=>$imagePath,
-            'abbreviation'=>$this->abbreviation,
-            'office_type'=>$this->office_type,
-            'head_id'=>$this->office_head == ''?null:$this->office_head
-        ]);
-        app(OfficeController::class)->store($data);
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         redirect()->route('offices.list-offices');
     }
 }

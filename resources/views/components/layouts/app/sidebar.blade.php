@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
@@ -34,26 +33,16 @@
     <body class="min-h-screen bg-white dark:bg-zinc-800">
         {{-- Sidebar: sticky, full height, scrollable if content overflows --}}
         <flux:sidebar sticky stashable data-flux-allow-scroll class="no-print border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800 h-screen overflow-y-auto">
-=======
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky stashable class="border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-            <a href="{{ route('dashboard') }}" class="mr-5 flex items-center space-x-2" wire:navigate>
+            <a href="{{ route('landing') }}" class="mr-5 flex items-center space-x-2" wire:navigate>
                 <x-app-logo />
             </a>
 
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Navigation')" class="grid">
-<<<<<<< HEAD
-                    {{-- FIX: removed wire:navigate to force a full page reload, preventing stale component state --}}
-                    <flux:navlist.item icon="squares-2x2" :href="route('dashboard')" :current="request()->routeIs('dashboard')">{{ __('Dashboard') }}</flux:navlist.item>
+                    <flux:navlist.item icon="squares-2x2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
 
                     @if (auth()->user()?->position === 'Administrator')
                         <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
@@ -82,20 +71,6 @@
                                 :badge-color="$unreadReceivedCount > 0 ? 'red' : null" 
                                 wire:navigate
                             >
-=======
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    @if (auth()->user()?->position === 'Administrator')
-                        <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
-                        <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
-                        {{-- <flux:navlist.item icon="document-plus" :href="route('documents.create-document')" :current="request()->routeIs('documents.create-document')" wire:navigate>{{ __('Write Documents') }}</flux:navlist.item> --}}
-                    @else
-                        @if (auth()->user()?->position === 'Records Officer')
-                            <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'all')" :current="request()->is('documents/all')" wire:navigate>
-                                {{ __('All Documents') }}
-                            </flux:navlist.item>
-                        @else
-                            <flux:navlist.item icon="inbox-arrow-down" :href="route('documents.list-documents', 'received')" :current="request()->is('documents/received')" wire:navigate>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                                 {{ __('Received Documents') }}
                             </flux:navlist.item>
 
@@ -103,7 +78,6 @@
                                 {{ __('Sent Documents') }}
                             </flux:navlist.item>
                         @endif
-<<<<<<< HEAD
                         <flux:navlist.item 
                             icon="inbox-arrow-down" 
                             :href="route('documents.list-external-documents')" 
@@ -114,15 +88,12 @@
                         >
                             {{ __('External Documents') }}
                         </flux:navlist.item>
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                     @endif
                 </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />
 
-<<<<<<< HEAD
             <!-- Desktop User Menu -->
             <flux:dropdown position="top" align="start" data-sidebar-profile-dropdown>
                 @if(auth()->user()->avatar_url)
@@ -138,32 +109,12 @@
                         icon-trailing="chevrons-up-down"
                     />
                 @endif
-=======
-        <!--    <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
-            </flux:navlist> -->
-
-            <!-- Desktop User Menu -->
-            <flux:dropdown position="bottom" align="start">
-                <flux:profile
-                    :name="auth()->user()->position"
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevrons-up-down"
-                />
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
                 <flux:menu class="w-[220px]">
                     <flux:menu.radio.group>
                         <div class="p-0 text-sm font-normal">
                             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-<<<<<<< HEAD
                                     @if(auth()->user()->avatar_url)
                                         <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover rounded-lg bg-gray-200 dark:bg-zinc-600" width="32" height="32" loading="eager">
                                     @else
@@ -171,13 +122,6 @@
                                             {{ auth()->user()->initials() }}
                                         </span>
                                     @endif
-=======
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                                 </span>
 
                                 <div class="grid flex-1 text-left text-sm leading-tight">
@@ -196,7 +140,6 @@
 
                     <flux:menu.separator />
 
-<<<<<<< HEAD
                     {{-- Fixed: prevent double submission, button type="button" with explicit submit --}}
                     <form id="logout-form-desktop" method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
@@ -204,30 +147,18 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
                             {{ __('Log Out') }}
                         </button>
-=======
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
-                        </flux:menu.item>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                     </form>
                 </flux:menu>
             </flux:dropdown>
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
-<<<<<<< HEAD
         <flux:header class="no-print lg:hidden">
-=======
-        <flux:header class="lg:hidden">
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
 
             <flux:dropdown position="top" align="end">
-<<<<<<< HEAD
                 @if(auth()->user()->avatar_url)
                     <button type="button" class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors">
                         <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover ring-2 ring-indigo-400 bg-gray-200 dark:bg-zinc-600" width="28" height="28" loading="eager">
@@ -239,19 +170,12 @@
                         icon-trailing="chevron-down"
                     />
                 @endif
-=======
-                <flux:profile
-                    :initials="auth()->user()->initials()"
-                    icon-trailing="chevron-down"
-                />
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
                 <flux:menu>
                     <flux:menu.radio.group>
                         <div class="p-0 text-sm font-normal">
                             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                 <span class="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg">
-<<<<<<< HEAD
                                     @if(auth()->user()->avatar_url)
                                         <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover rounded-lg bg-gray-200 dark:bg-zinc-600" width="32" height="32" loading="eager">
                                     @else
@@ -259,13 +183,6 @@
                                             {{ auth()->user()->initials() }}
                                         </span>
                                     @endif
-=======
-                                    <span
-                                        class="flex h-full w-full items-center justify-center rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white"
-                                    >
-                                        {{ auth()->user()->initials() }}
-                                    </span>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                                 </span>
 
                                 <div class="grid flex-1 text-left text-sm leading-tight">
@@ -284,7 +201,6 @@
 
                     <flux:menu.separator />
 
-<<<<<<< HEAD
                     {{-- Fixed: prevent double submission, button type="button" with explicit submit --}}
                     <form id="logout-form-mobile" method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
@@ -292,13 +208,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
                             {{ __('Log Out') }}
                         </button>
-=======
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
-                        </flux:menu.item>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                     </form>
                 </flux:menu>
             </flux:dropdown>
@@ -308,8 +217,4 @@
 
         @fluxScripts
     </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045

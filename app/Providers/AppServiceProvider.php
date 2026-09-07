@@ -3,15 +3,12 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ExternalDocument; 
 use App\Models\Document;
 use App\Models\Office;
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-<<<<<<< HEAD
         Schema::defaultStringLength(191);
         
         View::composer([
@@ -194,8 +190,5 @@ class AppServiceProvider extends ServiceProvider
             $view->with('unreadReceivedCount', $unreadReceived);
             $view->with('unreadAllCount', $unreadAll); // <--- PASS TO VIEW
         });
-=======
-        //
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

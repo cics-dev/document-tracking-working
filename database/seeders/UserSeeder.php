@@ -19,10 +19,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'position' => 'Administrator',
-<<<<<<< HEAD
             'role_id' => 1,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => null, // set if needed
         ]);
 
@@ -31,10 +28,7 @@ class UserSeeder extends Seeder
             'email' => 'president@example.com',
             'password' => Hash::make('password'),
             'position' => 'University President',
-<<<<<<< HEAD
             'role_id' => 2,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'signature' => 'assets/img/fakesig1.png',
             'office_id' => 1, // set if needed
         ]);
@@ -57,10 +51,7 @@ class UserSeeder extends Seeder
             'email' => 'vpsas@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Student Affairs and Services',
-<<<<<<< HEAD
             'role_id' => 3,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'signature' => 'assets/img/fakesig2.png',
             'office_id' => 2, // set if needed
         ]);
@@ -83,10 +74,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaa@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Academic Affairs',
-<<<<<<< HEAD
             'role_id' => 3,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'signature' => 'assets/img/fakesig3.png',
             'office_id' => 3, // set if needed
         ]);
@@ -109,10 +97,7 @@ class UserSeeder extends Seeder
             'email' => 'vpaf@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Administration and Finance',
-<<<<<<< HEAD
             'role_id' => 3,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'signature' => 'assets/img/fakesig4.png',
             'office_id' => 4, // set if needed
         ]);
@@ -135,10 +120,7 @@ class UserSeeder extends Seeder
             'email' => 'vprde@example.com',
             'password' => Hash::make('password'),
             'position' => 'Vice President for Research Development and Extension',
-<<<<<<< HEAD
             'role_id' => 3, 
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'signature' => 'assets/img/fakesig5.png',
             'office_id' => 5, // set if needed
         ]);
@@ -161,10 +143,7 @@ class UserSeeder extends Seeder
             'email' => 'cics_dean@example.com',
             'password' => Hash::make('password'),
             'position' => 'Dean',
-<<<<<<< HEAD
             'role_id' => 8,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 9, // set if needed
         ]);
         $cics_dean->profile()->create([
@@ -186,10 +165,7 @@ class UserSeeder extends Seeder
             'email' => 'drrmo@example.com',
             'password' => Hash::make('password'),
             'position' => 'Director',
-<<<<<<< HEAD
             'role_id' => 9,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 6, // set if needed
         ]);
         $drrmo->profile()->create([
@@ -211,10 +187,7 @@ class UserSeeder extends Seeder
             'email' => 'records@example.com',
             'password' => Hash::make('password'),
             'position' => 'Records Officer',
-<<<<<<< HEAD
             'role_id' => 10,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 17, // set if needed
         ]);
         $records->profile()->create([
@@ -233,16 +206,10 @@ class UserSeeder extends Seeder
 
         $sao = User::create([
             'name' => 'Arnel H. Lee',
-<<<<<<< HEAD
             'email' => 'sao-a@example.com',
             'password' => Hash::make('password'),
             'position' => 'Supervising Administrative Officer for Administration',
             'role_id' => 4,
-=======
-            'email' => 'sao@example.com',
-            'password' => Hash::make('password'),
-            'position' => 'Supervising Administrative Officer for Administration',
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 18, // set if needed
         ]);
         $sao->profile()->create([
@@ -264,10 +231,7 @@ class UserSeeder extends Seeder
             'email' => 'budget@example.com',
             'password' => Hash::make('password'),
             'position' => 'Budget Office Head',
-<<<<<<< HEAD
             'role_id' => 10,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 19, // set if needed
         ]);
         $budget->profile()->create([
@@ -289,10 +253,7 @@ class UserSeeder extends Seeder
             'email' => 'motorpool@example.com',
             'password' => Hash::make('password'),
             'position' => 'Motorpool Office Head',
-<<<<<<< HEAD
             'role_id' => 10,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 20, // set if needed
         ]);
         $motorpool->profile()->create([
@@ -314,10 +275,7 @@ class UserSeeder extends Seeder
             'email' => 'legal@example.com',
             'password' => Hash::make('password'),
             'position' => 'University Attorney',
-<<<<<<< HEAD
             'role_id' => 10,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 21, // set if needed
         ]);
         $legal->profile()->create([
@@ -339,10 +297,7 @@ class UserSeeder extends Seeder
             'email' => 'igp@example.com',
             'password' => Hash::make('password'),
             'position' => 'IGP Office Head',
-<<<<<<< HEAD
             'role_id' => 10,
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             'office_id' => 22, // set if needed
         ]);
         $igp->profile()->create([
@@ -358,7 +313,6 @@ class UserSeeder extends Seeder
         $igp->office()->update([
             'head_id' => $igp->id
         ]);
-<<<<<<< HEAD
 
         $cao = User::create([
             'name' => 'Unknown',
@@ -485,7 +439,5 @@ class UserSeeder extends Seeder
         $pio->office()->update([
             'head_id' => $pio->id
         ]);
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 }

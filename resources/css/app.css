@@ -63,7 +63,6 @@ select:focus[data-flux-control] {
     @apply ring-accent ring-offset-accent-foreground ring-2 ring-offset-2 outline-hidden;
 }
 
-<<<<<<< HEAD
 
 svg[data-flux-icon],
 [data-flux-icon] {
@@ -71,8 +70,3 @@ svg[data-flux-icon],
     max-height: 1.5rem !important;
 }
 
-=======
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045

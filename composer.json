@@ -12,7 +12,6 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "fpdf/fpdf": "^1.86",
-<<<<<<< HEAD
         "ladumor/laravel-pwa": "^0.0.5",
         "laravel/framework": "12.51.0",
         "laravel/tinker": "^2.10.1",
@@ -20,15 +19,6 @@
         "livewire/volt": "^1.6.7",
         "openai-php/laravel": "^0.17.1",
         "setasign/fpdi": "^2.6"
-=======
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1",
-        "livewire/flux": "^2.0",
-        "livewire/volt": "^1.6.7",
-        "setasign/fpdi": "^2.6",
-        "spatie/browsershot": "^5.0",
-        "spatie/pdf-to-image": "^1.2"
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -85,12 +75,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-<<<<<<< HEAD
         },
         "audit": {
             "block-insecure": false
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         }
     },
     "minimum-stability": "stable",

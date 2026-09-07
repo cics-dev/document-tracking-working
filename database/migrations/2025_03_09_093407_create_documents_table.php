@@ -26,11 +26,8 @@ return new class extends Migration
             $table->string('file_url')->nullable();
             $table->string('document_level')->default('Inter'); //Inter, Intra, External
             $table->string('to_text')->nullable(); //Inter, Intra, External
-<<<<<<< HEAD
             $table->boolean('is_revision')->nullable();
             $table->foreignId('original_document_id')->nullable()->constrained('documents')->onDelete('cascade');
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             $table->timestamps();
         });
     }

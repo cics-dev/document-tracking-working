@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Auth;
-<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Collection;
 
 class Document extends Model
@@ -14,12 +13,6 @@ class Document extends Model
         'is_revision',
         'original_document_id'
     ];
-=======
-
-class Document extends Model
-{
-    protected $fillable = ['document_number', 'from_id', 'to_id', 'document_type_id', 'thru', 'subject', 'content', 'created_by', 'status', 'date_sent', 'file_url', 'document_level', 'to_text'];
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
     protected function viewedAt(): Attribute
     {
@@ -70,7 +63,6 @@ class Document extends Model
         });
     }
 
-<<<<<<< HEAD
     public function revisions()
     {
         return $this->hasMany(Document::class, 'original_document_id');
@@ -80,43 +72,6 @@ class Document extends Model
     {
         return $this->belongsTo(Document::class, 'original_document_id');
     }
-=======
-    // public function scopeReadyForUser($query, $userId)
-    // {
-    //     return $query->where(function($q) use ($userId) {
-    //         // Documents where user is in routings and it's their turn
-    //         $q->whereHas('routings', function($routingQuery) use ($userId) {
-    //             $routingQuery->where('user_id', $userId)
-    //                 ->where('status', 'pending')
-    //                 ->whereDoesntHave('document.routings', function($subQuery) {
-    //                     $subQuery->where('status', 'pending')
-    //                         ->whereColumn('document_routings.created_at', '<', 'document_routings.created_at');
-    //                 });
-    //         })
-    //         ->orWhere(function($q) use ($userId) {
-    //             // OR documents where user is a signatory and it's their turn
-    //             $q->whereHas('signatories', function($signatoryQuery) use ($userId) {
-    //                 $signatoryQuery->where('user_id', $userId)
-    //                     ->where('status', 'pending')
-    //                     // Check that all previous signatories have approved
-    //                     ->where(function($sq) {
-    //                         $sq->where('sequence', 1)
-    //                             ->orWhereHas('document', function($docQuery) {
-    //                                 $docQuery->whereDoesntHave('signatories', function($prevQuery) {
-    //                                     $prevQuery->whereColumn('sequence', '<', 'document_signatories.sequence')
-    //                                         ->where('status', '!=', 'approved');
-    //                                 });
-    //                             });
-    //                     })
-    //                     // Check that all routings are reviewed (if any exist)
-    //                     ->whereDoesntHave('document.routings', function($routingQuery) {
-    //                         $routingQuery->where('status', '!=', 'reviewed');
-    //                     });
-    //             });
-    //         });
-    //     });
-    // }
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
     public function fromOffice()
     {
@@ -143,7 +98,6 @@ class Document extends Model
         return $this->hasMany(DocumentAttachment::class);
     }
 
-<<<<<<< HEAD
     public function externalDocuments()
     {
         return $this->hasMany(ExternalDocument::class);
@@ -164,8 +118,6 @@ class Document extends Model
         );
     }
 
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     public function signatories()
     {
         return $this->hasMany(DocumentSignatory::class);
@@ -185,7 +137,6 @@ class Document extends Model
     {
         return $this->hasMany(DocumentLog::class);
     }
-<<<<<<< HEAD
 
 
     public function accessLogs()
@@ -215,6 +166,4 @@ class Document extends Model
             }
         );
     }
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 }

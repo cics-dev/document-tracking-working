@@ -133,7 +133,6 @@
         .signatory {
             margin-top: 40px;
         }
-<<<<<<< HEAD
 
         /* Reset and general document styles */
         .document-container {
@@ -495,103 +494,6 @@
                         </tr>
                     </table>
                 @endif
-=======
-    </style>
-</head>
-<body>
-    <div class="header">
-        <?php $image_path = '/assets/img/zppsu-logo.png'; ?>
-        <img src="{{ public_path() . $image_path }}" alt="University Logo">
-        <strong>Republic of the Philippines<br>
-        ZAMBOANGA PENINSULA POLYTECHNIC STATE UNIVERSITY</strong><br>
-        Region IX, Western Mindanao<br>
-        R.T. Lim Boulevard, Baliwasan, Zamboanga City<br>
-        Telephone No.: 955-4024 / 991-4012
-        @if(isset($office_logo) && $office_logo && $documentType=='Intra')
-            <img src="{{ public_path('storage/' . $office_logo) }}" alt="Office Logo" style="left: 600px">
-        @endif
-    </div>
-
-    <hr style="margin: 10px 0;">
-
-    <div class="memo-info">
-        @if($documentType == 'Intra')
-            <p><strong>College Memorandum</strong><br>
-        @else
-            <p><strong>{{ strtoupper($documentType) }}</strong><br>
-        @endif
-        {{ $documentNumber }}</p>
-        <table>
-            <tr>
-                <td class="label">{{ $documentType == 'Intra' || $documentType == 'IOM'?'TO':'FOR' }}</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($toName) }}</strong><br>
-                    @if($toPosition != 'N/A' && $toPosition != 'NA' && $toPosition != '')
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $toPosition }}
-                    @endif
-                </td>
-            </tr>
-            @if(!empty($thru))
-                <tr>
-                    <td class="label">THRU</td>
-                    <td>
-                        : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($thru) }}</strong><br>
-                    </td>
-                </tr>
-            @endif
-            <tr>
-                <td class="label" style="padding-top:25px;">FROM</td>
-                <td>
-                    <img 
-                        src="{{ public_path('storage/assets/img/fakesig1.png') }}" 
-                        alt="Signature" 
-                        style="height: 30px; padding-left: 20px"
-                    ><br>
-                    : &nbsp;&nbsp;&nbsp;&nbsp;<strong>{{ strtoupper($fromName) }}</strong><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ $fromPosition }}
-                </td>
-            </tr>
-            <tr>
-                <td class="label">SUBJECT</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;<strong><u>{{ $subject }}</u></strong></td>
-            </tr>
-            <tr>
-                <td class="label">DATE</td>
-                <td>: &nbsp;&nbsp;&nbsp;&nbsp;{{ \Carbon\Carbon::parse($date_sent)->format('F d, Y') }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <hr>
-
-    <div class="content">
-        {!! $content !!}
-    </div>
-
-    @if(!empty($signatories))
-        <div class="signatory">
-            @foreach(collect($signatories)->groupBy('role') as $role => $grouped)
-                <div class="signatory-group">
-                    @if (!empty($role))
-                        <p class="signatory-label">{{ $role }}:</p>
-                    @endif
-
-                    <div class="signatory-row">
-                        @foreach($grouped as $signatory)
-                            <div class="signatory-box">
-                                @if(isset($signatory['signature']) && $signatory['signature'] && $signatory['signed'])
-                                    <img 
-                                        src="{{ public_path('storage/' . $signatory['signature']) }}" 
-                                        alt="Signature" 
-                                        style="height: 50px; margin-bottom: 10px;"
-                                    >
-                                @endif
-                                <br><strong>{{ $signatory['user_name'] }}</strong><br>
-                                {{ $signatory['position'] }}
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             @endforeach
         </div>
     @endif
@@ -601,25 +503,18 @@
             <span class="cf-label">CF:</span>
             <div class="cf-row">
                 @foreach($cfs as $cf)
-<<<<<<< HEAD
                     <span>{{ $cf['office'] }}</span><br>
-=======
-                    <span>{{ $cf['name'] }}</span><br>
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
                 @endforeach
             </div>
         </div>
     @endif
 
-<<<<<<< HEAD
     <footer style="position: fixed; bottom: 30px; width: 100%; text-align: left; font-size: 12px;">
         @if ($documentType === 'Special Order' || $documentType === 'External Communication Response Letter')
             {{ $documentNumber }}
         @endif
     </footer>
 
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     {{-- <div class="page-break"></div>  <!-- This forces a page break -->
 
     <div style="text-align: center; margin-top: 50px;">

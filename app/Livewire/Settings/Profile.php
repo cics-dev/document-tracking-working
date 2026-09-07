@@ -5,7 +5,6 @@ namespace App\Livewire\Settings;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -43,23 +42,12 @@ class Profile extends Component
 
     // Dynamically loaded from folder
     public $preset_avatars = [];
-=======
-use Illuminate\Validation\Rule;
-use Livewire\Component;
-
-class Profile extends Component
-{
-    public string $name = '';
-
-    public string $email = '';
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
     /**
      * Mount the component.
      */
     public function mount(): void
     {
-<<<<<<< HEAD
         $user = Auth::user();
 
         // 1. Personal Info
@@ -128,16 +116,11 @@ class Profile extends Component
         $this->captured_avatar = $base64Data;
         $this->selected_preset_avatar = '';
         $this->custom_avatar = null;
-=======
-        $this->name = Auth::user()->name;
-        $this->email = Auth::user()->email;
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     }
 
     /**
      * Update the profile information for the currently authenticated user.
      */
-<<<<<<< HEAD
     public function updateProfileInformation()
     {
         $this->validate([
@@ -225,49 +208,12 @@ class Profile extends Component
         $this->dispatch('profile-updated', name: $user->name);
     }
 
-=======
-    public function updateProfileInformation(): void
-    {
-        $user = Auth::user();
-
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id),
-            ],
-        ]);
-
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
-
-        $this->dispatch('profile-updated', name: $user->name);
-    }
-
-    /**
-     * Send an email verification notification to the current user.
-     */
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     public function resendVerificationNotification(): void
     {
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
-<<<<<<< HEAD
-=======
-
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
             return;
         }
 
@@ -275,13 +221,9 @@ class Profile extends Component
 
         Session::flash('status', 'verification-link-sent');
     }
-<<<<<<< HEAD
 
     public function render()
     {
         return view('livewire.settings.profile')->layout('layouts.app');
     }
 }
-=======
-}
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045

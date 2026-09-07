@@ -3,10 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-<<<<<<< HEAD
 use App\Notifications\ResetPasswordNotification;
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,7 +19,6 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-<<<<<<< HEAD
     protected $fillable = ['name', 'email', 'password', 'role_id', 'position', 'office_id', 'signature', 'avatar'];
 
     /**
@@ -48,9 +44,6 @@ class User extends Authenticatable
 
         return asset('storage/' . $this->avatar);
     }
-=======
-    protected $fillable = ['name', 'email', 'password', 'position', 'office_id', 'signature'];
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
     /**
      * The attributes that should be hidden for serialization.
@@ -95,14 +88,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserProfile::class);
     }
-<<<<<<< HEAD
 
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
     
     public function office()
     {

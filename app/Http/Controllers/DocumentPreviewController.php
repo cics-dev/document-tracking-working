@@ -8,16 +8,11 @@ use App\Models\DocumentAttachment;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use setasign\Fpdi\Fpdi;
-<<<<<<< HEAD
-=======
-use Spatie\Browsershot\Browsershot;
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
 class DocumentPreviewController extends Controller
 {    
     public function preview(Request $request)
     {
-<<<<<<< HEAD
         $key = array_key_first($request->all());
         $data = session()->get($key);
 
@@ -26,9 +21,6 @@ class DocumentPreviewController extends Controller
         if (!$data) {
             abort(404, 'Preview session expired or not found.');
         }
-=======
-        $data = $request->all();
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
 
         $data['date_sent'] = $data['date_sent'] ?? now();
 
@@ -46,10 +38,7 @@ class DocumentPreviewController extends Controller
             $data['cfs'] = json_decode($data['cfs'], true);
         }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         $tempGeneratedPdf = tempnam(sys_get_temp_dir(), 'generated_') . '.pdf';
         $tempMergedPdf = null;
 
@@ -59,35 +48,6 @@ class DocumentPreviewController extends Controller
 
         $filesToMerge = [$tempGeneratedPdf];
 
-<<<<<<< HEAD
-=======
-        // dd($data['attachments']);
-
-        
-        if (!empty($data['attachments'])) {
-            foreach ($data['attachments'] as $attachment) {
-                // Process the top-level attachment
-                $this->processAttachment($attachment, $filesToMerge);
-
-                // Check if this attachment has child attachments
-                if (!empty($attachment['attachment_document_id'])) {
-                    $childAttachments = DocumentAttachment::where('document_id', $attachment['attachment_document_id'])
-                        ->get();
-
-                    if ($childAttachments->isNotEmpty()) {
-                        foreach ($childAttachments as $childAttachment) {
-                            // Convert child attachment model → array so it's compatible
-                            $childAttachmentData = $childAttachment->toArray();
-                            $this->processAttachment($childAttachmentData, $filesToMerge);
-                        }
-                    }
-                }
-            }
-        }
-
-
-
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         $pdfToShow = $tempGeneratedPdf;
 
         if (count($filesToMerge) > 1) {
@@ -108,11 +68,8 @@ class DocumentPreviewController extends Controller
             ]);
         }
 
-<<<<<<< HEAD
         session()->forget($key);
 
-=======
->>>>>>> d1c7b1feb3effde0c5d3ec144ba41064f14a3045
         register_shutdown_function(function () use ($tempGeneratedPdf, $tempMergedPdf) {
             if (file_exists($tempGeneratedPdf)) {
                 unlink($tempGeneratedPdf);
