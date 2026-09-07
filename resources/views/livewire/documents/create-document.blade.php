@@ -90,12 +90,20 @@
                         <flux:label>Document Number @if($is_manual_document_number)<span class="text-red-500">*</span>@endif</flux:label>
                         
                         @if($is_manual_document_number)
-                            <flux:input 
-                                wire:model.blur="manual_document_number" 
-                                type="text" 
-                                placeholder="Enter Reference/Document No."
-                                required
-                            />
+                            <div class="flex min-h-10 flex-wrap items-center overflow-hidden rounded-lg border border-gray-300 bg-gray-100">
+                                @foreach($this->manualDocumentNumberParts() as $index => $part)
+                                    @if($part['type'] === 'literal')
+                                        <span class="px-2 py-2 font-medium text-gray-600" wire:key="number-literal-{{ $index }}">{{ $part['value'] }}</span>
+                                    @elseif($part['type'] === 'number')
+                                        <input wire:model.blur="manual_document_sequence" type="number" min="1" required placeholder="No." aria-label="Manual sequence number" class="w-20 self-stretch border-x border-gray-300 bg-white px-2 text-center outline-none focus:ring-2 focus:ring-blue-500" wire:key="number-sequence-{{ $index }}">
+                                    @else
+                                        <input wire:model.blur="manual_document_year" type="number" min="1900" max="9999" required placeholder="Year" aria-label="Manual year" class="w-24 self-stretch border-x border-gray-300 bg-white px-2 text-center outline-none focus:ring-2 focus:ring-blue-500" wire:key="number-year-{{ $index }}">
+                                    @endif
+                                @endforeach
+                            </div>
+                            <flux:error name="manual_document_sequence" />
+                            <flux:error name="manual_document_year" />
+                            <flux:error name="manual_document_number" />
                         @else
                             <div class="relative">
                                 <flux:input 
@@ -213,7 +221,7 @@
             <flux:label>Content <span class="text-red-500">*</span></flux:label>
             <div wire:init="loadInitialContent">
                 <div wire:ignore class="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                    <div id="quill-editor" style="min-height: 200px;" class="bg-white text-gray-900"></div>
+                    <div id="quill-editor" style="height: clamp(200px, 40vh, 320px);" class="bg-white text-gray-900"></div>
                     <input type="hidden" wire:model="content" id="quill-content" />
                 </div>
             </div>

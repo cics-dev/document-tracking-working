@@ -115,6 +115,28 @@ class SystemManagementRenderingTest extends TestCase
         $this->assertSame('hidden', $previewData['approverDisplayMode']);
         $this->assertSame('signatures/test-sender.png', $previewData['fromSignature']);
 
+        Document::create([
+            'document_number' => 'TEST(ADMIN)-DTD-2-2025',
+            'from_id' => $office->id,
+            'document_type_id' => $type->id,
+            'subject' => 'Existing manual number',
+            'content' => 'Test',
+            'created_by' => $user->id,
+        ]);
+        $documentCount = Document::count();
+
+        Livewire::test(CreateDocument::class)
+            ->set('document_type_id', (string) $type->id)
+            ->call('handleUpdateDocumentType')
+            ->set('is_manual_document_number', true)
+            ->set('manual_document_sequence', '2')
+            ->set('manual_document_year', '2025')
+            ->set('subject', 'Duplicate manual number')
+            ->call('submitDocument', 'Draft')
+            ->assertHasErrors('manual_document_number');
+
+        $this->assertSame($documentCount, Document::count());
+
         Livewire::test(CreateDocument::class)
             ->set('document_type_id', (string) $type->id)
             ->call('handleUpdateDocumentType')
@@ -129,6 +151,14 @@ class SystemManagementRenderingTest extends TestCase
             ->assertSee('Enter custom label...')
             ->assertSee('Runtime rendering check')
             ->assertStatus(200);
+
+        Livewire::test(CreateDocument::class)
+            ->set('document_type_id', (string) $type->id)
+            ->call('handleUpdateDocumentType')
+            ->set('is_manual_document_number', true)
+            ->assertSeeHtml('aria-label="Manual sequence number"')
+            ->assertSeeHtml('aria-label="Manual year"')
+            ->assertDontSee('Enter Reference/Document No.');
 
         Livewire::test(CreateDocument::class)
             ->set('document_type_id', (string) $type->id)

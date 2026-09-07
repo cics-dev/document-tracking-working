@@ -14,6 +14,7 @@ use App\Models\ExternalDocument;
 use App\Models\Office;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
@@ -86,6 +87,10 @@ class CreateDocument extends Component
 
     public $manual_document_number = null;
 
+    public string $manual_document_sequence = '';
+
+    public string $manual_document_year = '';
+
     public $is_manual_document_number = false;
 
     public function mount($number = null, $draft_id = null)
@@ -98,6 +103,7 @@ class CreateDocument extends Component
         );
         $this->redirect_mode = $number ? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
+        $this->manual_document_year = date('Y');
 
         $this->users = app(UserController::class)->index(false);
         $this->types = app(DocumentTypeController::class)->index(Auth::user());
@@ -410,7 +416,9 @@ class CreateDocument extends Component
             $officePart .= '('.Auth::user()->office->office_type.')';
         }
 
-        $docNumber = $this->documentNumberPrefix($typeObj, $officePart).'-_____-'.date('Y');
+        $docNumber = $this->is_manual_document_number
+            ? $this->buildManualDocumentNumber()
+            : $this->formatDocumentNumber($typeObj, $fromOffice ?? Auth::user()->office, '_____', date('Y'));
 
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
             $office = $this->allOffices[$sig['office_id']] ?? null;
@@ -467,6 +475,10 @@ class CreateDocument extends Component
         $isSend = $action === 'send';
         $status = $isSend ? 'Sent' : 'Draft';
 
+        if ($this->is_manual_document_number) {
+            $this->manual_document_number = $this->buildManualDocumentNumber();
+        }
+
         if ($isSend && ($this->selectedType()?->allow_oic_signature ?? true) && $this->headIsTemporarilyRelieved()) {
             throw ValidationException::withMessages([
                 'document' => 'This office currently has an OIC. The designated head may prepare and preview drafts, but only the OIC may send documents.',
@@ -480,6 +492,13 @@ class CreateDocument extends Component
             $this->validate([
                 'document_type_id' => 'required',
                 'subject' => 'required|max:255',
+                'manual_document_sequence' => $this->is_manual_document_number ? 'required|integer|min:1' : 'nullable',
+                'manual_document_year' => $this->is_manual_document_number ? 'required|digits:4|integer|min:1900|max:9999' : 'nullable',
+                'manual_document_number' => $this->is_manual_document_number
+                    ? ['required', Rule::unique('documents', 'document_number')->ignore($this->original_document_id)]
+                    : ['nullable'],
+            ], [
+                'manual_document_number.unique' => 'This document number already exists. Choose a different number or year.',
             ]);
         }
 
@@ -599,7 +618,11 @@ class CreateDocument extends Component
             'document_type_id' => 'required',
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
-            'manual_document_number' => $this->is_manual_document_number ? 'required|unique:documents,document_number' : 'nullable',
+            'manual_document_sequence' => $this->is_manual_document_number ? 'required|integer|min:1' : 'nullable',
+            'manual_document_year' => $this->is_manual_document_number ? 'required|digits:4|integer|min:1900|max:9999' : 'nullable',
+            'manual_document_number' => $this->is_manual_document_number
+                ? ['required', Rule::unique('documents', 'document_number')->ignore($this->original_document_id)]
+                : ['nullable'],
             'cf_offices' => $this->selectedType()?->show_carbon_copy ? ['array'] : ['prohibited'],
             'cf_offices.*' => ['distinct', 'exists:offices,id'],
             'attachments' => $this->selectedType()?->allow_attachments ? ['array'] : ['prohibited'],
@@ -618,6 +641,7 @@ class CreateDocument extends Component
         }
 
         $this->validate($rules, [
+            'manual_document_number.unique' => 'This document number already exists. Choose a different number or year.',
             'signatories.required' => 'At least one signatory is required.',
             'signatories.min' => 'At least one signatory is required.',
             'signatories.*.role.required' => 'Role is required.',
@@ -661,45 +685,106 @@ class CreateDocument extends Component
             ->pluck('document_number');
 
         $lastNumber = 0;
+        $office = Office::find($from_id) ?? Auth::user()->office;
+        $pattern = $this->documentNumberPattern($typeObj, $office);
 
         foreach ($documents as $docNumber) {
-            if (empty($docNumber)) {
-                continue;
-            }
-
-            $parts = explode('-', trim($docNumber));
-            $count = count($parts);
-
-            for ($i = $count - 2; $i >= 0; $i--) {
-                $part = trim($parts[$i]);
-
-                if (preg_match('/\d+/', $part, $matches)) {
-                    $num = (int) $matches[0];
-                    if ($num > $lastNumber) {
-                        $lastNumber = $num;
-                    }
-                    break;
-                }
+            if ($docNumber && preg_match($pattern, trim($docNumber), $matches)) {
+                $number = (int) $matches['number'];
+                $lastNumber = max($lastNumber, $number);
             }
         }
 
-        $officePart = Auth::user()->office->abbreviation;
-        if (Auth::user()->office->office_type) {
-            $officePart .= '('.Auth::user()->office->office_type.')';
-        }
-
-        return $this->documentNumberPrefix($typeObj, $officePart).'-'.($lastNumber + 1).'-'.date('Y');
+        return $this->formatDocumentNumber($typeObj, $office, $lastNumber + 1, date('Y'));
     }
 
-    private function documentNumberPrefix($type, string $officeWithType): string
+    private function normalizedNumberTemplate($type): string
     {
         $template = $type['number_prefix'] ?: '{office_with_type}-{type}';
 
-        return strtr($template, [
-            '{office}' => Auth::user()->office->abbreviation,
+        if (! str_contains($template, '{number}')) {
+            $template .= '-{number}';
+        }
+        if (! str_contains($template, '{year}')) {
+            $template .= '-{year}';
+        }
+
+        return $template;
+    }
+
+    private function formatDocumentNumber($type, Office $office, string|int $number, string|int $year): string
+    {
+        $officeWithType = $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : '');
+
+        return strtr($this->normalizedNumberTemplate($type), [
+            '{office}' => $office->abbreviation,
             '{office_with_type}' => $officeWithType,
             '{type}' => $type['abbreviation'],
+            '{number}' => (string) $number,
+            '{year}' => (string) $year,
         ]);
+    }
+
+    private function documentNumberPattern($type, Office $office): string
+    {
+        $officeWithType = $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : '');
+        $parts = preg_split('/(\{number\}|\{year\})/', $this->normalizedNumberTemplate($type), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $pattern = '';
+
+        foreach ($parts as $part) {
+            $pattern .= match ($part) {
+                '{number}' => '(?P<number>\d+)',
+                '{year}' => '(?P<year>\d{4})',
+                default => preg_quote(strtr($part, [
+                    '{office}' => $office->abbreviation,
+                    '{office_with_type}' => $officeWithType,
+                    '{type}' => $type['abbreviation'],
+                ]), '~'),
+            };
+        }
+
+        return '~^'.$pattern.'$~u';
+    }
+
+    public function manualDocumentNumberParts(): array
+    {
+        $type = $this->selectedType();
+        if (! $type) {
+            return [];
+        }
+
+        $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
+        $parts = preg_split('/(\{number\}|\{year\})/', $this->normalizedNumberTemplate($type), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+
+        return collect($parts)->map(function ($part) use ($type, $office) {
+            if ($part === '{number}') {
+                return ['type' => 'number'];
+            }
+            if ($part === '{year}') {
+                return ['type' => 'year'];
+            }
+
+            return [
+                'type' => 'literal',
+                'value' => strtr($part, [
+                    '{office}' => $office->abbreviation,
+                    '{office_with_type}' => $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : ''),
+                    '{type}' => $type->abbreviation,
+                ]),
+            ];
+        })->values()->all();
+    }
+
+    private function buildManualDocumentNumber(): ?string
+    {
+        $type = $this->selectedType();
+        if (! $type) {
+            return null;
+        }
+
+        $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
+
+        return $this->formatDocumentNumber($type, $office, $this->manual_document_sequence, $this->manual_document_year);
     }
 
     private function processAttachments(Document $document)

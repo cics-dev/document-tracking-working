@@ -60,7 +60,12 @@
                 </flux:select>
                 <flux:error name="document_level" />
             </flux:field>
-            <flux:input wire:model="number_prefix" label="Number Prefix Template" placeholder="{office_with_type}-{type}" />
+            <flux:field>
+                <flux:label>Number Template</flux:label>
+                <flux:input wire:model="number_prefix" placeholder="{office_with_type}-{type}-{number}-{year}" />
+                <flux:description>Available: {office}, {office_with_type}, {type}, {number}, {year}. Missing {number} or {year} is appended automatically.</flux:description>
+                <flux:error name="number_prefix" />
+            </flux:field>
             <flux:select wire:model="print_layout" label="Print Layout" placeholder="Choose print layout...">
                 <flux:select.option value="memorandum">Memorandum</flux:select.option>
                 <flux:select.option value="letter">Letter</flux:select.option>

@@ -182,6 +182,49 @@ class DynamicConfigurationTest extends TestCase
         $this->assertTrue(true);
     }
 
+    public function test_number_template_controls_automatic_and_manual_number_positions(): void
+    {
+        $office = $this->office('Student Affairs Office', 'SAO');
+        $office->update(['office_type' => 'ADMIN']);
+        $type = DocumentType::create([
+            'name' => 'Request Letter Memorandum',
+            'abbreviation' => 'RLM',
+            'number_prefix' => 'ZPPSU-{office_with_type}-{number}-{type}-{year}',
+        ]);
+        $year = date('Y');
+        Document::create([
+            'document_number' => "ZPPSU-SAO(ADMIN)-1-RLM-{$year}",
+            'from_id' => $office->id,
+            'document_type_id' => $type->id,
+            'subject' => 'Existing number',
+            'content' => 'Test',
+            'created_by' => $office->head_id,
+            'status' => 'Sent',
+        ]);
+        $this->actingAs($office->head);
+
+        $component = new CreateDocument;
+        $component->types = collect([$type]);
+        $component->document_type_id = (string) $type->id;
+        $component->manual_document_sequence = '7';
+        $component->manual_document_year = '2025';
+
+        $automatic = new ReflectionMethod(CreateDocument::class, 'generateDocumentNumber');
+        $automatic->setAccessible(true);
+        $this->assertSame(
+            "ZPPSU-SAO(ADMIN)-2-RLM-{$year}",
+            $automatic->invoke($component, $office->id)
+        );
+
+        $manual = new ReflectionMethod(CreateDocument::class, 'buildManualDocumentNumber');
+        $manual->setAccessible(true);
+        $this->assertSame('ZPPSU-SAO(ADMIN)-7-RLM-2025', $manual->invoke($component));
+        $this->assertSame(
+            ['literal', 'number', 'literal', 'year'],
+            collect($component->manualDocumentNumberParts())->pluck('type')->all()
+        );
+    }
+
     private function office(string $name, string $abbreviation): Office
     {
         $office = Office::create(compact('name', 'abbreviation') + ['office_type' => 'ADMIN']);
