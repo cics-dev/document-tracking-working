@@ -4,14 +4,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\ResetPasswordNotification;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -26,7 +28,7 @@ class User extends Authenticatable
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        if (!$this->avatar) {
+        if (! $this->avatar) {
             return null;
         }
 
@@ -42,7 +44,7 @@ class User extends Authenticatable
             return asset($this->avatar);
         }
 
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**
@@ -83,7 +85,7 @@ class User extends Authenticatable
     {
         return ($this->office && $this->id === $this->office->head_id) ? 'Yes' : 'No';
     }
-    
+
     public function profile()
     {
         return $this->hasOne(UserProfile::class);
@@ -93,10 +95,35 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPasswordNotification($token));
     }
-    
+
     public function office()
     {
         return $this->belongsTo(Office::class);
+    }
+
+    /**
+     * The system role assigned to this user.
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Determine whether the user has the administrator role.
+     *
+     * Authorization is based on the role record rather than the editable
+     * position field or a hard-coded role ID.
+     */
+    public function isAdmin(): bool
+    {
+        if ($this->relationLoaded('role')) {
+            return strtolower((string) $this->role?->role) === 'admin';
+        }
+
+        return $this->role()
+            ->whereRaw('LOWER(role) = ?', ['admin'])
+            ->exists();
     }
 
     public function documents()

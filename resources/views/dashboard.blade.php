@@ -317,12 +317,17 @@
     <div>
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Document Tracking Analytics</h1>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Real-time overview of document movement, office turnaround, and system activity across university offices.</p>
+          <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">
+            {{ $isAdmin ? 'Document Tracking Analytics' : 'My Document Dashboard' }}
+          </h1>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {{ $isAdmin
+                ? 'Real-time overview of document movement, office turnaround, and system activity across university offices.'
+                : 'A personal overview of documents associated with your account, office, and assigned workflow.' }}
+          </p>
         </div>
         <div class="flex items-center gap-2">
-          {{-- FIX: Hide Create Document button for Administrators as well --}}
-          @if (auth()->user()?->position != 'Staff' && auth()->user()?->position != 'Administrator')
+          @if (auth()->user()?->position != 'Staff' && ! $isAdmin)
             <flux:button href="{{ route('documents.create-document') }}" variant="primary" icon="plus" size="sm">
               Create Document
             </flux:button>
@@ -337,7 +342,7 @@
       <div class="dashboard-card relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300">
         <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
           <div style="flex: 1; padding-left: 10px;">
-            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">Total Documents</h3>
+            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">{{ $isAdmin ? 'Total Documents' : 'My Documents' }}</h3>
             <p class="card-value" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">{{ number_format($grandTotalDocs) }}</p>
           </div>
           <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 16px; top: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
@@ -345,23 +350,23 @@
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
-            <p style="font-size: 13px; color: #4CAF50;">Live Database Record</p>
+            <p style="font-size: 13px; color: #4CAF50;">{{ $isAdmin ? 'Live Database Record' : 'Your accessible records' }}</p>
         </div>
       </div>
 
-      <!-- Card 2: Active Users -->
+      <!-- Card 2: System users / my activity -->
       <div class="dashboard-card relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300">
         <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
           <div style="flex: 1; padding-left: 10px;">
-            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">System Users</h3>
-            <p class="card-value" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">{{ number_format($usersCount) }}</p>
+            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">{{ $isAdmin ? 'System Users' : 'My Activity' }}</h3>
+            <p class="card-value" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">{{ number_format($isAdmin ? $usersCount : $activityCount) }}</p>
           </div>
           <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 16px; top: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
             <img src="{{ asset('assets/img/team.gif') }}" alt="Users Icon" style="width: 28px; height: 28px;">
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
-            <p class="card-meta" style="font-size: 13px; color: #4CAF50;">Registered Users</p>
+            <p class="card-meta" style="font-size: 13px; color: #4CAF50;">{{ $isAdmin ? 'Registered Users' : 'Your recorded actions' }}</p>
         </div>
       </div>
 
@@ -381,11 +386,11 @@
         </div>
       </div>
 
-      <!-- Card 4: ZPPSU Offices -->
+      <!-- Card 4: Organization offices / my office -->
       <div class="dashboard-card relative aspect-video overflow-hidden rounded-xl border-2 border-gray-300">
         <div style="flex: 1; padding-right: 80px; display: flex; align-items: center; justify-content: flex-start; padding-top: 10px; padding-bottom: 10px;">
           <div style="flex: 1; padding-left: 10px;">
-            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">ZPPSU Offices</h3>
+            <h3 class="card-title" style="font-size: 16px; margin-bottom: 2px;">{{ $isAdmin ? 'ZPPSU Offices' : 'My Office' }}</h3>
             <p class="card-value" style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">{{ number_format($officesCount) }}</p>
           </div>
           <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 16px; top: 16px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
@@ -393,7 +398,7 @@
           </div>
         </div>
         <div style="flex: 1; padding-left: 10px;">
-            <p class="card-meta" style="font-size: 13px; color: #f1c50f;">Academic & Admin units</p>
+            <p class="card-meta" style="font-size: 13px; color: #f1c50f;">{{ $isAdmin ? 'Academic & Admin units' : ($officeName ?? 'No office assigned') }}</p>
         </div>
       </div>
 
@@ -418,15 +423,15 @@
     <div class="chart-container">
       <div class="charts-wrapper">
         <div id="chartdiv">
-          <div class="chart-label">ZPPSU - DTS Document Tracking Analytics</div>
+          <div class="chart-label">{{ $isAdmin ? 'ZPPSU - DTS Document Tracking Analytics' : 'My Documents by Year' }}</div>
           <div id="chartcanvas" style="width: 100%; height: 100%;"></div>
         </div>
         <div id="chartdiv-mobile">
-          <div class="chart-label">Documents by Year</div>
+          <div class="chart-label">{{ $isAdmin ? 'Documents by Year' : 'My Documents by Year' }}</div>
           <div id="chartcanvas-mobile" style="width: 100%; height: 100%;"></div>
         </div>
         <div id="chartdiv2">
-          <div class="history-header">Document History</div>
+          <div class="history-header">{{ $isAdmin ? 'Document History' : 'My Document History' }}</div>
           <div class="history-container">
             @if($historyLogs->isNotEmpty())
               @foreach($historyLogs as $log)
@@ -469,8 +474,8 @@
       <!-- Widget 1: Document Classification Breakdown -->
       <div class="analytics-card bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 p-5 shadow-xs">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Document Classifications</h3>
-          <span class="text-xs px-2 py-1 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded font-medium">Database Types</span>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $isAdmin ? 'Document Classifications' : 'My Document Classifications' }}</h3>
+          <span class="text-xs px-2 py-1 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded font-medium">{{ $isAdmin ? 'Database Types' : 'My Records' }}</span>
         </div>
         <div class="space-y-4">
           @forelse($docTypes as $type)
@@ -495,14 +500,14 @@
       <!-- Widget 2: Document Processing Efficiency -->
       <div class="analytics-card bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 p-5 shadow-xs">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Routing & Approval Status</h3>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $isAdmin ? 'Routing & Approval Status' : 'My Routing & Approval Status' }}</h3>
           <span class="text-xs px-2 py-1 bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded font-medium">{{ $approvedPct }}% Approved</span>
         </div>
         <div class="grid grid-cols-2 gap-3 mb-4">
           <div class="p-3 bg-gray-50 dark:bg-zinc-700/50 rounded-lg text-center">
             <p class="text-xs text-gray-500 dark:text-zinc-400">Total Tracked</p>
             <p class="text-lg font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalDocsCount) }}</p>
-            <span class="text-[10px] text-green-600 dark:text-green-400">System Records</span>
+            <span class="text-[10px] text-green-600 dark:text-green-400">{{ $isAdmin ? 'System Records' : 'My Records' }}</span>
           </div>
           <div class="p-3 bg-gray-50 dark:bg-zinc-700/50 rounded-lg text-center">
             <p class="text-xs text-gray-500 dark:text-zinc-400">Active Routing</p>
@@ -538,29 +543,45 @@
         </div>
       </div>
 
-      <!-- Widget 3: Top Active ZPPSU Units -->
+      <!-- Widget 3: Organization activity for admins / personal type activity for users -->
       <div class="analytics-card bg-white dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 p-5 shadow-xs">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Active ZPPSU Units</h3>
-          <span class="text-xs px-2 py-1 bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded font-medium">Database Units</span>
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $isAdmin ? 'Top Active ZPPSU Units' : 'My Most Used Document Types' }}</h3>
+          <span class="text-xs px-2 py-1 bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded font-medium">{{ $isAdmin ? 'Database Units' : 'My Records' }}</span>
         </div>
         <div class="space-y-3">
-          @forelse($topOffices as $office)
-            <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
-              <div class="flex items-center gap-2.5">
-                <div class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
-                  {{ strtoupper(substr($office->abbreviation ?? $office->name, 0, 3)) }}
+          @if($isAdmin)
+            @forelse($topOffices as $office)
+              <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <div class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                    {{ strtoupper(substr($office->abbreviation ?? $office->name, 0, 3)) }}
+                  </div>
+                  <div>
+                    <p class="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $office->name }}</p>
+                    <p class="text-[10px] text-gray-500 dark:text-zinc-400">{{ $office->abbreviation ?? ($office->office_type ?? 'Office Unit') }}</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $office->name }}</p>
-                  <p class="text-[10px] text-gray-500 dark:text-zinc-400">{{ $office->abbreviation ?? ($office->office_type ?? 'Office Unit') }}</p>
-                </div>
+                <span class="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded whitespace-nowrap">{{ number_format($office->total_activity) }} docs</span>
               </div>
-              <span class="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded whitespace-nowrap">{{ number_format($office->total_activity) }} docs</span>
-            </div>
-          @empty
-            <div class="text-xs text-gray-500">No office units registered in database yet</div>
-          @endforelse
+            @empty
+              <div class="text-xs text-gray-500">No office units registered in database yet</div>
+            @endforelse
+          @else
+            @forelse($docTypes->where('documents_count', '>', 0)->sortByDesc('documents_count')->take(4) as $type)
+              <div class="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <div class="size-7 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold text-xs">
+                    {{ strtoupper(substr($type->abbreviation ?? $type->name, 0, 3)) }}
+                  </div>
+                  <p class="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">{{ $type->name }}</p>
+                </div>
+                <span class="text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded whitespace-nowrap">{{ number_format($type->documents_count) }} docs</span>
+              </div>
+            @empty
+              <div class="text-xs text-gray-500">No documents are associated with your account yet</div>
+            @endforelse
+          @endif
         </div>
       </div>
     </div>
@@ -768,108 +789,20 @@
         });
       });
 
-      lineSeries.events.on("datavalidated", function() {
-        am5.array.each(lineSeries.dataItems, function(dataItem) {
-          dataItem.set("locationX",
-            dataItem.dataContext.count % 2 === 0 ? 0 : 0.5
-          );
+      // The controller supplies only the data this viewer is allowed to see.
+      // Do not create synthetic organization-wide history in the browser.
+      var yearlyDocuments = @json($yearlyChartData['Documents']);
+      var chartData = Object.keys(yearlyDocuments)
+        .sort(function(a, b) { return parseInt(a, 10) - parseInt(b, 10); })
+        .map(function(year) {
+          return {
+            category: year,
+            realName: year,
+            value: yearlyDocuments[year],
+            quantity: yearlyDocuments[year],
+            provider: @json($isAdmin ? 'Documents' : 'My Documents')
+          };
         });
-      });
-
-      var chartData = [];
-
-      var currentYear = {{ $currentYear }};
-      var startYear = 2025;
-      var dbDocsCount = {{ $totalDocsCount }};
-
-      function generateYearData(baseMultiplier, defaultQuantity) {
-        var res = { quantity: defaultQuantity };
-        for (var y = startYear; y <= currentYear; y++) {
-          var yStr = y.toString();
-          if (y === currentYear && dbDocsCount > 0) {
-            res[yStr] = dbDocsCount;
-          } else {
-            res[yStr] = Math.floor(10 + (y - startYear) * baseMultiplier + ((y % 3) + 1) * 5);
-          }
-        }
-        return res;
-      }
-
-      var data = {
-        "Documents": generateYearData(12, {{ $grandTotalDocs > 0 ? $grandTotalDocs : 430 }}),
-        "Offices": generateYearData(5, {{ $officesCount > 0 ? $officesCount : 210 }}),
-        "Departments": generateYearData(6, 265),
-        "Office Heads": generateYearData(4, 98)
-      };
-
-      if (isMobile) {
-        var mobileData = data.Documents;
-        var mobileChartData = [];
-
-        for (var mobileYear in mobileData) {
-          if (mobileYear !== "quantity") {
-            mobileChartData.push({
-              category: mobileYear,
-              realName: mobileYear,
-              value: mobileData[mobileYear],
-              quantity: mobileData[mobileYear],
-              provider: "Documents"
-            });
-          }
-        }
-
-        xAxis.data.setAll(mobileChartData);
-        series.data.setAll(mobileChartData);
-        lineSeries.data.setAll(mobileChartData);
-        series.appear(700);
-        chart.appear(700, 100);
-        return;
-      }
-
-      for (var providerName in data) {
-        var providerData = data[providerName];
-        var tempArray = [];
-        var count = 0;
-
-        for (var itemName in providerData) {
-          if (itemName !== "quantity") {
-            count++;
-            tempArray.push({
-              category: providerName + "_" + itemName,
-              realName: itemName,
-              value: providerData[itemName],
-              provider: providerName
-            });
-          }
-        }
-
-        // Sort chronologically by year starting with 2025.
-        tempArray.sort((a, b) => parseInt(a.realName) - parseInt(b.realName));
-        var midIndex = Math.floor(count / 2);
-        tempArray[midIndex].quantity = providerData.quantity;
-        tempArray[midIndex].count = count;
-
-        am5.array.each(tempArray, item => chartData.push(item));
-
-        var range = xAxis.makeDataItem({});
-        xAxis.createAxisRange(range);
-        range.set("category", tempArray[0].category);
-        range.set("endCategory", tempArray[tempArray.length - 1].category);
-        range.get("label").setAll({
-          text: tempArray[0].provider,
-          dy: 30,
-          fontWeight: "bold",
-          tooltipText: tempArray[0].provider
-        });
-        range.get("tick").setAll({ visible: true, strokeOpacity: 1, length: 50, location: 0 });
-        range.get("grid").setAll({ strokeOpacity: 1 });
-      }
-
-      var finalRange = xAxis.makeDataItem({});
-      xAxis.createAxisRange(finalRange);
-      finalRange.set("category", chartData[chartData.length - 1].category);
-      finalRange.get("tick").setAll({ visible: true, strokeOpacity: 1, length: 50, location: 1 });
-      finalRange.get("grid").setAll({ strokeOpacity: 1, location: 1 });
 
       xAxis.data.setAll(chartData);
       series.data.setAll(chartData);

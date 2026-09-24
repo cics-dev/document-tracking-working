@@ -14,10 +14,23 @@ return new class extends Migration
             $table->index(['player_name', 'score']);
         });
 
+        // An UPDATE joined to users works on MySQL, but Laravel compiles it to an
+        // invalid SQLite statement. Backfill row by row instead so this migration
+        // remains portable (including the in-memory SQLite test database).
+        $playerNames = DB::table('users')->pluck('name', 'id');
+
         DB::table('tetris_scores')
-            ->join('users', 'users.id', '=', 'tetris_scores.user_id')
-            ->whereNull('tetris_scores.player_name')
-            ->update(['tetris_scores.player_name' => DB::raw('users.name')]);
+            ->whereNull('player_name')
+            ->orderBy('id')
+            ->each(function (object $score) use ($playerNames): void {
+                $playerName = $playerNames->get($score->user_id);
+
+                if ($playerName !== null) {
+                    DB::table('tetris_scores')
+                        ->where('id', $score->id)
+                        ->update(['player_name' => $playerName]);
+                }
+            });
 
         Schema::table('tetris_scores', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();
