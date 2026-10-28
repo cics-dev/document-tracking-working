@@ -14,6 +14,14 @@ class Document extends Model
         'original_document_id'
     ];
 
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => \App\Support\DocumentHtml::sanitize($value),
+            set: fn ($value) => \App\Support\DocumentHtml::sanitize($value),
+        );
+    }
+
     protected function viewedAt(): Attribute
     {
         return Attribute::get(function () {

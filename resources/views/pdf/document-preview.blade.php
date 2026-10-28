@@ -391,7 +391,7 @@
     @endif
 
     <div class="content" style="line-height: {{ $documentType == 'External Communication Response Letter' ? '0.25' : '1.5' }};">
-        {!! $content !!}
+        {!! \App\Support\DocumentHtml::sanitize($content ?? null) !!}
     </div>
 
     

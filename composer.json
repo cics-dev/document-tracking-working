@@ -11,9 +11,10 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "ezyang/htmlpurifier": "^4.18",
         "fpdf/fpdf": "^1.86",
         "ladumor/laravel-pwa": "^0.0.5",
-        "laravel/framework": "12.51.0",
+        "laravel/framework": "^12.69",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.0",
         "livewire/volt": "^1.6.7",

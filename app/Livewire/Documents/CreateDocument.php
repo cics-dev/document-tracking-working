@@ -185,7 +185,7 @@ class CreateDocument extends Component
 
     private function formatECLRContent()
     {
-        $html = '<strong>' . strtoupper($this->document_to_text) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . strtoupper($this->subject) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]';
+        $html = '<strong>' . e(strtoupper($this->document_to_text ?? '')) . '</strong><p>[insert position here]</p><p>[insert office here]</p><p>[insert office address here]</p><br><br><p>Subject: <b>' . e(strtoupper($this->subject ?? '')) . '</b></p><br><br>[Insert your salutation]<br><br>[Start your message here]';
         
         $this->dispatch('update-quill', ['content' => $html]);
     }
@@ -253,7 +253,7 @@ class CreateDocument extends Component
         $query = [
             'action' => 'preview',
             'subject' => $this->subject,
-            'content' => $this->content,
+            'content' => \App\Support\DocumentHtml::sanitize($this->content),
             'thru' => $this->thru,
             'toName' => $toName,
             'toPosition' => $toPosition,
@@ -311,7 +311,7 @@ class CreateDocument extends Component
             'document_number' => $this->revision_document_number ?? $docNumber,
             'subject' => $this->subject,
             'thru' => $this->thru,
-            'content' => $this->content,
+            'content' => \App\Support\DocumentHtml::sanitize($this->content),
             'created_by' => Auth::id(),
             'status' => $status,
             'date_sent' => now(), // Set date even for drafts to track last edit, or move to 'updated_at' logic
@@ -644,7 +644,7 @@ class CreateDocument extends Component
         $this->document_type_id = $data['document_type_id'] ?? null;
         $this->document_type = $data['document_type'] ?? null;
         $this->subject = $data['subject'] ?? '';
-        $this->content = $data['content'] ?? null;
+        $this->content = \App\Support\DocumentHtml::sanitize($data['content'] ?? null);
         $this->thru = $data['thru'] ?? null;
         $this->cf_offices = $data['cf'] ?? [];
         
