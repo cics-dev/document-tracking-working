@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DocumentHtml;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,14 @@ class Document extends Model
         'is_revision',
         'original_document_id',
     ];
+
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => DocumentHtml::sanitize($value),
+            set: fn ($value) => DocumentHtml::sanitize($value),
+        );
+    }
 
     protected function viewedAt(): Attribute
     {

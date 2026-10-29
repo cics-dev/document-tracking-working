@@ -12,6 +12,7 @@ use App\Models\DocumentGenerationRule;
 use App\Models\DocumentType;
 use App\Models\ExternalDocument;
 use App\Models\Office;
+use App\Support\DocumentHtml;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -379,10 +380,10 @@ class CreateDocument extends Component
     private function formatConfiguredContent()
     {
         $html = strtr($this->selectedType()->content_template, [
-            '{TO}' => strtoupper((string) $this->document_to_text),
-            '{SUBJECT}' => strtoupper((string) $this->subject),
+            '{TO}' => e(strtoupper((string) $this->document_to_text)),
+            '{SUBJECT}' => e(strtoupper((string) $this->subject)),
         ]);
-        $this->dispatch('update-quill', ['content' => $html]);
+        $this->dispatch('update-quill', ['content' => DocumentHtml::sanitize($html)]);
     }
 
     public function previewDocument()
@@ -443,7 +444,7 @@ class CreateDocument extends Component
         $query = [
             'action' => 'preview',
             'subject' => $this->subject,
-            'content' => $this->content,
+            'content' => DocumentHtml::sanitize($this->content),
             'thru' => $this->thru,
             'toName' => $toName,
             'toPosition' => $toPosition,
@@ -534,7 +535,7 @@ class CreateDocument extends Component
             'document_number' => $this->revision_document_number ?? $docNumber,
             'subject' => $this->subject,
             'thru' => $this->thru,
-            'content' => $this->content,
+            'content' => DocumentHtml::sanitize($this->content),
             'created_by' => Auth::id(),
             'status' => $status,
             'date_sent' => now(),
@@ -1090,7 +1091,7 @@ class CreateDocument extends Component
         $this->document_type_id = $data['document_type_id'] ?? null;
         $this->document_type = $data['document_type'] ?? null;
         $this->subject = $data['subject'] ?? '';
-        $this->content = $data['content'] ?? null;
+        $this->content = DocumentHtml::sanitize($data['content'] ?? null);
         $this->thru = $data['thru'] ?? null;
         $this->cf_offices = $data['cf'] ?? [];
 

@@ -2,9 +2,10 @@
 
 use App\Livewire\Auth\Login;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -30,10 +31,11 @@ test('users can authenticate using the login screen', function () {
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'wrong-password',
-    ]);
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'wrong-password')
+        ->call('login')
+        ->assertHasErrors(['email']);
 
     $this->assertGuest();
 });
@@ -45,4 +47,19 @@ test('users can logout', function () {
 
     $this->assertGuest();
     $response->assertRedirect('/');
+});
+
+test('remember me login persists a token and preserves the dashboard redirect', function () {
+    $user = User::factory()->create(['remember_token' => null]);
+
+    Livewire::test(Login::class)
+        ->set('email', $user->email)
+        ->set('password', 'password')
+        ->set('remember', true)
+        ->call('login')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticatedAs($user);
+    expect($user->fresh()->remember_token)->not->toBeNull();
 });

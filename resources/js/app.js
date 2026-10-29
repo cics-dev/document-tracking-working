@@ -24,12 +24,11 @@ function initQuillEditor() {
         const quillContentInput = document.getElementById('quill-content');
 
         if (quillContentInput.value) {
-            quill.root.innerHTML = quillContentInput.value;
+            quill.setContents(quill.clipboard.convert({ html: quillContentInput.value }), 'silent');
         }
 
         quill.on('text-change', function () {
-            const content = quill.root.innerHTML;
-            quillContentInput.value = content;
+            quillContentInput.value = quill.root.innerHTML;
             quillContentInput.dispatchEvent(new Event('input')); // Trigger Livewire update
         });
 
@@ -39,11 +38,11 @@ function initQuillEditor() {
         // });
         window.addEventListener('update-quill', event => {
             const content = event.detail[0].content || '';
-            quill.root.innerHTML = content;
+            quill.setContents(quill.clipboard.convert({ html: content }), 'silent');
 
             const quillContentInput = document.getElementById('quill-content');
             if (quillContentInput) {
-                quillContentInput.value = content;
+                quillContentInput.value = quill.root.innerHTML;
                 quillContentInput.dispatchEvent(new Event('input'));
             }
         });

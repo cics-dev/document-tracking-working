@@ -76,15 +76,16 @@ test('password can be reset with valid token', function () {
     Notification::assertSentTo($user, ResetPasswordNotification::class, function ($notification) use ($user) {
         $response = Livewire::test(ResetPassword::class, ['token' => $notification->token])
             ->set('email', $user->email)
-            ->set('password', 'password')
-            ->set('password_confirmation', 'password')
+            ->set('password', 'new-password')
+            ->set('password_confirmation', 'new-password')
             ->call('resetPassword');
 
         $response
             ->assertHasNoErrors()
             ->assertRedirect(route('login', absolute: false));
 
-        expect(Hash::check('password', $user->fresh()->password))->toBeTrue();
+        expect(Hash::check('new-password', $user->fresh()->password))->toBeTrue();
+        expect($user->fresh()->remember_token)->not->toBeNull();
 
         return true;
     });

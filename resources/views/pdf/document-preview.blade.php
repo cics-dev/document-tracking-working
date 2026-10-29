@@ -389,7 +389,7 @@
     @endif
 
     <div class="content" style="line-height: {{ $printLayout === 'letter' ? '0.25' : '1.5' }};">
-        {!! $content !!}
+        {!! \App\Support\DocumentHtml::sanitize($content ?? null) !!}
     </div>
 
     @if(!empty($signatories) && $showSignatories)
