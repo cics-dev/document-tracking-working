@@ -251,12 +251,12 @@
     @endif
 
     @if ($selectedDocumentType)
-        @if (collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->isNotEmpty())
+        @if ($this->applicableFlowStages()->where('stage_type', 'routing')->where('is_selectable', true)->isNotEmpty())
         <div class="mb-8 bg-gray-50/80 p-5 rounded-lg border border-gray-100">
             <flux:label class="mb-3">Routing Requirements <span class="text-gray-500 font-normal">- select applicable review offices</span></flux:label>
             <div class="h-4"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach(collect($flowStages)->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
+                @foreach($this->applicableFlowStages()->where('stage_type', 'routing')->where('is_selectable', true)->values()->chunk(2) as $routingColumn)
                         <div class="space-y-3">
                             @foreach($routingColumn as $stage)
                                 <div class="flex items-center gap-1">
@@ -274,12 +274,16 @@
         </div>
         @endif
 
-        @if (! $this->isIntraDocument() && ($selectedDocumentType->requires_signatories || collect($flowStages)->where('stage_type', 'signatory')->isNotEmpty()))
+        @php
+            $choiceGroups = $this->flowChoiceGroups();
+        @endphp
+
+        @if (! $this->isIntraDocument() && ($selectedDocumentType->requires_signatories || $this->applicableFlowStages()->where('stage_type', 'signatory')->isNotEmpty()))
         <div class="mb-8">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-1">
                     <flux:heading size="lg">Signatories</flux:heading>
-                    @if($selectedDocumentType->requires_signatories)<span class="text-red-500">*</span>@endif
+                    @if($selectedDocumentType->requires_signatories || $choiceGroups->contains('required', true))<span class="text-red-500">*</span>@endif
                 </div>
                 <flux:button wire:click="addSignatory" wire:loading.attr="disabled" variant="ghost" size="sm" icon="plus" class="text-indigo-600">Add Signatory</flux:button>
             </div>
@@ -289,6 +293,28 @@
             <flux:error name="signatories" class="mb-2" />
 
             <div class="space-y-3">
+                @foreach ($choiceGroups as $groupKey => $group)
+                    @php
+                        $selectedStage = $group['stages']->firstWhere('id', (int) ($flowGroupSelections[$groupKey] ?? 0));
+                        $groupLabels = $group['stages']->pluck('label')->unique();
+                        $approvalLabel = $selectedStage?->label ?? ($groupLabels->count() === 1 ? $groupLabels->first() : $group['label']);
+                    @endphp
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start" wire:key="flow-choice-{{ $groupKey }}">
+                        <div class="md:col-span-4">
+                            <flux:input :value="$approvalLabel" disabled aria-label="Signatory role" />
+                        </div>
+                        <div class="md:col-span-7">
+                            <x-searchable-filter-select model="flowGroupSelections.{{ $groupKey }}" :live="true"
+                                :options="$group['options']" placeholder="Select signatory office..." search-placeholder="Search offices..." />
+                            <flux:error name="flowGroupSelections.{{ $groupKey }}" />
+                        </div>
+                        <div class="md:col-span-1 flex justify-end">
+                            @if($group['required'])
+                                <div class="mt-2 text-gray-400" title="Required Signatory"><flux:icon icon="lock-closed" class="size-5" /></div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
                 @foreach ($signatories as $index => $signatory)
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                         <div class="md:col-span-4">

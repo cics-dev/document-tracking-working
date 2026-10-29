@@ -24,6 +24,23 @@
                 <flux:field><flux:label>Stage Label <span class="text-red-500">*</span></flux:label><flux:input wire:model="label" required placeholder="e.g. VPAF Review" /></flux:field>
             @endif
             <flux:error name="label" />
+            <flux:select wire:model.live="senderRoleId" label="Sending office head role" placeholder="Any sending office">
+                <flux:select.option value="">Any sending office</flux:select.option>
+                @foreach($roles as $role)<flux:select.option value="{{ $role->id }}">{{ $role->description }}</flux:select.option>@endforeach
+            </flux:select>
+            @if($senderRoleId)
+                <flux:select wire:model="senderRoleOperator" label="Apply when the sending office head role">
+                    <flux:select.option value="equals">Is this role</flux:select.option>
+                    <flux:select.option value="not_equals">Is not this role</flux:select.option>
+                </flux:select>
+            @endif
+            <flux:description>Uses the sending office's designated head, including when staff or an OIC prepares the document.</flux:description>
+            <flux:error name="senderRoleId" /><flux:error name="senderRoleOperator" />
+            @if($stageType === 'signatory')
+                <flux:input wire:model.live="selectionGroup" label="Choose-one group (optional)" placeholder="e.g. VP approval" />
+                <flux:description>Give alternative offices the same group name. The creator chooses one office from the group. Check Required to require a selection.</flux:description>
+                <flux:error name="selectionGroup" />
+            @endif
             <flux:textarea wire:model="description" label="Help Description" placeholder="e.g. For gymnasium or any school facility usage" rows="3" />
             <flux:description>This appears behind a question-mark in Create Document.</flux:description>
             <flux:error name="description" />
@@ -39,7 +56,7 @@
                 @endif
                 <flux:error name="conditionValue" />
             @endif
-            <flux:checkbox wire:model="isSelectable" label="Show checkbox" />
+            @if(! $selectionGroup)<flux:checkbox wire:model="isSelectable" label="Show checkbox" />@endif
             <flux:checkbox wire:model="isRequired" label="Required" />
             <flux:description>Required checkboxes are automatically selected and locked when the condition applies.</flux:description>
             <div class="flex gap-2"><flux:button type="submit" variant="primary">{{ $stageId ? 'Update' : 'Add' }} Stage</flux:button>@if($stageId)<flux:button type="button" wire:click="resetStage">Cancel</flux:button>@endif</div>
@@ -47,7 +64,7 @@
 
         <section class="min-w-0 overflow-x-auto rounded-lg border bg-white shadow-sm">
             <table class="w-full min-w-[44rem] text-left text-sm"><thead class="bg-gray-100 text-xs uppercase"><tr><th class="p-3">Stage</th><th class="p-3">Office</th><th class="p-3">Rules</th><th class="p-3 text-right">Actions</th></tr></thead>
-                <tbody>@forelse($stages as $stage)<tr class="border-t"><td class="p-3"><b>{{ ucfirst($stage->stage_type) }}</b><br>{{ $stage->label }}@if($stage->description)<br><span class="text-xs text-gray-500">{{ $stage->description }}</span>@endif</td><td class="p-3">{{ $stage->office?->name }}</td><td class="p-3">{{ $stage->workflowCondition?->label ?? 'Always' }}@if($stage->workflowCondition) · {{ str_replace('_', ' ', $stage->condition_operator) }} {{ $stage->workflowCondition->input_type === 'boolean' ? ($stage->condition_value ? 'Yes' : 'No') : $stage->condition_value }}@endif<br>{{ $stage->is_required ? 'Must complete' : 'Optional' }} · {{ $stage->is_selectable ? 'Shown to creator' : 'Automatic' }}</td><td class="p-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $stage->id }})">Edit</flux:button><flux:button size="sm" variant="danger" wire:click="delete({{ $stage->id }})" wire:confirm="Delete this flow stage?">Delete</flux:button></div></td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-500">No configured flow.</td></tr>@endforelse</tbody>
+                <tbody>@forelse($stages as $stage)<tr class="border-t"><td class="p-3"><b>{{ ucfirst($stage->stage_type) }}</b><br>{{ $stage->label }}@if($stage->description)<br><span class="text-xs text-gray-500">{{ $stage->description }}</span>@endif</td><td class="p-3">{{ $stage->office?->name }}</td><td class="p-3">@if($stage->senderRole)Sending office head {{ $stage->sender_role_operator === 'not_equals' ? 'is not' : 'is' }} {{ $stage->senderRole->description }}<br>@endif @if($stage->selection_group)Choose one: {{ $stage->selection_group }}<br>@endif {{ $stage->workflowCondition?->label ?? 'Always' }}@if($stage->workflowCondition) · {{ str_replace('_', ' ', $stage->condition_operator) }} {{ $stage->workflowCondition->input_type === 'boolean' ? ($stage->condition_value ? 'Yes' : 'No') : $stage->condition_value }}@endif<br>{{ $stage->is_required ? 'Must complete' : 'Optional' }} · {{ $stage->is_selectable ? 'Shown to creator' : 'Automatic' }}</td><td class="p-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $stage->id }})">Edit</flux:button><flux:button size="sm" variant="danger" wire:click="delete({{ $stage->id }})" wire:confirm="Delete this flow stage?">Delete</flux:button></div></td></tr>@empty<tr><td colspan="4" class="p-6 text-center text-gray-500">No configured flow.</td></tr>@endforelse</tbody>
             </table>
         </section>
     </div>

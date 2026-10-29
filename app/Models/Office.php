@@ -36,7 +36,7 @@ class Office extends Model
             return 'Officer-in-Charge'.($this->name ? ', '.$this->name : '');
         }
 
-        return $this->workflow_assignee?->position;
+        return $this->workflow_assignee?->documentPosition();
     }
 
     public function qualifyPosition(?string $position): ?string

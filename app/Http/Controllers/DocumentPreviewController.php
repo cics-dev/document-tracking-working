@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\IndorsementHeader;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -20,6 +21,14 @@ class DocumentPreviewController extends Controller
 
         $data = $this->normalizePreviewData($data);
         $generatedPdf = $this->temporaryFile('generated_');
+
+        if (IndorsementHeader::applies($data)) {
+            $data = array_merge($data, IndorsementHeader::data($data), ['useIlHeader' => true]);
+            // IL's header reports the actual page count, rather than a fixed '1 of 2'.
+            $firstPass = Pdf::loadView('pdf.document-preview', $data)->setPaper([0, 0, 612.00, 936.00]);
+            $firstPass->render();
+            $data['ilPageCount'] = $firstPass->getDomPDF()->getCanvas()->get_page_count();
+        }
 
         Pdf::loadView('pdf.document-preview', $data)
             ->setPaper([0, 0, 612.00, 936.00])

@@ -35,6 +35,12 @@ class ManageDocumentFlows extends Component
 
     public string $conditionValue = '';
 
+    public string $senderRoleId = '';
+
+    public string $senderRoleOperator = 'equals';
+
+    public string $selectionGroup = '';
+
     public string $newConditionKey = '';
 
     public string $newConditionLabel = '';
@@ -75,6 +81,9 @@ class ManageDocumentFlows extends Component
         $this->workflowConditionId = (string) ($stage->workflow_condition_id ?? '');
         $this->conditionOperator = $stage->condition_operator ?? 'equals';
         $this->conditionValue = $stage->condition_value ?? '';
+        $this->senderRoleId = (string) ($stage->sender_role_id ?? '');
+        $this->senderRoleOperator = $stage->sender_role_operator ?? 'equals';
+        $this->selectionGroup = $stage->selection_group ?? '';
     }
 
     public function updatedWorkflowConditionId(): void
@@ -86,6 +95,9 @@ class ManageDocumentFlows extends Component
 
     public function updatedStageType(string $value): void
     {
+        if ($value !== 'signatory') {
+            $this->selectionGroup = '';
+        }
         if ($value === 'signatory' && ! in_array($this->label, ['Approved by', 'Recommending Approval'], true)) {
             $this->label = '';
         }
@@ -102,6 +114,9 @@ class ManageDocumentFlows extends Component
                 ? ['required', Rule::in(['Approved by', 'Recommending Approval'])]
                 : ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'senderRoleId' => ['nullable', 'exists:roles,id'],
+            'senderRoleOperator' => ['required', Rule::in(['equals', 'not_equals'])],
+            'selectionGroup' => $this->stageType === 'signatory' ? ['nullable', 'string', 'max:80', 'regex:/^[a-zA-Z0-9 _-]+$/'] : ['prohibited'],
             'isRequired' => ['boolean'],
             'isSelectable' => ['boolean'],
             'workflowConditionId' => ['nullable', 'exists:workflow_conditions,id'],
@@ -117,10 +132,13 @@ class ManageDocumentFlows extends Component
             'sequence' => $this->stageId
                 ? DocumentFlowStage::findOrFail($this->stageId)->sequence
                 : $this->nextInternalOrder($data['documentTypeId'], $data['stageType']),
-            'is_required' => $data['isRequired'], 'is_selectable' => $data['isSelectable'],
+            'is_required' => $data['isRequired'], 'is_selectable' => filled(trim($data['selectionGroup'] ?? '')) ? false : $data['isSelectable'],
             'workflow_condition_id' => $data['workflowConditionId'] !== '' ? $data['workflowConditionId'] : null,
             'condition_operator' => $data['conditionOperator'] ?: 'equals',
             'condition_value' => $data['conditionValue'] === '' ? null : $data['conditionValue'],
+            'sender_role_id' => $data['senderRoleId'] ?: null,
+            'sender_role_operator' => $data['senderRoleOperator'],
+            'selection_group' => trim($data['selectionGroup'] ?? '') ?: null,
         ]);
         session()->flash('status', $this->stageId ? 'Flow stage updated.' : 'Flow stage added.');
         $this->resetStage();
@@ -136,7 +154,7 @@ class ManageDocumentFlows extends Component
 
     public function resetStage(): void
     {
-        $this->reset('stageId', 'officeId', 'label', 'description');
+        $this->reset('stageId', 'officeId', 'label', 'description', 'senderRoleId', 'senderRoleOperator', 'selectionGroup');
         $this->stageType = '';
         $this->isRequired = false;
         $this->isSelectable = false;
@@ -248,7 +266,7 @@ class ManageDocumentFlows extends Component
         return view('livewire.document-flows.manage-document-flows', [
             'types' => DocumentType::orderBy('name')->get(),
             'offices' => Office::orderBy('name')->get(['id', 'name', 'abbreviation']),
-            'stages' => DocumentFlowStage::with('office', 'workflowCondition')->where('document_type_id', $this->documentTypeId)
+            'stages' => DocumentFlowStage::with('office', 'workflowCondition', 'senderRole')->where('document_type_id', $this->documentTypeId)
                 ->orderByRaw("CASE stage_type WHEN 'routing' THEN 1 WHEN 'signatory' THEN 2 ELSE 3 END")
                 ->orderBy('sequence')->orderBy('id')->get(),
             'conditions' => WorkflowCondition::orderBy('label')->get(),

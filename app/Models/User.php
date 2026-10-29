@@ -36,6 +36,11 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function documentPosition(): ?string
+    {
+        return filled($this->role?->description) ? $this->role->description : $this->position;
+    }
+
     public function initials(): string
     {
         return Str::of($this->name)

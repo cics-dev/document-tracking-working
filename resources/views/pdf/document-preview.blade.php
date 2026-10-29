@@ -246,6 +246,9 @@
             || ($senderSignaturePolicy === 'approved' && $status === 'Approved');
     @endphp
     @if ($printLayout === 'indorsement')
+        @if (!empty($useIlHeader))
+            @include('pdf.partials.indorsement-header')
+        @else
         <div class="document-container">
             <table class="document-header" cellspacing="0" cellpadding="0">
                 <tr>
@@ -299,6 +302,8 @@
                 SUBJECT: {{ strtoupper($subject) }}
             </div>
         </div>
+        @endif
+
     @else
         <div class="header">
             <?php $image_path = '/assets/img/zppsu-logo.png'; ?>

@@ -13,6 +13,7 @@ use App\Models\DocumentType;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Support\DocumentHtml;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -82,6 +83,8 @@ class CreateDocument extends Component
 
     public array $conditionValues = [];
 
+    public array $flowGroupSelections = [];
+
     public $readyToLoad = false;
 
     public $redirect_mode = null;
@@ -148,7 +151,7 @@ class CreateDocument extends Component
     public function render()
     {
         $selectedDocumentType = $this->selectedType();
-        $flowConditions = collect($this->flowStages)
+        $flowConditions = $this->applicableFlowStages()
             ->pluck('workflow_condition')
             ->filter(fn ($condition) => $condition['is_active'] ?? false)
             ->unique('id')
@@ -164,6 +167,82 @@ class CreateDocument extends Component
             ->layout('layouts.app');
     }
 
+    private function sendingOffice(): ?Office
+    {
+        return Office::with('head')->find($this->document_from_id ?: Auth::user()?->office_id);
+    }
+
+    private function stageMatchesSender(array $stage): bool
+    {
+        return (new DocumentFlowStage($stage))->matchesSenderRole($this->sendingOffice());
+    }
+
+    public function applicableFlowStages(): Collection
+    {
+        return collect($this->flowStages)->filter(fn ($stage) => $this->stageMatchesSender($stage));
+    }
+
+    public function flowChoiceGroups(): Collection
+    {
+        // Reload rules from the database: client-side stage metadata is not authority.
+        return DocumentFlowStage::with('office.head', 'office.actingHead', 'workflowCondition')
+            ->where('document_type_id', $this->document_type_id)->where('stage_type', 'signatory')
+            ->whereNotNull('selection_group')->orderBy('sequence')->orderBy('id')->get()
+            ->filter(fn ($stage) => filled($stage->selection_group) && $this->flowConditionMatches($stage))
+            ->groupBy('selection_group')->mapWithKeys(function ($stages, $label) {
+                return ['group_'.md5($label) => [
+                    'label' => $label,
+                    'required' => $stages->contains('is_required', true),
+                    'stages' => $stages,
+                    'options' => $stages->filter(fn ($stage) => $stage->office && ! $stage->office->trashed()
+                        && $this->documentTypeAssignee($stage->office))
+                        ->map(fn ($stage) => ['value' => (string) $stage->id, 'label' => $stage->office->name, 'search' => $stage->office->abbreviation])->values()->all(),
+                ]];
+            });
+    }
+
+    private function validateFlowGroups(): Collection
+    {
+        if (DocumentFlowStage::where('document_type_id', $this->document_type_id)->whereNotNull('sender_role_id')->exists()
+            && ! $this->sendingOffice()?->head?->role_id) {
+            throw ValidationException::withMessages(['document_type_id' => 'The sending office must have a designated head role to apply its flow rules.']);
+        }
+        $chosen = collect();
+        foreach ($this->flowChoiceGroups() as $key => $group) {
+            $selected = $this->flowGroupSelections[$key] ?? '';
+            if (! is_string($selected) && ! is_int($selected)) {
+                throw ValidationException::withMessages(['flowGroupSelections.'.$key => 'Choose only one office for '.$group['label'].'.']);
+            }
+            $selected = (string) $selected;
+            if ($selected === '' && ! $group['required']) {
+                continue;
+            }
+            if (! in_array($selected, array_column($group['options'], 'value'), true)) {
+                throw ValidationException::withMessages(['flowGroupSelections.'.$key => 'Choose one eligible office for '.$group['label'].'.']);
+            }
+            $chosen->push($group['stages']->firstWhere('id', (int) $selected));
+        }
+
+        return $chosen;
+    }
+
+    private function syncFlowGroupSelections(): void
+    {
+        $previous = $this->flowGroupSelections;
+        $this->flowGroupSelections = $this->flowChoiceGroups()->mapWithKeys(function ($group, $key) use ($previous) {
+            $value = $previous[$key] ?? '';
+
+            return [$key => in_array($value, array_column($group['options'], 'value'), true) ? $value : ''];
+        })->all();
+    }
+
+    public function updatedDocumentFromId(): void
+    {
+        $this->flowGroupSelections = [];
+        $this->syncRequiredConfiguredSignatories();
+        $this->syncFlowGroupSelections();
+    }
+
     public function signatoryOfficeOptions(array $signatory): array
     {
         $configuredStages = collect($this->flowStages)->where('stage_type', 'signatory')
@@ -174,7 +253,9 @@ class CreateDocument extends Component
             ])->values()->all();
         }
 
-        $officeIds = $configuredStages->pluck('office_id');
+        $officeIds = $configuredStages->filter(fn ($stage) => empty($stage['selection_group'])
+            && $this->stageMatchesSender($stage)
+            && (empty($stage['workflow_condition_id']) || $this->flowConditionArrayMatches($stage)))->pluck('office_id');
 
         return collect($this->allOffices)->whereIn('id', $officeIds)->map(fn ($office) => [
             'value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation,
@@ -196,6 +277,7 @@ class CreateDocument extends Component
         $this->document_type = $typeObj?->abbreviation ?? '';
 
         $this->signatories = [];
+        $this->flowGroupSelections = [];
         $this->flowStages = DocumentFlowStage::with('office', 'workflowCondition')
             ->where('document_type_id', $this->document_type_id)
             ->orderBy('sequence')->orderBy('id')->get()->toArray();
@@ -204,6 +286,7 @@ class CreateDocument extends Component
             ->filter(fn ($stage) => $stage['is_required'] && (empty($stage['workflow_condition_id']) || $this->flowConditionArrayMatches($stage)))
             ->mapWithKeys(fn ($stage) => [(string) $stage['id'] => true])->all();
         $this->syncRequiredConfiguredSignatories();
+        $this->syncFlowGroupSelections();
 
         $type = $this->selectedType();
         if (! $type?->show_carbon_copy) {
@@ -247,6 +330,7 @@ class CreateDocument extends Component
         }
 
         $this->syncRequiredConfiguredSignatories();
+        $this->syncFlowGroupSelections();
     }
 
     private function syncRequiredConfiguredSignatories(): void
@@ -263,6 +347,7 @@ class CreateDocument extends Component
         $requiredSignatories = collect($this->flowStages)
             ->where('stage_type', 'signatory')
             ->where('is_required', true)
+            ->filter(fn ($stage) => empty($stage['selection_group']) && $this->stageMatchesSender($stage))
             ->filter(fn ($stage) => empty($stage['workflow_condition_id'])
                 || ! ($stage['workflow_condition']['is_active'] ?? false)
                 || $this->flowConditionArrayMatches($stage))
@@ -335,9 +420,9 @@ class CreateDocument extends Component
         }
     }
 
-    public function updatedSignatories($value, string $key): void
+    public function updatedSignatories($value, ?string $key = null): void
     {
-        if (! str_ends_with($key, '.role_type')) {
+        if ($key === null || ! str_ends_with($key, '.role_type')) {
             return;
         }
 
@@ -406,7 +491,7 @@ class CreateDocument extends Component
         }
 
         $fromName = $fromUser->name.($fromUser->profile?->titles ? ', '.$fromUser->profile->titles : '');
-        $fromPosition = $fromOffice?->workflowAssigneePosition() ?? $fromUser->position ?? 'N/A';
+        $fromPosition = $fromOffice?->workflowAssigneePosition() ?? $fromUser->documentPosition() ?? 'N/A';
         $fromPosition = $fromOffice?->qualifyPosition($fromPosition) ?? $fromPosition;
 
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
@@ -441,6 +526,16 @@ class CreateDocument extends Component
             ];
         });
 
+        foreach ($this->validateFlowGroups() as $stage) {
+            $assignee = $this->documentTypeAssignee($stage->office);
+            $signatoriesData->push([
+                'role' => $stage->label, 'user_name' => $assignee->name,
+                'position' => ($this->selectedType()?->allow_oic_signature ?? true)
+                    ? $stage->office->workflowAssigneePosition() : $assignee->documentPosition(),
+                'signature' => null, 'signed_for' => false, 'signed' => null,
+            ]);
+        }
+
         $query = [
             'action' => 'preview',
             'subject' => $this->subject,
@@ -466,6 +561,10 @@ class CreateDocument extends Component
         ];
 
         $key = uniqid();
+        if (($typeObj['print_layout'] ?? null) === 'indorsement' && $this->redirect_mode === 'revision') {
+            $query['indorsementRevisionSourceId'] = $this->original_document_id;
+        }
+
         session([$key => $query]);
 
         $this->dispatch('open-preview-tab', ['url' => '/document/preview?'.$key]);
@@ -526,7 +625,7 @@ class CreateDocument extends Component
             'from_id' => $fromUser->office->id,
             'from_user_id' => $fromUser->id,
             'from_name' => $isSend ? $fromUser->name : null,
-            'from_position' => $isSend ? ($fromUser->office->workflowAssigneePosition() ?? $fromUser->position) : null,
+            'from_position' => $isSend ? ($fromUser->office->workflowAssigneePosition() ?? $fromUser->documentPosition()) : null,
             'to_id' => $this->selectedType()?->recipient_mode === 'office' ? $this->document_to_id : null,
             'to_name' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflow_assignee?->name : null,
             'to_position' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflowAssigneePosition() : null,
@@ -615,6 +714,8 @@ class CreateDocument extends Component
 
     protected function validateForSend()
     {
+        $groupChoices = $this->validateFlowGroups();
+        $requiresManualSignatories = $this->selectedType()?->requires_signatories && $groupChoices->isEmpty();
         $rules = [
             'document_type_id' => 'required',
             'subject' => 'required|string|max:255',
@@ -635,8 +736,8 @@ class CreateDocument extends Component
             $rules['document_to_text'] = 'required';
         }
 
-        if (! $this->isIntraDocument() && ($this->selectedType()?->requires_signatories || ! empty($this->signatories))) {
-            $rules['signatories'] = $this->selectedType()?->requires_signatories ? 'required|array|min:1' : 'array';
+        if (! $this->isIntraDocument() && ($requiresManualSignatories || ! empty($this->signatories))) {
+            $rules['signatories'] = $requiresManualSignatories ? 'required|array|min:1' : 'array';
             $rules['signatories.*.role'] = 'required';
             $rules['signatories.*.office_id'] = 'required';
         }
@@ -902,7 +1003,7 @@ class CreateDocument extends Component
         foreach ($stages->where('stage_type', 'routing') as $stage) {
             $manuallySelectedConditionalStage = $stage->is_selectable && $stage->workflow_condition_id
                 && (bool) ($this->selectedFlowStages[(string) $stage->id] ?? false);
-            if ($this->configuredStageSelected($stage) && ($this->flowConditionMatches($stage) || $manuallySelectedConditionalStage)) {
+            if ($stage->matchesSenderRole($this->sendingOffice()) && $this->configuredStageSelected($stage) && ($this->flowConditionMatches($stage) || $manuallySelectedConditionalStage)) {
                 $this->createConfiguredStep($document, $stage, $sequence++);
             }
         }
@@ -911,6 +1012,7 @@ class CreateDocument extends Component
         $signatories = collect($this->signatories);
         $applicableRequiredSignatories = $configuredSignatories
             ->where('is_required', true)
+            ->filter(fn ($stage) => ! $stage->selection_group && $stage->matchesSenderRole($this->sendingOffice()))
             ->filter(fn ($stage) => ! $stage->workflow_condition_id
                 || ! $stage->workflowCondition?->is_active
                 || $this->flowConditionMatches($stage));
@@ -932,6 +1034,9 @@ class CreateDocument extends Component
             }
 
             if ($configured) {
+                if ($configured->selection_group) {
+                    throw ValidationException::withMessages(['signatories' => 'Use the choose-one field for '.$configured->selection_group.'.']);
+                }
                 if (! $this->flowConditionMatches($configured)) {
                     continue;
                 }
@@ -953,9 +1058,13 @@ class CreateDocument extends Component
                 'step_type' => 'signatory', 'step_label' => $role,
                 'signatory_name' => $assignee->name,
                 'signatory_position' => ($this->selectedType()?->allow_oic_signature ?? true)
-                    ? $office->workflowAssigneePosition() : $assignee->position,
+                    ? $office->workflowAssigneePosition() : $assignee->documentPosition(),
                 'sequence' => $sequence++, 'status' => 'Pending',
             ]);
+        }
+
+        foreach ($this->validateFlowGroups() as $stage) {
+            $this->createConfiguredStep($document, $stage, $sequence++);
         }
 
         foreach ($stages->where('stage_type', 'action') as $stage) {
@@ -971,6 +1080,9 @@ class CreateDocument extends Component
 
     private function flowConditionMatches(DocumentFlowStage $stage): bool
     {
+        if (! $stage->matchesSenderRole($this->sendingOffice())) {
+            return false;
+        }
         if (! $stage->workflow_condition_id) {
             return true;
         }
@@ -991,6 +1103,9 @@ class CreateDocument extends Component
 
     private function flowConditionArrayMatches(array $stage): bool
     {
+        if (! $this->stageMatchesSender($stage)) {
+            return false;
+        }
         if (empty($stage['workflow_condition_id']) || ! ($stage['workflow_condition']['is_active'] ?? false)) {
             return false;
         }
@@ -1022,9 +1137,9 @@ class CreateDocument extends Component
             'step_type' => $stage->stage_type, 'step_label' => $stage->label,
             'signatory_name' => $namedOfficial->name,
             'signatory_position' => $stage->stage_type === 'routing'
-                ? $namedOfficial->position
+                ? $namedOfficial->documentPosition()
                 : (($this->selectedType()?->allow_oic_signature ?? true)
-                    ? $office->workflowAssigneePosition() : $assignee->position),
+                    ? $office->workflowAssigneePosition() : $assignee->documentPosition()),
             'sequence' => $sequence, 'status' => 'Pending',
         ]);
     }
@@ -1145,6 +1260,14 @@ class CreateDocument extends Component
         $this->handleUpdateDocumentType();
 
         foreach ($document->steps()->where('step_type', 'signatory')->get() as $s) {
+            $groupStage = DocumentFlowStage::where('document_type_id', $this->document_type_id)
+                ->where('stage_type', 'signatory')->where('office_id', $s->office_id)
+                ->where('label', $s->step_label)->whereNotNull('selection_group')->first();
+            if ($groupStage && $this->flowConditionMatches($groupStage)) {
+                $this->flowGroupSelections['group_'.md5($groupStage->selection_group)] = (string) $groupStage->id;
+
+                continue;
+            }
             $incomingSignatories[] = [
                 'role' => $s->step_label,
                 'role_type' => in_array($s->step_label, ['Reviewed by', 'Recommending Approval'], true)
