@@ -6,8 +6,10 @@ use App\Http\Controllers\DocumentAttachmentPreviewController;
 use App\Http\Controllers\DocumentPreviewController;
 use App\Http\Controllers\DocumentTrackingController;
 use App\Http\Controllers\ExternalDocumentPreviewController;
+use App\Http\Controllers\PhysicalDocumentScanController;
 use App\Livewire\AccessRights\ManageAccessRights;
 use App\Livewire\DocumentFlows\ManageDocumentFlows;
+use App\Livewire\Documents\ArchivePhysicalDocument;
 use App\Livewire\Documents\CreateDocument;
 use App\Livewire\Documents\ListDocuments;
 use App\Livewire\Documents\ListExternalDocuments;
@@ -23,6 +25,7 @@ use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Office as OfficeSettings;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\Settings\TwoFactor;
 use App\Livewire\Users\CreateUser;
 use App\Livewire\Users\ListUsers;
 use Illuminate\Support\Facades\Route;
@@ -68,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/receive-external-document', ReceiveExternalDocument::class)->name('receive-external-document');
         Route::get('/list-external-documents', ListExternalDocuments::class)->name('list-external-documents');
         Route::get('/{mode}', ListDocuments::class)->whereIn('mode', ['Sent', 'received', 'all'])->name('list-documents');
+        Route::get('/archive-physical', ArchivePhysicalDocument::class)->name('archive-physical');
+        Route::get('/{document}/physical-scan', PhysicalDocumentScanController::class)->name('physical-scan');
         Route::get('/create', CreateDocument::class)->name('create-document');
         Route::get('/create-revision/{number}', CreateDocument::class)->name('create-revision');
         Route::get('/edit-draft/{draft_id}', CreateDocument::class)->name('edit-draft');
@@ -79,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');
+    Route::get('settings/two-factor', TwoFactor::class)->name('settings.two-factor');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
     Route::get('settings/office', OfficeSettings::class)->name('settings.office');
 });

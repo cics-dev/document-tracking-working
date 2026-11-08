@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\DocumentTypeController;
+use App\Livewire\Documents\ViewDocument;
 use App\Models\Document;
 use App\Models\DocumentStep;
 use App\Models\DocumentType;
@@ -16,6 +17,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
 class DocumentWorkflowServiceTest extends TestCase
@@ -93,6 +96,47 @@ class DocumentWorkflowServiceTest extends TestCase
         $this->assertSame('Budget is insufficient.', $approval['comments']);
         $this->assertSame('signatures/disapprover.png', $approval['signature']);
         $this->assertNotEmpty($approval['signed']);
+    }
+
+    public function test_signatory_decisions_require_a_fresh_code_when_enabled(): void
+    {
+        [$document, $actor] = $this->documentWithStep('signatory');
+        $authenticator = app(Google2FA::class);
+        $secret = $authenticator->generateSecretKey();
+        $actor->forceFill([
+            'require_two_factor_for_signing' => true,
+            'two_factor_secret' => $secret,
+        ])->save();
+
+        $role = Role::create(['role' => 'Signatory', 'description' => 'Signatory']);
+        $role->permissions()->attach(Permission::where('key', 'receive_documents')->firstOrFail());
+        $actor->update(['role_id' => $role->id]);
+
+        $view = Livewire::actingAs($actor)->test(ViewDocument::class, ['number' => $document->document_number])
+            ->assertStatus(200)
+            ->call('documentSigned')
+            ->assertHasErrors('twoFactorCode')
+            ->call('documentRejected', 'Returned.')
+            ->assertHasErrors('twoFactorCode');
+
+        $this->assertSame('Pending', $document->steps()->firstOrFail()->status);
+
+        $code = $authenticator->getCurrentOtp($secret);
+        $view->call('sign')
+            ->set('twoFactorCode', $code)
+            ->set('signingRemarks', 'Verified.')
+            ->call('confirmSignature')
+            ->assertHasNoErrors();
+
+        $this->assertSame('Approved', $document->fresh()->status);
+        $this->assertSame('Verified.', $document->steps()->firstOrFail()->comments);
+
+        [$nextDocument] = $this->documentWithStep('signatory', '-2');
+        $nextDocument->steps()->update(['user_id' => $actor->id, 'office_id' => $actor->office_id]);
+
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('already been used');
+        app(DocumentWorkflowService::class)->approve($nextDocument, $actor, code: $code);
     }
 
     public function test_rejecting_a_routing_step_returns_document(): void

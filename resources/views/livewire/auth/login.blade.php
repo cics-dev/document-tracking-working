@@ -19,6 +19,20 @@
           <img src="{{ asset('/assets/img/hd-logo.png') }}" alt="ZPPSU Logo" class="h-24 sm:h-28 w-auto" />
         </div>
 
+        @if (session()->has('two-factor.login'))
+          <x-auth-header
+            title="Two-factor authentication"
+            description="Enter a fresh code from your authenticator app or use a recovery code."
+            class="text-center"
+          />
+
+          <form wire:submit="verifyTwoFactor" class="flex flex-col gap-4">
+            <flux:input wire:model="twoFactorCode" label="Verification code" autocomplete="one-time-code" required autofocus />
+            <flux:error name="twoFactorCode" />
+            <flux:button type="submit" variant="primary">Verify and log in</flux:button>
+            <flux:button type="button" variant="ghost" wire:click="cancelTwoFactor">Back to login</flux:button>
+          </form>
+        @else
         <x-auth-header 
           :title="__('Log in to your account')" 
           :description="__('Enter your email and password below to log in')" 
@@ -41,6 +55,8 @@
               placeholder="email@example.com"
             />
           </div>
+
+          <flux:error name="email" />
 
           <!-- Password -->
           <div class="space-y-1 relative">
@@ -96,6 +112,7 @@
           <!--    {{ __('Sign up') }} -->
             </flux:link>
           </div>
+        @endif
         @endif
       </div>
     </div>

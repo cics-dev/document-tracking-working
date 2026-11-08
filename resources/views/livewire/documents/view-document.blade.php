@@ -1,5 +1,21 @@
 <div x-data="{ documentReady: false }">
-    <h2 class="text-lg font-bold mb-4">Document Preview</h2>
+    <div class="mb-4 flex items-center gap-2">
+        <h2 class="text-lg font-bold">Document Preview</h2>
+        <flux:badge size="sm" :color="$document->is_physical ? 'amber' : 'zinc'">{{ $document->is_physical ? 'Physical' : 'Digital' }}</flux:badge>
+    </div>
+
+    @if ($document->is_physical)
+        <div class="mb-4 space-y-1">
+            <flux:heading>{{ $document->subject }}</flux:heading>
+            <flux:text>{{ $document->document_number }} · Archived</flux:text>
+            @if ($document->date_sent)
+                <flux:text>Signed on paper {{ $document->date_sent->format('M d, Y') }}</flux:text>
+            @endif
+            @if ($document->cfs->isNotEmpty())
+                <flux:text>CF recipients: {{ $document->cfs->pluck('user.name')->filter()->join(', ') }}</flux:text>
+            @endif
+        </div>
+    @endif
 
     <fieldset disabled x-bind:disabled="!documentReady" class="min-w-0 border-0 p-0">
 
@@ -55,7 +71,7 @@
             src="{{ $previewUrl }}"
             class="w-full h-[800px] border rounded"
             frameborder="0"
-            title="Document PDF preview"
+            title="{{ $document->is_physical ? 'Signed paper document scan' : 'Document PDF preview' }}"
             @load="documentReady = true"
         ></iframe>
     @else
@@ -87,6 +103,9 @@
     )
         @if(!$canGenerate)
             @if($canAct && empty($signed) && empty($rejected))
+                @if ($signingStepId === null)
+                    <flux:error name="twoFactorCode" />
+                @endif
                 <div class="mt-4 flex gap-4">
                     <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <span wire:loading.remove wire:target="sign">{{ $myStep && $myStep->step_type === 'routing' ? 'Set as reviewed' : 'Sign' }}</span>
@@ -110,6 +129,25 @@
             </div>
         @endif
     @endif
+
+    <flux:modal name="verify-signature" class="max-w-md w-full">
+        <form wire:submit="confirmSignature" class="space-y-4">
+            <flux:heading size="lg">{{ $rejectingSignature ? 'Confirm rejection' : 'Confirm signature' }}</flux:heading>
+            <flux:text>Enter a fresh code from your authenticator app or use a recovery code.</flux:text>
+            <flux:input wire:model="signingRemarks" label="Remarks (optional)" />
+            <flux:input wire:model="twoFactorCode" label="Verification code" autocomplete="one-time-code" required />
+            <flux:error name="twoFactorCode" />
+            <flux:error name="document" />
+            <div class="flex justify-end gap-2">
+                <flux:modal.close>
+                    <flux:button type="button" variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button type="submit" :variant="$rejectingSignature ? 'danger' : 'primary'">
+                    {{ $rejectingSignature ? 'Reject document' : 'Sign document' }}
+                </flux:button>
+            </div>
+        </form>
+    </flux:modal>
 
     <flux:modal name="view-attachment-modal" class="max-w-5xl w-full">
         <div class="space-y-4">

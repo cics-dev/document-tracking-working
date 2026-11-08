@@ -41,9 +41,9 @@
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200 hidden md:table">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('name')">Name</button></th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('email')">Email</button></th>
-                    <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('position')">Position</button></th>
+                    <x-sortable-column column="name" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Name</x-sortable-column>
+                    <x-sortable-column column="email" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Email</x-sortable-column>
+                    <x-sortable-column column="position" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Position</x-sortable-column>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Office</th>
                     <th class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Is&nbsp;Head</th>
                     <th class="px-4 py-2 text-center border-r border-gray-300 dark:border-gray-600">Actions</th>

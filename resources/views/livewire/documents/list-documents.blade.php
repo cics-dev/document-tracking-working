@@ -7,9 +7,26 @@
         </div>
 
         @if($mode == 'Sent')
-            <flux:button href="{{ route('documents.create-document', $documentTypeTab === 'intra' ? ['level' => 'Intra'] : []) }}" variant="primary" icon="plus" class="w-full md:w-auto">
-                {{ $documentTypeTab === 'intra' ? 'Create Intra Document' : 'Create Document' }}
-            </flux:button>
+            @php
+                $createDocumentUrl = route('documents.create-document', $documentTypeTab === 'intra' ? ['level' => 'Intra'] : []);
+                $archiveDocumentUrl = route('documents.archive-physical', $documentTypeTab === 'intra' ? ['level' => 'Intra'] : []);
+            @endphp
+
+            <flux:button.group class="w-full md:w-auto">
+                <flux:button :href="$createDocumentUrl" variant="primary" icon="plus" class="grow">
+                    {{ $documentTypeTab === 'intra' ? 'Create Intra Document' : 'Create Document' }}
+                </flux:button>
+
+                <flux:dropdown align="end">
+                    <flux:button variant="primary" icon="chevron-down" icon:variant="micro" aria-label="Document creation options" />
+                    <flux:menu>
+                        <flux:menu.item :href="$archiveDocumentUrl">
+                            Upload manual document
+                        </flux:menu.item>
+                        <flux:menu.item :href="$createDocumentUrl">Create new document</flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+            </flux:button.group>
         @endif
     </div>
     
@@ -25,6 +42,7 @@
                     <flux:select.option value="Sent">Sent</flux:select.option>
                     <flux:select.option value="In Process">In Process</flux:select.option>
                     <flux:select.option value="Approved">Approved</flux:select.option>
+                    <flux:select.option value="Archived">Archived</flux:select.option>
                     <flux:select.option value="Returned">Returned</flux:select.option>
                     <flux:select.option value="Rejected">Rejected</flux:select.option>
                 </flux:select>
@@ -87,16 +105,16 @@
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
-                    <th class="px-6 py-3"><button wire:click="sort('document_number')">Document Number</button></th>
-                    <th class="px-6 py-3 w-1/3"><button wire:click="sort('subject')">Subject</button></th>
+                    <x-sortable-column column="document_number" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Document Number</x-sortable-column>
+                    <x-sortable-column column="subject" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3 w-1/3">Subject</x-sortable-column>
                     
                     @if($documentTypeTab != 'intra')
                         <th class="px-6 py-3">{{ $mode == 'Sent' ? 'To' : 'From' }}</th>
                     @endif
                     
                     <th class="px-6 py-3 text-center">Type</th>
-                    <th class="px-6 py-3 text-center"><button wire:click="sort('status')">Status</button></th>
-                    <th class="px-6 py-3"><button wire:click="sort('created_at')">Date</button></th>
+                    <x-sortable-column column="status" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3 text-center">Status</x-sortable-column>
+                    <x-sortable-column column="created_at" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Date</x-sortable-column>
                     <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
             </thead>
@@ -121,6 +139,9 @@
                             <div class="line-clamp-2 text-gray-700" title="{{ $document->subject }}">
                                 {{ $document->subject }}
                             </div>
+                            <flux:badge size="sm" :color="$document->is_physical ? 'amber' : 'zinc'" class="mt-1">
+                                {{ $document->is_physical ? 'Physical' : 'Digital' }}
+                            </flux:badge>
                         </td>
 
                         @if($documentTypeTab != 'intra')
@@ -164,7 +185,7 @@
                                     <flux:button href="{{ route('documents.create-revision', $document->document_number) }}" size="sm" icon="arrow-path" variant="filled" class="bg-blue-600 hover:bg-blue-700 text-white">Revise</flux:button>
                                 @endif
 
-                                @if($document->status != 'Draft')
+                                @if($document->status != 'Draft' && ! $document->is_physical)
                                     <flux:button wire:click="trackDocument('{{ $document->document_number }}')" size="sm" icon="map" variant="primary" class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors">Track</flux:button>
                                 @endif
 

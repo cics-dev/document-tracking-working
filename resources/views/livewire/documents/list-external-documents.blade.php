@@ -46,10 +46,10 @@
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
-                    <th class="px-6 py-3"><button wire:click="sort('document_number')">Document Number</button></th>
-                    <th class="px-6 py-3"><button wire:click="sort('from')">From</button></th>
-                    <th class="px-6 py-3 w-1/3"><button wire:click="sort('subject')">Subject</button></th>
-                    <th class="px-6 py-3"><button wire:click="sort('received_date')">Received Date</button></th>
+                    <x-sortable-column column="document_number" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Document Number</x-sortable-column>
+                    <x-sortable-column column="from" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">From</x-sortable-column>
+                    <x-sortable-column column="subject" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3 w-1/3">Subject</x-sortable-column>
+                    <x-sortable-column column="received_date" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Received Date</x-sortable-column>
                     <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
             </thead>

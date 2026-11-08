@@ -12,6 +12,7 @@ class Document extends Model
     protected $casts = [
         'date_sent' => 'date',
         'is_revision' => 'boolean',
+        'is_physical' => 'boolean',
     ];
 
     protected $fillable = [
@@ -34,6 +35,7 @@ class Document extends Model
         'document_level',
         'to_text',
         'is_revision',
+        'is_physical',
         'original_document_id',
     ];
 

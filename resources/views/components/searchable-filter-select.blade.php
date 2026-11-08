@@ -6,6 +6,7 @@
     'emptyMessage' => 'No matching options.',
     'disabled' => false,
     'live' => true,
+    'openUpward' => false,
 ])
 
 <div
@@ -33,7 +34,7 @@
             if ({{ $disabled ? 'true' : 'false' }}) return
 
             this.open = true
-            this.$nextTick(() => this.$refs.search?.focus())
+            this.$nextTick(() => this.$refs.search?.focus({ preventScroll: {{ $openUpward ? 'true' : 'false' }} }))
         },
     }"
     class="relative"
@@ -56,8 +57,12 @@
     <div
         x-cloak
         x-show="open"
-        x-transition.origin.top
-        class="absolute z-50 mt-1 w-full min-w-64 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-800"
+        x-transition.origin.{{ $openUpward ? 'bottom' : 'top' }}
+        @class([
+            'absolute z-50 w-full min-w-64 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-800',
+            'bottom-full mb-1' => $openUpward,
+            'mt-1' => ! $openUpward,
+        ])
         role="listbox"
     >
         <div class="border-b border-zinc-200 p-2 dark:border-white/10">

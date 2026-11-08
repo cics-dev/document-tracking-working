@@ -98,7 +98,9 @@ class ListDocuments extends Component
     {
         $documents = app(DocumentQueryService::class)->listFor(Auth::user(), $this->mode)
             ->when($this->documentTypeTab === 'intra', fn ($query) => $query->where('document_level', 'Intra'))
-            ->when($this->documentTypeTab !== 'intra', fn ($query) => $query->where('document_level', '!=', 'Intra'))
+            ->when($this->documentTypeTab !== 'intra', fn ($query) => $query->where(fn ($levels) => $levels
+                ->where('document_level', '!=', 'Intra')
+                ->when($this->mode !== 'Sent', fn ($levels) => $levels->orWhere('is_physical', true))))
             ->when($this->search !== '', fn ($query) => $query->where(function ($query) {
                 $query->where('subject', 'like', "%{$this->search}%")
                     ->orWhere('document_number', 'like', "%{$this->search}%");

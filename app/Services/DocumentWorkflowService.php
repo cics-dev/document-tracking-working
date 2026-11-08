@@ -10,14 +10,16 @@ use Illuminate\Validation\ValidationException;
 
 class DocumentWorkflowService
 {
+    public function __construct(private TwoFactorAuthentication $twoFactor) {}
+
     /**
      * Process the next pending workflow step for the authenticated assignee.
      *
      * @return array{document: Document, step: DocumentStep, completed: bool, description: string}
      */
-    public function approve(Document $document, User $actor, ?string $remarks = null): array
+    public function approve(Document $document, User $actor, ?string $remarks = null, ?string $code = null, ?int $stepId = null): array
     {
-        return $this->process($document, $actor, $remarks, false);
+        return $this->process($document, $actor, $remarks, false, $code, $stepId);
     }
 
     /**
@@ -25,17 +27,19 @@ class DocumentWorkflowService
      *
      * @return array{document: Document, step: DocumentStep, completed: bool, description: string}
      */
-    public function reject(Document $document, User $actor, ?string $remarks): array
+    public function reject(Document $document, User $actor, ?string $remarks, ?string $code = null, ?int $stepId = null): array
     {
-        return $this->process($document, $actor, $remarks, true);
+        return $this->process($document, $actor, $remarks, true, $code, $stepId);
     }
 
-    private function process(Document $document, User $actor, ?string $remarks, bool $isRejection): array
+    private function process(Document $document, User $actor, ?string $remarks, bool $isRejection, ?string $code, ?int $stepId): array
     {
         $remarks = is_string($remarks) ? trim($remarks) : $remarks;
         $remarks = $remarks === '' ? null : $remarks;
 
-        return DB::transaction(function () use ($document, $actor, $remarks, $isRejection) {
+        $this->twoFactor->throttle($actor->id, $code);
+
+        return DB::transaction(function () use ($document, $actor, $remarks, $isRejection, $code, $stepId) {
             $document = Document::query()->lockForUpdate()->findOrFail($document->id);
 
             if (! in_array($document->status, ['Sent', 'In Process'], true)) {
@@ -53,6 +57,18 @@ class DocumentWorkflowService
             $step?->loadMissing('office.actingHead', 'office.head');
             if (! $step || ! $step->isAssignedTo($actor)) {
                 throw ValidationException::withMessages(['document' => 'It is not your turn to act on this document.']);
+            }
+
+            if ($stepId !== null && $step->id !== $stepId) {
+                throw ValidationException::withMessages(['document' => 'The current signing step changed. Reload the document and try again.']);
+            }
+
+            if ($step->step_type === 'signatory') {
+                $signer = User::query()->lockForUpdate()->findOrFail($actor->id);
+
+                if ($signer->require_two_factor_for_signing) {
+                    $this->twoFactor->verify($signer, $code);
+                }
             }
 
             $status = $this->stepStatus($step, $isRejection);

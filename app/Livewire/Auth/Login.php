@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\User;
+use App\Services\TwoFactorAuthentication;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
@@ -23,16 +26,52 @@ class Login extends Component
 
     public bool $remember = false;
 
+    public string $twoFactorCode = '';
+
     /**
      * Handle an incoming authentication request.
      */
     public function login(): void
     {
+        Session::forget('two-factor.login');
         $this->validate();
 
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        $credentials = ['email' => $this->email, 'password' => $this->password];
+        $challenged = false;
+
+        $authenticated = Auth::attemptWhen($credentials, function (User $user) use ($credentials, &$challenged) {
+            if (! $user->require_two_factor_for_login) {
+                return true;
+            }
+
+            if (config('hashing.rehash_on_login', true)) {
+                Auth::getProvider()->rehashPasswordIfRequired($user, $credentials);
+            }
+
+            // Keep the current Livewire page's CSRF token valid for the 2FA submission.
+            Session::migrate(true);
+            Session::put('two-factor.login', [
+                'user' => $user->id,
+                'password' => hash('sha256', $user->getAuthPassword()),
+                'remember' => $this->remember,
+                'expires' => now()->addMinutes(5)->timestamp,
+            ]);
+            $challenged = true;
+
+            return false;
+        }, $this->remember);
+
+        $this->reset('password');
+
+        if ($challenged) {
+            RateLimiter::clear($this->throttleKey());
+
+            return;
+        }
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -41,6 +80,54 @@ class Login extends Component
         }
 
         RateLimiter::clear($this->throttleKey());
+        $this->finishLogin();
+    }
+
+    public function verifyTwoFactor(TwoFactorAuthentication $twoFactor): void
+    {
+        abort_if(Auth::check(), 403);
+
+        $code = $this->pull('twoFactorCode');
+        $challenge = Session::get('two-factor.login');
+        if (! $challenge || now()->timestamp >= $challenge['expires']) {
+            $this->cancelTwoFactor();
+
+            throw ValidationException::withMessages(['email' => 'Your login challenge expired. Please log in again.']);
+        }
+
+        $twoFactor->throttle($challenge['user'], $code);
+
+        $user = DB::transaction(function () use ($challenge, $twoFactor, $code) {
+            $user = User::query()->lockForUpdate()->find($challenge['user']);
+            if (! $user?->require_two_factor_for_login
+                || ! hash_equals($challenge['password'], hash('sha256', $user->getAuthPassword()))) {
+                return null;
+            }
+
+            $twoFactor->verify($user, $code);
+
+            return $user;
+        });
+
+        $this->cancelTwoFactor();
+
+        if (! $user) {
+            throw ValidationException::withMessages(['email' => 'Your login challenge expired. Please log in again.']);
+        }
+
+        Auth::login($user, $challenge['remember']);
+        $this->finishLogin();
+    }
+
+    public function cancelTwoFactor(): void
+    {
+        Session::forget('two-factor.login');
+        $this->reset('twoFactorCode');
+        $this->resetValidation('twoFactorCode');
+    }
+
+    private function finishLogin(): void
+    {
         Session::regenerate();
 
         $this->redirectIntended(default: route('dashboard', absolute: false));

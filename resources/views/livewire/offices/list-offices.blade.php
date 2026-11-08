@@ -30,9 +30,9 @@
         <table class="border-spacing-y-2 text-sm text-left text-gray-700 dark:text-gray-200 w-full hidden md:table">
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>  
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('name')">Name</button></th>
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('abbreviation')">Abbreviation</button></th>
-                    <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600"><button wire:click="sort('office_type')">Type</button></th>
+                    <x-sortable-column column="name" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Name</x-sortable-column>
+                    <x-sortable-column column="abbreviation" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Abbreviation</x-sortable-column>
+                    <x-sortable-column column="office_type" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Type</x-sortable-column>
                     <th class="px-4 py-3 border-r border-gray-300 dark:border-gray-600">Office Head</th>
                     <th class="px-4 py-3 text-center border-r border-gray-300 dark:border-gray-600">Actions</th>
                 </tr>

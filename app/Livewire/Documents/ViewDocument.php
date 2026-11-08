@@ -6,6 +6,7 @@ use App\Http\Controllers\DocumentController;
 use App\Models\Document;
 use App\Models\DocumentAttachment;
 use App\Models\DocumentGenerationRule;
+use App\Models\DocumentStep;
 use App\Models\ExternalDocument;
 use App\Services\AttachmentPreviewService;
 use App\Services\DocumentGenerationService;
@@ -13,6 +14,7 @@ use App\Services\DocumentPreviewDataService;
 use App\Services\DocumentQueryService;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ViewDocument extends Component
@@ -46,6 +48,16 @@ class ViewDocument extends Component
     public bool $canGenerate = false;
 
     public array $generationRules = [];
+
+    #[Locked]
+    public ?int $signingStepId = null;
+
+    #[Locked]
+    public bool $rejectingSignature = false;
+
+    public string $signingRemarks = '';
+
+    public string $twoFactorCode = '';
 
     protected $listeners = ['documentSigned', 'documentRejected', 'lastStep'];
 
@@ -88,6 +100,12 @@ class ViewDocument extends Component
                 'action' => 'Viewed',
                 'description' => Auth::user()->office->name.' viewed the document',
             ]);
+        }
+
+        if ($this->document->is_physical) {
+            $this->previewUrl = route('documents.physical-scan', $this->document);
+
+            return;
         }
 
         if ($this->document->steps->isNotEmpty() || $this->document->cfs->isNotEmpty()) {
@@ -154,7 +172,11 @@ class ViewDocument extends Component
 
     public function sign()
     {
-        $this->assertCurrentActorCanAct();
+        $step = $this->assertCurrentActorCanAct();
+
+        if ($this->showSigningChallenge($step, rejecting: false)) {
+            return;
+        }
 
         $stepType = $this->myStep->step_type ?? 'signatory';
 
@@ -184,7 +206,12 @@ class ViewDocument extends Component
 
     public function documentSigned($remarks = null)
     {
-        $result = app(DocumentWorkflowService::class)->approve($this->document, Auth::user(), $remarks);
+        $this->approveDocument($remarks);
+    }
+
+    private function approveDocument(?string $remarks, ?string $code = null, ?int $stepId = null): void
+    {
+        $result = app(DocumentWorkflowService::class)->approve($this->document, Auth::user(), $remarks, $code, $stepId);
         $this->document = $result['document']->fresh();
         $event = $result['completed'] ? 'lastStep' : 'redirect';
 
@@ -207,6 +234,7 @@ class ViewDocument extends Component
     public function lastStep()
     {
         $this->document->refresh();
+        abort_if($this->document->is_physical, 403);
 
         $isComplete = $this->document->steps()
             ->whereIn('step_type', ['routing', 'signatory'])
@@ -227,6 +255,8 @@ class ViewDocument extends Component
 
     public function generateDocument(int $ruleId)
     {
+        abort_if($this->document->is_physical, 403);
+
         $rule = DocumentGenerationRule::with('targetType', 'roles')->findOrFail($ruleId);
         session()->flash('redirect_data', app(DocumentGenerationService::class)->redirectData($rule, $this->document, Auth::user()));
 
@@ -235,7 +265,12 @@ class ViewDocument extends Component
 
     public function reject()
     {
-        $this->assertCurrentActorCanAct();
+        $step = $this->assertCurrentActorCanAct();
+
+        if ($this->showSigningChallenge($step, rejecting: true)) {
+            return;
+        }
+
         $stepType = $this->myStep->step_type ?? 'signatory';
 
         $confirmText = match ($stepType) {
@@ -263,7 +298,12 @@ class ViewDocument extends Component
 
     public function documentRejected($remarks)
     {
-        $result = app(DocumentWorkflowService::class)->reject($this->document, Auth::user(), $remarks);
+        $this->rejectDocument($remarks);
+    }
+
+    private function rejectDocument(?string $remarks, ?string $code = null, ?int $stepId = null): void
+    {
+        $result = app(DocumentWorkflowService::class)->reject($this->document, Auth::user(), $remarks, $code, $stepId);
         $this->document = $result['document']->fresh();
 
         $data = [
@@ -282,7 +322,38 @@ class ViewDocument extends Component
         $this->dispatch('fireSwal', $data);
     }
 
-    private function assertCurrentActorCanAct(): void
+    private function showSigningChallenge(DocumentStep $step, bool $rejecting): bool
+    {
+        if ($step->step_type !== 'signatory' || ! Auth::user()->require_two_factor_for_signing) {
+            return false;
+        }
+
+        $this->reset('signingRemarks', 'twoFactorCode');
+        $this->resetValidation(['twoFactorCode', 'document']);
+        $this->signingStepId = $step->id;
+        $this->rejectingSignature = $rejecting;
+        $this->modal('verify-signature')->show();
+
+        return true;
+    }
+
+    public function confirmSignature(): void
+    {
+        abort_if($this->signingStepId === null, 403);
+
+        $code = $this->pull('twoFactorCode');
+
+        if ($this->rejectingSignature) {
+            $this->rejectDocument($this->signingRemarks, $code, $this->signingStepId);
+        } else {
+            $this->approveDocument($this->signingRemarks, $code, $this->signingStepId);
+        }
+
+        $this->reset('signingStepId', 'rejectingSignature', 'signingRemarks');
+        $this->modal('verify-signature')->close();
+    }
+
+    private function assertCurrentActorCanAct(): DocumentStep
     {
         $document = $this->document->fresh(['steps']);
         if (! in_array($document->status, ['Sent', 'In Process'])) {
@@ -291,6 +362,8 @@ class ViewDocument extends Component
 
         $nextStep = $document->nextPendingStep();
         abort_unless($nextStep?->isAssignedTo(Auth::user()), 403, 'It is not your turn to act on this document.');
+
+        return $nextStep;
     }
 
     public function viewAttachment($id, $type)

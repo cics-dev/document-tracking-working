@@ -13,6 +13,7 @@ use App\Models\DocumentType;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Support\DocumentHtml;
+use App\Support\DocumentNumber;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -504,7 +505,7 @@ class CreateDocument extends Component
 
         $docNumber = $this->is_manual_document_number
             ? $this->buildManualDocumentNumber()
-            : $this->formatDocumentNumber($typeObj, $fromOffice ?? Auth::user()->office, '_____', date('Y'));
+            : DocumentNumber::format($typeObj, $fromOffice ?? Auth::user()->office, '_____', date('Y'));
 
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
             $office = $this->allOffices[$sig['office_id']] ?? null;
@@ -788,7 +789,7 @@ class CreateDocument extends Component
 
         $lastNumber = 0;
         $office = Office::find($from_id) ?? Auth::user()->office;
-        $pattern = $this->documentNumberPattern($typeObj, $office);
+        $pattern = DocumentNumber::pattern($typeObj, $office);
 
         foreach ($documents as $docNumber) {
             if ($docNumber && preg_match($pattern, trim($docNumber), $matches)) {
@@ -797,55 +798,7 @@ class CreateDocument extends Component
             }
         }
 
-        return $this->formatDocumentNumber($typeObj, $office, $lastNumber + 1, date('Y'));
-    }
-
-    private function normalizedNumberTemplate($type): string
-    {
-        $template = $type['number_prefix'] ?: '{office_with_type}-{type}';
-
-        if (! str_contains($template, '{number}')) {
-            $template .= '-{number}';
-        }
-        if (! str_contains($template, '{year}')) {
-            $template .= '-{year}';
-        }
-
-        return $template;
-    }
-
-    private function formatDocumentNumber($type, Office $office, string|int $number, string|int $year): string
-    {
-        $officeWithType = $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : '');
-
-        return strtr($this->normalizedNumberTemplate($type), [
-            '{office}' => $office->abbreviation,
-            '{office_with_type}' => $officeWithType,
-            '{type}' => $type['abbreviation'],
-            '{number}' => (string) $number,
-            '{year}' => (string) $year,
-        ]);
-    }
-
-    private function documentNumberPattern($type, Office $office): string
-    {
-        $officeWithType = $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : '');
-        $parts = preg_split('/(\{number\}|\{year\})/', $this->normalizedNumberTemplate($type), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-        $pattern = '';
-
-        foreach ($parts as $part) {
-            $pattern .= match ($part) {
-                '{number}' => '(?P<number>\d+)',
-                '{year}' => '(?P<year>\d{4})',
-                default => preg_quote(strtr($part, [
-                    '{office}' => $office->abbreviation,
-                    '{office_with_type}' => $officeWithType,
-                    '{type}' => $type['abbreviation'],
-                ]), '~'),
-            };
-        }
-
-        return '~^'.$pattern.'$~u';
+        return DocumentNumber::format($typeObj, $office, $lastNumber + 1, date('Y'));
     }
 
     public function manualDocumentNumberParts(): array
@@ -856,25 +809,8 @@ class CreateDocument extends Component
         }
 
         $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
-        $parts = preg_split('/(\{number\}|\{year\})/', $this->normalizedNumberTemplate($type), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
-        return collect($parts)->map(function ($part) use ($type, $office) {
-            if ($part === '{number}') {
-                return ['type' => 'number'];
-            }
-            if ($part === '{year}') {
-                return ['type' => 'year'];
-            }
-
-            return [
-                'type' => 'literal',
-                'value' => strtr($part, [
-                    '{office}' => $office->abbreviation,
-                    '{office_with_type}' => $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : ''),
-                    '{type}' => $type->abbreviation,
-                ]),
-            ];
-        })->values()->all();
+        return DocumentNumber::parts($type, $office);
     }
 
     private function buildManualDocumentNumber(): ?string
@@ -886,7 +822,7 @@ class CreateDocument extends Component
 
         $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
 
-        return $this->formatDocumentNumber($type, $office, $this->manual_document_sequence, $this->manual_document_year);
+        return DocumentNumber::format($type, $office, $this->manual_document_sequence, $this->manual_document_year);
     }
 
     private function processAttachments(Document $document)

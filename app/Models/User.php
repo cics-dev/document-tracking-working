@@ -18,6 +18,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_last_used_step',
     ];
 
     protected function casts(): array
@@ -25,6 +28,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'require_two_factor_for_login' => 'boolean',
+            'require_two_factor_for_signing' => 'boolean',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'array',
+            'two_factor_last_used_step' => 'integer',
         ];
     }
 
