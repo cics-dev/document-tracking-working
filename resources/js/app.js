@@ -9,7 +9,7 @@ function initQuillEditor() {
     const editorElement = document.getElementById('quill-editor');
 
     if (editorElement && !editorElement.classList.contains('ql-container')) {
-        const quill = new Quill(editorElement, {
+        quill = new Quill(editorElement, {
             modules: {
                 toolbar: [
                     [{ 'align': [] }, { 'color': [] }],
@@ -36,18 +36,19 @@ function initQuillEditor() {
         // quill.on('text-change', function () {
         //     Livewire.find(document.querySelector('[wire\\:id]')?.getAttribute('wire:id'))?.set('content', quill.root.innerHTML);
         // });
-        window.addEventListener('update-quill', event => {
-            const content = event.detail[0].content || '';
-            quill.setContents(quill.clipboard.convert({ html: content }), 'silent');
-
-            const quillContentInput = document.getElementById('quill-content');
-            if (quillContentInput) {
-                quillContentInput.value = quill.root.innerHTML;
-                quillContentInput.dispatchEvent(new Event('input'));
-            }
-        });
+        editorElement.setAttribute('data-editor-ready', '');
     }
 }
+
+window.addEventListener('update-quill', event => {
+    if (!quill?.root.isConnected) return;
+
+    const content = event.detail[0].content || '';
+    const quillContentInput = document.getElementById('quill-content');
+    quill.setContents(quill.clipboard.convert({ html: content }), 'silent');
+    quillContentInput.value = quill.root.innerHTML;
+    quillContentInput.dispatchEvent(new Event('input'));
+});
 
 // document.addEventListener('submitDocument', function (e) {
 //     const contentInput = document.getElementById('quill-content');

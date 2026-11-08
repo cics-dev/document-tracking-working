@@ -86,8 +86,6 @@ class CreateDocument extends Component
 
     public array $flowGroupSelections = [];
 
-    public $readyToLoad = false;
-
     public $redirect_mode = null;
 
     public $manual_document_number = null;
@@ -139,13 +137,9 @@ class CreateDocument extends Component
                 $this->handleUpdateDocumentType();
             }
         }
-    }
 
-    public function loadInitialContent()
-    {
-        $this->readyToLoad = true;
-        if ($this->selectedType()?->content_template) {
-            $this->updateContentWithSubject();
+        if (blank($this->content) && $this->selectedType()?->content_template) {
+            $this->content = $this->configuredContent();
         }
     }
 
@@ -270,6 +264,11 @@ class CreateDocument extends Component
             && strcasecmp($stage['label'], $signatory['role'] ?? '') === 0
             && ! empty($stage['description'])
         );
+    }
+
+    public function updatedDocumentTypeId(): void
+    {
+        $this->handleUpdateDocumentType();
     }
 
     public function handleUpdateDocumentType()
@@ -465,11 +464,17 @@ class CreateDocument extends Component
 
     private function formatConfiguredContent()
     {
+        $this->dispatch('update-quill', ['content' => $this->configuredContent()]);
+    }
+
+    private function configuredContent(): string
+    {
         $html = strtr($this->selectedType()->content_template, [
             '{TO}' => e(strtoupper((string) $this->document_to_text)),
             '{SUBJECT}' => e(strtoupper((string) $this->subject)),
         ]);
-        $this->dispatch('update-quill', ['content' => DocumentHtml::sanitize($html)]);
+
+        return DocumentHtml::sanitize($html);
     }
 
     public function previewDocument()

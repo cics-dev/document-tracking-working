@@ -107,11 +107,11 @@
                     <flux:error name="twoFactorCode" />
                 @endif
                 <div class="mt-4 flex gap-4">
-                    <button wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
+                    <button data-form-action wire:click="sign" wire:loading.attr="disabled" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <span wire:loading.remove wire:target="sign">{{ $myStep && $myStep->step_type === 'routing' ? 'Set as reviewed' : 'Sign' }}</span>
                         <span wire:loading wire:target="sign">Processing...</span>
                     </button>
-                    <button wire:click="reject" wire:loading.attr="disabled" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                    <button data-form-action wire:click="reject" wire:loading.attr="disabled" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                         <span wire:loading.remove wire:target="reject">{{ $myStep && $myStep->step_type === 'routing' ? 'Return with remarks' : 'Reject' }}</span>
                         <span wire:loading wire:target="reject">Processing...</span>
                     </button>

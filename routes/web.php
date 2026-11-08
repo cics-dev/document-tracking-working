@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatBotController;
+use App\Http\Controllers\ConnectionTestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentAttachmentPreviewController;
 use App\Http\Controllers\DocumentPreviewController;
@@ -86,6 +87,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/password', Password::class)->name('settings.password');
     Route::get('settings/two-factor', TwoFactor::class)->name('settings.two-factor');
     Route::get('settings/appearance', Appearance::class)->name('settings.appearance');
+    Route::view('settings/connection', 'settings.connection')->name('settings.connection');
+    Route::get('settings/connection/sample', [ConnectionTestController::class, 'download'])
+        ->middleware('throttle:12,1,connection-test:')->name('settings.connection.sample');
+    Route::post('settings/connection/sample', [ConnectionTestController::class, 'upload'])
+        ->middleware('throttle:12,1,connection-test:');
     Route::get('settings/office', OfficeSettings::class)->name('settings.office');
 });
 

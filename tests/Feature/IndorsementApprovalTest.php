@@ -51,7 +51,7 @@ beforeEach(function () {
     $this->choiceField = 'flowGroupSelections.'.$this->groupKey;
     $this->actingAs($this->sender->head);
     $this->compose = fn () => Livewire::test(CreateDocument::class)
-        ->set('document_type_id', (string) $this->type->id)->call('handleUpdateDocumentType')
+        ->set('document_type_id', (string) $this->type->id)
         ->set('subject', 'Configured routing')->set('content', '<p>Body</p>');
 });
 

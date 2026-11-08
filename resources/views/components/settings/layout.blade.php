@@ -5,6 +5,7 @@
             <flux:navlist.item :href="route('settings.password')" wire:navigate>{{ __('Password') }}</flux:navlist.item>
             <flux:navlist.item :href="route('settings.two-factor')" wire:navigate>{{ __('Two-factor authentication') }}</flux:navlist.item>
             <flux:navlist.item :href="route('settings.appearance')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('settings.connection')" wire:navigate>{{ __('Connection test') }}</flux:navlist.item>
             @if(auth()->user()?->office?->head_id === auth()->id())
                 <flux:navlist.item :href="route('settings.office')" wire:navigate>{{ __('Office & OIC') }}</flux:navlist.item>
             @endif

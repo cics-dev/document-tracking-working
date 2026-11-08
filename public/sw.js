@@ -52,6 +52,10 @@ const returnFromCache = function (request) {
 };
 
 self.addEventListener("fetch", function (event) {
+    if (event.request.method !== "GET" || event.request.destination !== "document") {
+        return;
+    }
+
     event.respondWith(checkResponse(event.request).catch(function () {
         return returnFromCache(event.request);
     }));

@@ -16,5 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        // Let uploads on slow connections finish before the signed URL expires.
+        config(['livewire.temporary_file_upload.max_upload_time' => 30]);
     }
 }

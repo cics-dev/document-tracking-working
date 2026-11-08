@@ -4,14 +4,23 @@
         <flux:subheading>Archive a document signed on paper and send informational copies to the people involved.</flux:subheading>
     </div>
 
-    <form wire:submit="archive" class="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800">
+    <form
+        wire:submit="archive"
+        data-configured-document-type="{{ $documentTypeId }}"
+        x-data="{ uploading: false }"
+        x-on:livewire-upload-start="uploading = true"
+        x-on:livewire-upload-finish="uploading = false"
+        x-on:livewire-upload-error="uploading = false"
+        x-on:livewire-upload-cancel="uploading = false"
+        class="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800"
+    >
         <div class="flex items-center justify-between gap-3 border-b pb-2">
             <h2 class="text-xl font-semibold">Document Details</h2>
             <flux:switch wire:model.live="is_manual_document_number" label="Manual Document No." class="text-sm" />
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <flux:select wire:model.live="documentTypeId" label="Document type" placeholder="Choose a document type" required>
+            <flux:select wire:model.live="documentTypeId" data-document-type label="Document type" placeholder="Choose a document type" required>
                 @foreach ($this->documentTypes as $type)
                     <flux:select.option :value="$type->id">{{ $type->name }}</flux:select.option>
                 @endforeach
@@ -33,6 +42,8 @@
         </div>
 
         <flux:input wire:model="scan" type="file" label="Signed scan" description="PDF, JPG, or PNG, up to 12 MB." accept=".pdf,.jpg,.jpeg,.png" required />
+
+        <p x-cloak x-show="uploading" role="status" class="text-sm text-gray-600">Uploading signed scan…</p>
 
         <div class="space-y-2">
             <flux:label>CF recipients</flux:label>
@@ -66,7 +77,7 @@
 
         <div class="flex justify-end gap-2">
             <flux:button :href="route('documents.list-documents', ['mode' => 'Sent'])" variant="ghost">Cancel</flux:button>
-            <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="scan, archive">Archive document</flux:button>
+            <flux:button type="submit" variant="primary" x-bind:disabled="uploading" wire:loading.attr="disabled" wire:target="archive">Archive document</flux:button>
         </div>
     </form>
 </section>
