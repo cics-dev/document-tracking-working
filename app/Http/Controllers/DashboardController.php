@@ -18,56 +18,43 @@ class DashboardController extends Controller
         $startOfMonth = now()->startOfMonth();
         $startOfPreviousMonth = $startOfMonth->copy()->subMonth();
 
-        $internalDocuments = Document::query();
-        $externalDocuments = ExternalDocument::query();
+        $periods = [
+            'total' => ['1 = 1', []],
+            'currentMonth' => ['created_at >= ?', [$startOfMonth]],
+            // Keep the existing inclusive month boundaries used by whereBetween.
+            'previousMonth' => ['created_at BETWEEN ? AND ?', [$startOfPreviousMonth, $startOfMonth]],
+        ];
+        $months = collect(range(5, 0))->map(function (int $monthsAgo) use ($startOfMonth, &$periods) {
+            $month = $startOfMonth->copy()->subMonths($monthsAgo);
+            $periods['month_'.$monthsAgo] = ['created_at BETWEEN ? AND ?', [$month, $month->copy()->addMonth()]];
+
+            return ['label' => $month->format('M Y'), 'period' => 'month_'.$monthsAgo];
+        });
+
+        $internal = $this->countsByPeriod(Document::query(), $periods, [
+            'all' => '1 = 1',
+            'files' => 'file_url IS NOT NULL',
+            'received' => "to_id IS NOT NULL AND status != 'Draft'",
+        ]);
+        $external = $this->countsByPeriod(ExternalDocument::query(), $periods)['all'];
+        $metricPeriods = array_intersect_key($periods, array_flip(['total', 'currentMonth', 'previousMonth']));
+        $attachments = $this->countsByPeriod(DocumentAttachment::query(), $metricPeriods)['all'];
+        $users = $this->countsByPeriod(User::query(), $metricPeriods)['all'];
+        $offices = $this->countsByPeriod(Office::query(), $metricPeriods)['all'];
 
         $metrics = [
-            $this->metric(
-                'Documents',
-                (clone $internalDocuments)->count() + (clone $externalDocuments)->count(),
-                (clone $internalDocuments)->where('created_at', '>=', $startOfMonth)->count()
-                    + (clone $externalDocuments)->where('created_at', '>=', $startOfMonth)->count(),
-                (clone $internalDocuments)->whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count()
-                    + (clone $externalDocuments)->whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count(),
-                'document-text',
-                'blue'
-            ),
-            $this->metricFromQuery('Users', User::query(), 'users', 'green'),
-            $this->metric(
-                'Files',
-                DocumentAttachment::count() + Document::whereNotNull('file_url')->count() + ExternalDocument::count(),
-                DocumentAttachment::where('created_at', '>=', $startOfMonth)->count()
-                    + Document::whereNotNull('file_url')->where('created_at', '>=', $startOfMonth)->count()
-                    + ExternalDocument::where('created_at', '>=', $startOfMonth)->count(),
-                DocumentAttachment::whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count()
-                    + Document::whereNotNull('file_url')->whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count()
-                    + ExternalDocument::whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count(),
-                'paper-clip',
-                'orange'
-            ),
-            $this->metricFromQuery('Offices', Office::query(), 'building-office-2', 'amber'),
-            $this->metric(
-                'Received',
-                Document::whereNotNull('to_id')->where('status', '!=', 'Draft')->count() + ExternalDocument::count(),
-                Document::whereNotNull('to_id')->where('status', '!=', 'Draft')->where('created_at', '>=', $startOfMonth)->count()
-                    + ExternalDocument::where('created_at', '>=', $startOfMonth)->count(),
-                Document::whereNotNull('to_id')->where('status', '!=', 'Draft')->whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count()
-                    + ExternalDocument::whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count(),
-                'inbox-arrow-down',
-                'violet'
-            ),
+            $this->metricFromCounts('Documents', [$internal['all'], $external], 'document-text', 'blue'),
+            $this->metricFromCounts('Users', [$users], 'users', 'green'),
+            $this->metricFromCounts('Files', [$attachments, $internal['files'], $external], 'paper-clip', 'orange'),
+            $this->metricFromCounts('Offices', [$offices], 'building-office-2', 'amber'),
+            $this->metricFromCounts('Received', [$internal['received'], $external], 'inbox-arrow-down', 'violet'),
         ];
 
-        $months = collect(range(5, 0))->map(function (int $monthsAgo) {
-            $month = now()->startOfMonth()->subMonths($monthsAgo);
-            $end = $month->copy()->addMonth();
-
-            return [
-                'label' => $month->format('M Y'),
-                'internal' => Document::whereBetween('created_at', [$month, $end])->count(),
-                'external' => ExternalDocument::whereBetween('created_at', [$month, $end])->count(),
-            ];
-        });
+        $months = $months->map(fn (array $month) => [
+            'label' => $month['label'],
+            'internal' => $internal['all'][$month['period']],
+            'external' => $external[$month['period']],
+        ]);
 
         $statusCounts = Document::query()
             ->selectRaw('status, COUNT(*) as total')
@@ -83,18 +70,39 @@ class DashboardController extends Controller
         return view('dashboard', compact('metrics', 'months', 'statusCounts', 'recentActivity'));
     }
 
-    private function metricFromQuery(string $label, Builder $query, string $icon, string $color): array
+    private function countsByPeriod(Builder $query, array $periods, array $groups = ['all' => '1 = 1']): array
     {
-        $startOfMonth = now()->startOfMonth();
-        $startOfPreviousMonth = $startOfMonth->copy()->subMonth();
+        foreach ($groups as $group => $condition) {
+            foreach ($periods as $period => [$dateCondition, $bindings]) {
+                $alias = $query->getQuery()->getGrammar()->wrap($group.'_'.$period);
+                $query->selectRaw(
+                    "COUNT(CASE WHEN ($condition) AND ($dateCondition) THEN 1 END) AS $alias",
+                    $bindings,
+                );
+            }
+        }
 
+        $row = $query->first();
+        $counts = [];
+
+        foreach ($groups as $group => $condition) {
+            foreach ($periods as $period => $definition) {
+                $counts[$group][$period] = (int) $row->getAttribute($group.'_'.$period);
+            }
+        }
+
+        return $counts;
+    }
+
+    private function metricFromCounts(string $label, array $sources, string $icon, string $color): array
+    {
         return $this->metric(
             $label,
-            (clone $query)->count(),
-            (clone $query)->where('created_at', '>=', $startOfMonth)->count(),
-            (clone $query)->whereBetween('created_at', [$startOfPreviousMonth, $startOfMonth])->count(),
+            array_sum(array_column($sources, 'total')),
+            array_sum(array_column($sources, 'currentMonth')),
+            array_sum(array_column($sources, 'previousMonth')),
             $icon,
-            $color
+            $color,
         );
     }
 

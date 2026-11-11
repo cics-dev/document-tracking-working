@@ -5,6 +5,7 @@ namespace App\Livewire\Documents;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
+use App\Mail\DocumentForReview;
 use App\Models\Document;
 use App\Models\DocumentAttachment;
 use App\Models\DocumentFlowStage;
@@ -17,6 +18,7 @@ use App\Support\DocumentNumber;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
@@ -668,6 +670,12 @@ class CreateDocument extends Component
         });
 
         if ($isSend) {
+            $recipient = $document->nextPendingStep()?->active_user;
+            if (! empty($recipient?->email)) {
+                // Disabled for testing; uncomment for deployment.
+                // Mail::to($recipient->email)->send(new DocumentForReview($document, $recipient->name));
+            }
+
             $document->logs()->create([
                 'user_id' => Auth::id(),
                 'action' => 'Sent',

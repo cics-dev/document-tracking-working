@@ -31,7 +31,7 @@ class Login extends Component
     /**
      * Handle an incoming authentication request.
      */
-    public function login(): void
+    public function login(): bool
     {
         Session::forget('two-factor.login');
         $this->validate();
@@ -63,15 +63,14 @@ class Login extends Component
             return false;
         }, $this->remember);
 
-        $this->reset('password');
-
         if ($challenged) {
             RateLimiter::clear($this->throttleKey());
 
-            return;
+            return false;
         }
 
         if (! $authenticated) {
+            $this->reset('password');
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -81,6 +80,9 @@ class Login extends Component
 
         RateLimiter::clear($this->throttleKey());
         $this->finishLogin();
+
+        // Let the login indicator remain visible until the redirect replaces the page.
+        return true;
     }
 
     public function verifyTwoFactor(TwoFactorAuthentication $twoFactor): void

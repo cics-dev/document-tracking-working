@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ loginPending: false }" x-on:pageshow.window="if ($event.persisted) loginPending = false">
   <!-- Single root element wrapper (Livewire compliant) -->
   <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6 bg-[#660710]">
     
@@ -42,7 +42,11 @@
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
 
-        <form wire:submit="login" class="flex flex-col gap-4 sm:gap-5">
+        <form
+          x-on:submit.prevent="if (loginPending) return; loginPending = true; $wire.login().then(redirecting => { if (redirecting !== true) loginPending = false }).catch(() => { loginPending = false })"
+          x-bind:inert="loginPending"
+          class="flex flex-col gap-4 sm:gap-5"
+        >
           <!-- Email Address -->
           <div class="space-y-1">
             <flux:label>{{ __('Email') }} <span class="text-red-500">*</span></flux:label>
@@ -94,9 +98,18 @@
             <flux:button 
               variant="primary" 
               type="submit" 
+              :loading="false"
+              x-bind:disabled="loginPending"
               class="w-full py-2.5 px-4 bg-blue-600 hover:bg-green-600 text-white font-medium rounded-md transition hover:scale-[1.02] active:scale-[0.98]"
             >
-              {{ __('Log in') }}
+              <span x-show="!loginPending">{{ __('Log in') }}</span>
+              <span x-show="loginPending" x-cloak class="inline-flex items-center justify-center gap-2" role="status" aria-live="polite">
+                <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
+                </svg>
+                {{ __('Logging in...') }}
+              </span>
             </flux:button>
           </div>
         </form>
@@ -156,4 +169,5 @@
       }
     }
   </style>
+
 </div>

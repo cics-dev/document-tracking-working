@@ -54,7 +54,16 @@
               <p style="font-size: 19px; color: #000; margin-bottom: 8px;">{{ number_format($metric['total']) }}</p>
             </div>
             <div style="width: 50px; height: 50px; border-radius: 50%; background-color: #ffffff; display: flex; align-items: center; justify-content: center; position: absolute; right: 20px; top: 20px; box-shadow: 0 4px 8px rgba(0,0,0,.5);">
-              <img src="{{ asset('assets/img/'.$cardImages[$index]) }}" alt="{{ $metric['label'] }} Icon" style="width: 32px; height: 32px;">
+              <span x-data="{ loaded: false }" style="position: relative; display: block; width: 32px; height: 32px;">
+                <span x-show="!loaded" aria-hidden="true" style="position: absolute; inset: 0; color: #9ca3af;">
+                  <flux:icon :icon="$metric['icon']" style="width: 100%; height: 100%;" />
+                </span>
+                <img src="{{ asset('assets/img/'.$cardImages[$index]) }}" alt="{{ $metric['label'] }} Icon" width="32" height="32"
+                  style="position: absolute; inset: 0; width: 32px; height: 32px; opacity: 0;"
+                  x-bind:style="{ opacity: loaded ? 1 : 0 }"
+                  x-init="loaded = $el.complete && $el.naturalWidth > 0"
+                  x-on:load="loaded = true" x-on:error="loaded = false">
+              </span>
             </div>
           </div>
           <div style="flex: 1; padding-left: 10px;">
@@ -71,6 +80,13 @@
       <div class="charts-wrapper min-w-0">
         <div id="chartdiv">
           <div class="chart-label">ZPPSU - DTS Document Tracking Analytics</div>
+          <div data-chart-loading role="status" aria-live="polite" class="absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm text-gray-600 pointer-events-none">
+            <svg class="h-5 w-5 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z" />
+            </svg>
+            <span>Loading chart...</span>
+          </div>
         </div>
 
         <div id="chartdiv2">
@@ -79,7 +95,16 @@
             @forelse ($recentActivity as $activity)
               <div class="history-item">
                 <div class="history-icon">
-                  <img src="{{ asset('assets/img/doc.gif') }}" alt="Document activity" style="width: 24px; height: 24px;">
+                  <span x-data="{ loaded: false }" style="position: relative; display: block; width: 24px; height: 24px;">
+                    <span x-show="!loaded" aria-hidden="true" style="position: absolute; inset: 0; color: #9ca3af;">
+                      <flux:icon icon="document-text" style="width: 100%; height: 100%;" />
+                    </span>
+                    <img src="{{ asset('assets/img/doc.gif') }}" alt="Document activity" width="24" height="24"
+                      style="position: absolute; inset: 0; width: 24px; height: 24px; opacity: 0;"
+                      x-bind:style="{ opacity: loaded ? 1 : 0 }"
+                      x-init="loaded = $el.complete && $el.naturalWidth > 0"
+                      x-on:load="loaded = true" x-on:error="loaded = false">
+                  </span>
                 </div>
                 <div class="history-content">
                   <div class="history-title">Document {{ ucfirst(strtolower($activity->action)) }}</div>
@@ -99,44 +124,99 @@
       </div>
     </div>
 
-    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
-    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <script>
-      am5.ready(function () {
-        const root = am5.Root.new('chartdiv');
-        root._logo?.dispose();
-        root.setThemes([am5themes_Animated.new(root)]);
+      (() => {
+        const container = document.getElementById('chartdiv');
+        const loading = container.querySelector('[data-chart-loading]');
+        let root;
+        let cancelled = false;
 
-        const chart = root.container.children.push(am5xy.XYChart.new(root, {
-          panX: false, panY: false, wheelX: 'none', wheelY: 'none', paddingTop: 25
-        }));
-        const data = @json($months);
-        const xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
-          categoryField: 'label', renderer: am5xy.AxisRendererX.new(root, { minGridDistance: 30 })
-        }));
-        const yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-          min: 0, renderer: am5xy.AxisRendererY.new(root, {})
-        }));
-        xAxis.data.setAll(data);
+        document.addEventListener('livewire:navigating', () => {
+          cancelled = true;
+          root?.dispose();
+        }, { once: true });
 
-        function addSeries(name, field) {
-          const series = chart.series.push(am5xy.ColumnSeries.new(root, {
-            name: name, xAxis: xAxis, yAxis: yAxis, valueYField: field,
-            categoryXField: 'label', tooltip: am5.Tooltip.new(root, { labelText: name + ': {valueY}' })
-          }));
-          series.columns.template.setAll({ width: am5.percent(75), cornerRadiusTL: 4, cornerRadiusTR: 4 });
-          series.data.setAll(data);
-          series.appear(1000);
+        function loadScript(src) {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = resolve;
+            script.onerror = () => {
+              script.remove();
+              reject(new Error('Chart library could not be loaded.'));
+            };
+            document.head.appendChild(script);
+          });
         }
 
-        addSeries('Internal Documents', 'internal');
-        addSeries('External Documents', 'external');
-        chart.set('cursor', am5xy.XYCursor.new(root, {}));
-        chart.appear(1000, 100);
-      });
+        async function loadChart() {
+          if (cancelled || !container.isConnected) return;
+
+          try {
+            window.dtsDashboardChartLibraries ??= (async () => {
+              if (!window.am5) await loadScript('https://cdn.amcharts.com/lib/5/index.js');
+              await Promise.all([
+                window.am5xy ? Promise.resolve() : loadScript('https://cdn.amcharts.com/lib/5/xy.js'),
+                window.am5themes_Animated ? Promise.resolve() : loadScript('https://cdn.amcharts.com/lib/5/themes/Animated.js'),
+              ]);
+            })().catch(error => {
+              window.dtsDashboardChartLibraries = null;
+              throw error;
+            });
+
+            await window.dtsDashboardChartLibraries;
+            if (cancelled || !container.isConnected) return;
+
+            root = am5.Root.new(container);
+            root.events.once('frameended', () => { loading.remove(); });
+            root._logo?.dispose();
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            const chart = root.container.children.push(am5xy.XYChart.new(root, {
+              panX: false, panY: false, wheelX: 'none', wheelY: 'none', paddingTop: 25
+            }));
+            const data = @json($months);
+            const xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+              categoryField: 'label', renderer: am5xy.AxisRendererX.new(root, { minGridDistance: 30 })
+            }));
+            const yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+              min: 0, renderer: am5xy.AxisRendererY.new(root, {})
+            }));
+            xAxis.data.setAll(data);
+
+            function addSeries(name, field) {
+              const series = chart.series.push(am5xy.ColumnSeries.new(root, {
+                name: name, xAxis: xAxis, yAxis: yAxis, valueYField: field,
+                categoryXField: 'label', tooltip: am5.Tooltip.new(root, { labelText: name + ': {valueY}' })
+              }));
+              series.columns.template.setAll({ width: am5.percent(75), cornerRadiusTL: 4, cornerRadiusTR: 4 });
+              series.data.setAll(data);
+              series.appear(1000);
+            }
+
+            addSeries('Internal Documents', 'internal');
+            addSeries('External Documents', 'external');
+            chart.set('cursor', am5xy.XYCursor.new(root, {}));
+            chart.appear(1000, 100);
+          } catch (error) {
+            root?.dispose();
+            if (!cancelled && container.isConnected) {
+              loading.textContent = 'Chart could not be loaded. Please reload to try again.';
+            }
+          }
+        }
+
+        // Let the dashboard paint before requesting the chart libraries.
+        const scheduleChart = () => requestAnimationFrame(() => requestAnimationFrame(loadChart));
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', scheduleChart, { once: true });
+        } else {
+          scheduleChart();
+        }
+      })();
     </script>
   </div>
 </x-layouts.app>

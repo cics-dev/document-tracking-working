@@ -130,6 +130,22 @@
         .content {
             text-align: justify;
         }
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            line-height: 1.5;
+        }
+        .content th, .content td {
+            border: 1px solid #000;
+            padding: 2px 5px;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        .content tr {
+            page-break-inside: avoid;
+        }
+        .content td[data-cell-covered="true"] { display: none; }
         .signatory {
             margin-top: 40px;
         }

@@ -2,6 +2,14 @@ import '../css/app.css'; // Tailwind CSS
 import Quill from 'quill';
 import Swal from 'sweetalert2';
 import 'quill/dist/quill.snow.css';
+import { addTableControls } from './quill-tables';
+import { registerTableColumnWidths, addTableColumnResize } from './quill-table-resize';
+import { addCellSelection } from './quill-table-cells';
+import { registerCellBreak, cellEnterBinding } from './quill-cell-break';
+import { addTableHeaders } from './quill-table-headers';
+
+registerTableColumnWidths(Quill);
+registerCellBreak(Quill);
 
 let quill;
 
@@ -11,6 +19,8 @@ function initQuillEditor() {
     if (editorElement && !editorElement.classList.contains('ql-container')) {
         quill = new Quill(editorElement, {
             modules: {
+                table: true,
+                keyboard: { bindings: { 'table enter': cellEnterBinding } },
                 toolbar: [
                     [{ 'align': [] }, { 'color': [] }],
                     ['bold', 'italic', 'underline', 'strike', { script: 'super' }, { script: 'sub' }],
@@ -20,6 +30,11 @@ function initQuillEditor() {
             placeholder: 'Compose an epic...',
             theme: 'snow',
         });
+
+        addTableControls(quill, Swal);
+        addTableColumnResize(quill);
+        addCellSelection(quill);
+        addTableHeaders(quill);
 
         const quillContentInput = document.getElementById('quill-content');
 
