@@ -3,8 +3,6 @@
 namespace App\Livewire\Documents;
 
 use App\Http\Controllers\DocumentController;
-use App\Mail\DocumentForReview;
-use App\Mail\DocumentStatusUpdate;
 use App\Models\Document;
 use App\Models\DocumentAttachment;
 use App\Models\DocumentGenerationRule;
@@ -16,7 +14,6 @@ use App\Services\DocumentPreviewDataService;
 use App\Services\DocumentQueryService;
 use App\Services\DocumentWorkflowService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -226,22 +223,6 @@ class ViewDocument extends Component
         $this->document = $result['document']->fresh();
         $event = $result['completed'] ? 'lastStep' : 'redirect';
 
-        $recipient = $this->document->nextPendingStep()?->active_user;
-        if (! empty($recipient?->email)) {
-            // Disabled for testing; uncomment for deployment.
-            // Mail::to($recipient->email)->send(new DocumentForReview($this->document, $recipient->name));
-        }
-
-        $fromOffice = $this->document->fromOffice;
-        $fromUser = ($this->document->documentType?->allow_oic_signature ?? true)
-            ? $fromOffice?->workflow_assignee
-            : $fromOffice?->head;
-        $mailAction = strtolower($result['step']->status);
-        if (! empty($fromUser?->email)) {
-            // Disabled for testing; uncomment for deployment.
-            // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name, $mailAction, $result['description']));
-        }
-
         $data = [
             'title' => 'Document processed!',
             'text' => "You've successfully processed the document",
@@ -332,16 +313,6 @@ class ViewDocument extends Component
     {
         $result = app(DocumentWorkflowService::class)->reject($this->document, Auth::user(), $remarks, $code, $stepId);
         $this->document = $result['document']->fresh();
-
-        $fromOffice = $this->document->fromOffice;
-        $fromUser = ($this->document->documentType?->allow_oic_signature ?? true)
-            ? $fromOffice?->workflow_assignee
-            : $fromOffice?->head;
-        $mailAction = strtolower($result['step']->status);
-        if (! empty($fromUser?->email)) {
-            // Disabled for testing; uncomment for deployment.
-            // Mail::to($fromUser->email)->send(new DocumentStatusUpdate($this->document, $fromUser->name, $mailAction, $result['description']));
-        }
 
         $data = [
             'title' => 'Document rejected!',

@@ -6,6 +6,7 @@ use App\Models\DocumentGenerationRule;
 use App\Models\ExternalDocument;
 use App\Services\AttachmentPreviewService;
 use App\Services\DocumentGenerationService;
+use App\Services\ExternalDocumentQueryService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -27,6 +28,7 @@ class ViewExternalDocument extends Component
             'You do not have permission to access external documents.'
         );
         $this->document = ExternalDocument::with('toOffice.head', 'toOffice.actingHead')->findOrFail($id);
+        abort_unless(app(ExternalDocumentQueryService::class)->canView(Auth::user(), $this->document), 403);
 
         $this->document->accessLogs()->firstOrCreate([
             'user_id' => Auth::id(),

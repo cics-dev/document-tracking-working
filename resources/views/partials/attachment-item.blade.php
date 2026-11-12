@@ -24,7 +24,7 @@
             <p class="font-semibold text-sm text-gray-800 truncate">
                 {{ $attachment->name }}
             </p>
-            <button type="button"
+            <button type="button" wire:loading.attr="disabled" wire:target="viewAttachment"
                 class="ml-3 text-gray-500 hover:text-red-600 transition-colors duration-200 shrink-0"
                 wire:click="viewAttachment('{{ $attachment->id }}', '{{ $attachment->type }}')">
                 <flux:icon.eye class="w-5 h-5" />

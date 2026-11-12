@@ -36,9 +36,9 @@
     </div>
     <flux:error name="archive" />
 
-    <div class="overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
+    <div class="min-w-0 overflow-x-auto rounded-lg shadow-sm bg-white dark:bg-gray-800">
         <!-- Desktop Table -->
-        <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200 hidden md:table">
+        <table class="w-full text-sm text-left text-gray-700 dark:text-gray-200 hidden md:table" style="table-layout: fixed; min-width: 56rem; overflow-wrap: anywhere;"><colgroup><col style="width: 21%;"><col style="width: 22%;"><col style="width: 18%;"><col><col style="width: 5rem;"><col style="width: 4.5rem;"></colgroup>
             <thead class="text-xs text-gray-500 uppercase border-b bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                 <tr>
                     <x-sortable-column column="name" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-4 py-2 border-r border-gray-300 dark:border-gray-600">Name</x-sortable-column>

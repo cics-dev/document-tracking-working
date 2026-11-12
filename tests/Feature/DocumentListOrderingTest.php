@@ -111,3 +111,9 @@ it('filters physical and digital documents and resets pagination and filters', f
         ->call('resetFilters')->assertSet('formatFilter', '')
         ->assertSee('2 documents');
 })->with(['all', 'Sent', 'received']);
+
+it('preserves uppercase abbreviations in generated status badges', function () {
+    ($this->makeDocument)('Generated source', '2026-10-01', ['status' => 'Generated IOM']);
+    Livewire::test(ListDocuments::class, ['mode' => 'Sent'])
+        ->assertSee('Generated IOM')->assertDontSee('Generated iom');
+});

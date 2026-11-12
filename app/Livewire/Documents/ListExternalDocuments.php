@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Documents;
 
-use App\Models\ExternalDocument;
 use App\Models\Office;
+use App\Services\ExternalDocumentQueryService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -70,10 +70,10 @@ class ListExternalDocuments extends Component
     public function render()
     {
         $user = Auth::user();
-        $query = ExternalDocument::query();
-
-        if (! $user->hasAccess('view_all_documents')) {
-            $query->whereIn('to_id', $user->workflowOfficeIds());
+        $query = app(ExternalDocumentQueryService::class)->listFor($user)->with('toOffice');
+        $officeIds = $user->workflowOfficeIds();
+        if (! $user->hasAccess('view_all_documents') && $this->officeFilter !== '') {
+            abort_unless(in_array((int) $this->officeFilter, $officeIds, true), 403);
         }
 
         if (! empty($this->search)) {
@@ -96,7 +96,14 @@ class ListExternalDocuments extends Component
 
         return view('livewire.documents.list-external-documents', [
             'documents' => $documents,
-            'offices' => Office::orderBy('name')->get(['id', 'name', 'abbreviation']),
+            'offices' => Office::query()
+                ->when(! $user->hasAccess('view_all_documents'), fn ($query) => $query->whereIn('id', $officeIds))
+                ->orderBy('name')->get(['id', 'name', 'abbreviation'])
+                ->filter(fn ($office) => $user->hasAccess('view_all_documents')
+                    || $user->hasAccess('receive_external_documents', $office->id)
+                    || $user->hasAccess('send_external_documents', $office->id)),
+            'showOfficeContext' => $user->managesMultipleOffices(),
+            'allOfficesLabel' => $user->hasAccess('view_all_documents') ? 'All Offices' : 'All my offices',
         ])->layout('layouts.app');
     }
 }

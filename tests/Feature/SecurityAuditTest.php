@@ -41,13 +41,13 @@ it('reproduces overwriting another users draft through mutable source id', funct
     expect($this->privateDocument->fresh()->created_by)->toBe($this->actor->id);
 });
 
-it('reproduces opening an external document outside the users office', function () {
+it('rejects opening an external document outside the users represented offices', function () {
     $external = ExternalDocument::create(['document_number' => 'EXT-AUD-1', 'from' => 'Outside', 'to_id' => $this->otherOffice->id, 'subject' => 'EXTERNAL PRIVATE SUBJECT', 'received_date' => now(), 'file_url' => 'attachments/private.pdf', 'file_type' => 'pdf']);
     $this->get(route('documents.list-external-documents'))->assertOk()->assertDontSee('EXTERNAL PRIVATE SUBJECT');
-    Livewire::test(\App\Livewire\Documents\ViewExternalDocument::class, ['id' => $external->id])->assertSet('document.id', $external->id);
+    Livewire::test(\App\Livewire\Documents\ViewExternalDocument::class, ['id' => $external->id])->assertForbidden();
     \Illuminate\Support\Facades\Storage::fake('public');
     \Illuminate\Support\Facades\Storage::disk('public')->put($external->file_url, '%PDF-1.4 audit');
-    $this->get(route('documents.external-document-preview', $external))->assertOk();
+    $this->get(route('documents.external-document-preview', $external))->assertForbidden();
 });
 
 it('reproduces predictable passwords on administrator created accounts', function () {

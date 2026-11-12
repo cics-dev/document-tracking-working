@@ -31,7 +31,7 @@
     </div>
     
     <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 [&>*]:min-w-0">
+        <div class="grid min-w-0 grid-cols-1 gap-3 {{ $showOfficeContext ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }} [&>*]:min-w-0">
             <div class="w-full min-w-0">
                 <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or number..." />
             </div>
@@ -48,6 +48,17 @@
                     <flux:input wire:model.live="dateTo" type="date" aria-label="To date" />
                 </flux:input.group>
             </div>
+
+            @if($showOfficeContext)
+                <div class="w-full min-w-0">
+                    <flux:select wire:model.live="officeFilter" aria-label="Office filter">
+                        <flux:select.option value="">All my offices</flux:select.option>
+                        @foreach($officeOptions as $officeOption)
+                            <flux:select.option value="{{ $officeOption->id }}">{{ $officeOption->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+            @endif
 
         </div>
 
@@ -114,24 +125,35 @@
         @endif
     </div>
 
-    <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200 bg-white">
-        <div class="border-b border-gray-200 px-6 py-3 text-sm text-gray-600" role="status" aria-live="polite">
+    <div class="min-w-0 overflow-x-auto rounded-xl shadow-sm border border-gray-200 bg-white">
+        <div class="border-b border-gray-200 px-3 py-3 text-sm text-gray-600" role="status" aria-live="polite">
             {{ $documents->total() }} {{ Str::plural('document', $documents->total()) }}
         </div>
-        <table class="w-full text-sm text-left">
+        <table class="w-full text-sm text-left" style="table-layout: fixed; min-width: {{ $documentTypeTab === 'intra' ? '52rem' : '60rem' }}; overflow-wrap: anywhere;">
+            <colgroup>
+                <col style="width: clamp(11rem, 18%, 14rem);">
+                <col>
+                @if($documentTypeTab != 'intra')
+                    <col style="width: clamp(9rem, 15%, 11rem);">
+                @endif
+                <col style="width: 4.5rem;">
+                <col style="width: 8.5rem;">
+                <col style="width: 7.5rem;">
+                <col style="width: 7rem;">
+            </colgroup>
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
-                    <x-sortable-column column="document_number" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Document Number</x-sortable-column>
-                    <x-sortable-column column="subject" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3 w-1/3">Subject</x-sortable-column>
+                    <x-sortable-column column="document_number" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-3 py-3">Document Number</x-sortable-column>
+                    <x-sortable-column column="subject" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-3 py-3">Subject</x-sortable-column>
                     
                     @if($documentTypeTab != 'intra')
-                        <th class="px-6 py-3">{{ $mode == 'Sent' ? 'To' : 'From' }}</th>
+                        <th class="px-3 py-3">{{ $mode == 'Sent' ? 'To' : 'From' }}</th>
                     @endif
                     
-                    <th class="px-6 py-3 text-center">Type</th>
-                    <x-sortable-column column="status" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3 text-center">Status</x-sortable-column>
-                    <x-sortable-column column="created_at" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-6 py-3">Date</x-sortable-column>
-                    <th class="px-6 py-3 text-right">Actions</th>
+                    <th class="px-3 py-3 text-center">Type</th>
+                    <x-sortable-column column="status" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-3 py-3 text-center">Status</x-sortable-column>
+                    <x-sortable-column column="created_at" :sort-by="$sortBy" :sort-direction="$sortDirection" class="px-3 py-3">Date</x-sortable-column>
+                    <th class="px-3 py-3 text-right">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -142,7 +164,7 @@
                     @endphp
                     <tr class="hover:bg-gray-50/50 transition-colors {{ $isUnreadNotification ? 'bg-blue-50/30' : '' }}">
                         
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-4">
                             <div class="flex items-center gap-2">
                                 @if($isUnreadNotification)
                                     <span class="size-2 rounded-full bg-blue-600 animate-pulse"></span>
@@ -151,28 +173,37 @@
                             </div>
                         </td>
 
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-4">
                             <div class="line-clamp-2 text-gray-700" title="{{ $document->subject }}">
                                 {{ $document->subject }}
                             </div>
+                            @if($showOfficeContext)
+                                <div class="mt-1 text-xs text-gray-500">
+                                    @if($mode === 'Sent')
+                                        Issuing office: {{ $document->fromOffice?->name ?? '—' }}
+                                    @else
+                                        Receiving office: {{ implode(', ', $receivingOfficeLabels[$document->id] ?? []) ?: '—' }}
+                                    @endif
+                                </div>
+                            @endif
                             <flux:badge size="sm" :color="$document->is_physical ? 'amber' : 'zinc'" class="mt-1">
                                 {{ $document->is_physical ? 'Physical' : 'Digital' }}
                             </flux:badge>
                         </td>
 
                         @if($documentTypeTab != 'intra')
-                            <td class="px-6 py-4 text-gray-600">
+                            <td class="px-3 py-4 text-gray-600">
                                 {{ $mode == 'Sent' 
                                     ? ($document->toOffice->name ?? $document->to_text ?? '—') 
                                     : ($document->fromOffice->name ?? '—') }}
                             </td>
                         @endif
 
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-3 py-4 text-center">
                             <span class="inline-flex rounded-md border border-black/10 px-2 py-1 text-xs font-medium text-gray-800" style="background-color: {{ $document->documentType?->chip_color ?? '#dbeafe' }}">{{ $document->documentType->abbreviation ?? 'N/A' }}</span>
                         </td>
 
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-3 py-4 text-center">
                             @php
                                 $status = strtolower($document->status);
                                 $color = match($status) {
@@ -183,16 +214,16 @@
                                     default => 'orange'
                                 };
                             @endphp
-                            <flux:badge size="sm" :color="$color" variant="solid" inset="top bottom">{{ ucfirst($status) }}</flux:badge>
+                            <flux:badge size="sm" :color="$color" variant="solid" inset="top bottom" class="max-w-full text-center" style="white-space: nowrap; max-width: none;" title="{{ $document->status }}">{{ ucfirst($document->status) }}</flux:badge>
                         </td>
 
-                        <td class="px-6 py-4 text-gray-500 whitespace-nowrap">
+                        <td class="px-3 py-4 text-gray-500 whitespace-nowrap">
                             {{ $document->created_at->format('M d, Y') }}<br>
                             <span class="text-xs">{{ $document->created_at->format('h:i A') }}</span>
                         </td>
 
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-2">
+                        <td class="px-3 py-4 text-right">
+                            <div class="flex flex-wrap justify-end gap-2">
                                 @if($document->status == 'Draft')
                                     <flux:button href="{{ route('documents.edit-draft', $document->id) }}" size="sm" icon="pencil-square" variant="subtle" class="text-blue-600">Edit</flux:button>
                                 @endif

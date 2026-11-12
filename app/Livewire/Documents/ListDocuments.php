@@ -3,6 +3,8 @@
 namespace App\Livewire\Documents;
 
 use App\Models\DocumentStep;
+use App\Models\Document;
+use App\Models\Office;
 use App\Models\DocumentType;
 use App\Services\DocumentQueryService;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +29,8 @@ class ListDocuments extends Component
     public $typeFilter = '';
 
     public string $formatFilter = '';
+
+    public string $officeFilter = '';
 
     public $dateFrom = '';
 
@@ -71,6 +75,11 @@ class ListDocuments extends Component
         $this->resetPage();
     }
 
+    public function updatedOfficeFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedFormatFilter(): void
     {
         $this->resetPage();
@@ -88,7 +97,7 @@ class ListDocuments extends Component
 
     public function resetFilters(): void
     {
-        $this->reset('search', 'statusFilter', 'typeFilter', 'formatFilter', 'dateFrom', 'dateTo');
+        $this->reset('search', 'statusFilter', 'typeFilter', 'formatFilter', 'officeFilter', 'dateFrom', 'dateTo');
         $this->resetPage();
     }
 
@@ -105,7 +114,7 @@ class ListDocuments extends Component
 
     public function render()
     {
-        $documents = app(DocumentQueryService::class)->listFor(Auth::user(), $this->mode)
+        $documents = app(DocumentQueryService::class)->listFor(Auth::user(), $this->mode, $this->mode !== 'all' && $this->officeFilter !== '' ? (int) $this->officeFilter : null)
             ->when($this->mode === 'all', fn ($query) => $query->where('status', '!=', 'Draft'))
             ->when($this->documentTypeTab === 'intra', fn ($query) => $query->where('document_level', 'Intra'))
             ->when($this->documentTypeTab !== 'intra', fn ($query) => $query->where(fn ($levels) => $levels
@@ -145,9 +154,26 @@ class ListDocuments extends Component
 
         $documentTypes = DocumentType::where('document_level', '!=', 'Intra')->get();
 
+        $showOfficeContext = $this->mode !== 'all' && Auth::user()->managesMultipleOffices();
+        $officeOptions = Office::whereIn('id', Auth::user()->workflowOfficeIds())->orderBy('name')->get();
+        $receivingOfficeLabels = [];
+        if ($showOfficeContext && $this->mode === 'received') {
+            foreach ($officeOptions as $office) {
+                $receivedIds = app(DocumentQueryService::class)->receivedBy(
+                    Document::whereIn('id', $documents->pluck('id')), Auth::user(), $office->id
+                )->pluck('id');
+                foreach ($receivedIds as $documentId) {
+                    $receivingOfficeLabels[$documentId][] = $office->name;
+                }
+            }
+        }
+
         return view('livewire.documents.list-documents', [
             'documents' => $documents,
             'documentTypes' => $documentTypes,
+            'officeOptions' => $officeOptions,
+            'showOfficeContext' => $showOfficeContext,
+            'receivingOfficeLabels' => $receivingOfficeLabels,
         ])->layout('layouts.app');
     }
 

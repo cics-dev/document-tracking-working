@@ -78,3 +78,12 @@ it('highlights the parent navigation for dashboard and management pages', functi
     ['roles', 'roles'], ['access-rights', 'access-rights'],
     ['document-types', 'document-types'], ['document-flows', 'document-flows'],
 ]);
+
+it('renders desktop sidebar collapse controls while retaining mobile navigation', function () {
+    $this->get('/dashboard')->assertOk()
+        ->assertSee('collapsible="true"', false)
+        ->assertSee('data-flux-sidebar-collapse', false)
+        ->assertSee('data-flux-sidebar-item', false)
+        ->assertSee('Collapse or expand sidebar')
+        ->assertSee('data-flux-sidebar-toggle', false);
+});

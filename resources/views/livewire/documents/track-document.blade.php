@@ -1,3 +1,4 @@
+<div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <style>
     :root { --primary: #800000; --secondary: #ffc107; --light-gray: #f5f5f5; --dark-gray: #757575; --success: #4caf50; --warning: #ff9800; --info: #2196f3; }
@@ -48,6 +49,26 @@
         .action-buttons { flex-direction: column; gap: 10px; } .action-buttons .btn-group { width: 100%; justify-content: space-between; }
     }
     @media (max-width: 480px) { .document-details { grid-template-columns: 1fr; } }
+    .tracking-print-summary { display: none; }
+    @media print {
+        @page { size: A4 portrait; margin: 14mm; }
+        body:has([data-tracking-page]) { display: block !important; background: white !important; color: black !important; }
+        body:has([data-tracking-page]) :is([data-flux-sidebar], [data-flux-sidebar-backdrop], [data-flux-header], .no-print, dialog) { display: none !important; }
+        body:has([data-tracking-page]) [data-flux-main] { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
+        [data-tracking-page] { width: 100% !important; max-width: none !important; }
+        .tracking-screen { display: none !important; }
+        .tracking-print-summary { display: block !important; font: 10pt/1.4 Arial, sans-serif; }
+        .tracking-print-summary h1 { font-size: 18pt; margin: 0 0 12px; }
+        .tracking-print-summary h2 { font-size: 12pt; margin: 18px 0 8px; }
+        .tracking-print-summary dl { display: grid; grid-template-columns: 8rem 1fr; gap: 5px 12px; }
+        .tracking-print-summary dt { font-weight: bold; }
+        .tracking-print-summary dd { margin: 0; overflow-wrap: anywhere; }
+        .tracking-print-summary table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .tracking-print-summary th, .tracking-print-summary td { border: 1px solid #aaa; padding: 6px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+        .tracking-print-summary thead { display: table-header-group; }
+        .tracking-print-summary tr { break-inside: avoid; }
+        .tracking-print-summary .print-note { margin-top: 12px; font-size: 9pt; color: #444; }
+    }
 </style>
 
 @php
@@ -59,7 +80,38 @@
     );
 @endphp
 
-<div class="container">
+<div class="container" data-tracking-page
+    x-data="{
+        shareMessage: '',
+        printedAt: '',
+        preparePrint() {
+            this.printedAt = new Intl.DateTimeFormat('en-PH', {
+                dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Manila'
+            }).format(new Date());
+        },
+        async copyTrackingLink(ref = 'trackingLink') {
+            this.shareMessage = '';
+            try {
+                if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+                await navigator.clipboard.writeText(this.$refs[ref].value);
+                this.shareMessage = ref === 'publicTrackingLink' ? 'Public tracking link copied.' : 'Link copied. The recipient must sign in and have access.';
+            } catch {
+                this.$refs[ref].focus();
+                this.$refs[ref].select();
+                this.shareMessage = 'Select and copy the link above.';
+            }
+        },
+        async shareTrackingLink(ref = 'trackingLink') {
+            this.shareMessage = '';
+            try {
+                await navigator.share({ title: 'Document Tracking', url: this.$refs[ref].value });
+            } catch (error) {
+                if (error.name !== 'AbortError') this.shareMessage = 'Sharing is unavailable. Copy the link instead.';
+            }
+        }
+    }"
+    @beforeprint.window="preparePrint()">
+    <div class="tracking-screen">
     <h1 class="text-2xl font-bold mb-4">Document Tracking</h1>
     <div class="tracking-container">
         <div class="tracking-header">
@@ -173,22 +225,104 @@
 
         <div class="action-buttons" style="margin-top: 30px;">
             <div class="btn-group">
-                <button class="btn btn-outline" id="share-btn"><i class="fas fa-share-alt"></i> Share Tracking</button>
-                <button class="btn btn-outline" id="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Summary</button>
+                <button type="button" class="btn btn-outline" id="share-btn" @click="shareMessage = ''; $flux.modal('share-tracking').show()"><i class="fas fa-share-alt"></i> Share Tracking</button>
+                <a class="btn btn-outline" id="print-btn" href="{{ route('documents.tracking-summary', $document) }}" target="_blank" rel="noopener"><i class="fas fa-print"></i> Print Summary</a>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('share-btn')?.addEventListener('click', () => {
-            const url = window.location.href;
-            if (navigator.share) {
-                navigator.share({ title: 'Document Tracking', url: url });
-            } else {
-                navigator.clipboard.writeText(url).then(() => alert('Tracking link copied to clipboard!'));
-            }
-        });
-    });
-</script>
+    <flux:modal name="share-tracking" class="max-w-lg w-full">
+        <div class="space-y-4">
+            <flux:heading size="lg">Share Tracking</flux:heading>
+            <flux:heading size="sm">Internal tracking link</flux:heading>
+            <flux:text>Sign-in required. Only users with permission to view this document can open this link. Sharing does not grant access.</flux:text>
+            <div>
+                <label for="tracking-share-link" class="mb-1 block text-sm font-medium">Tracking link</label>
+                <input id="tracking-share-link" x-ref="trackingLink" type="text" readonly
+                    value="{{ route('documents.track-document', ['number' => $document->document_number]) }}"
+                    @click="$el.select()" class="w-full rounded border border-gray-300 px-3 py-2 text-sm">
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <flux:button type="button" variant="primary" @click="copyTrackingLink()">Copy link</flux:button>
+                <flux:button type="button" x-show="typeof navigator.share === 'function'" @click="shareTrackingLink()">Share via device</flux:button>
+            </div>
+            <div class="space-y-3 border-t border-gray-200 pt-4">
+                <flux:heading size="sm">Public tracking link</flux:heading>
+                <flux:text>Anyone with this link can view the document reference, type, status and workflow progress without signing in. No subject, content, attachments, names, signatures, remarks or activity logs are shared.</flux:text>
+                <flux:select wire:model="shareExpiresIn" label="Link expires after">
+                    <flux:select.option value="1">1 hour</flux:select.option>
+                    <flux:select.option value="24">1 day</flux:select.option>
+                    <flux:select.option value="168">7 days</flux:select.option>
+                </flux:select>
+                <flux:error name="shareExpiresIn" />
+                <flux:button type="button" wire:click="createPublicShare" wire:loading.attr="disabled" wire:target="createPublicShare">Create public link</flux:button>
+                @if($publicShareUrl ?? '')
+                    <div wire:key="public-tracking-link-{{ $publicShareId }}">
+                        <label for="public-tracking-share-link" class="mb-1 block text-sm font-medium">Public link — copy before leaving this page</label>
+                        <input id="public-tracking-share-link" x-ref="publicTrackingLink" type="text" readonly value="{{ $publicShareUrl }}" @click="$el.select()" class="w-full rounded border border-gray-300 px-3 py-2 text-sm">
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            <flux:button type="button" @click="copyTrackingLink('publicTrackingLink')">Copy public link</flux:button>
+                            <flux:button type="button" x-show="typeof navigator.share === 'function'" @click="shareTrackingLink('publicTrackingLink')">Share public link</flux:button>
+                        </div>
+                    </div>
+                @endif
+                @if(isset($trackingShares) && $trackingShares->isNotEmpty())
+                    <flux:heading size="sm">Your active public links</flux:heading>
+                    @foreach($trackingShares as $trackingShare)
+                        <div wire:key="tracking-share-{{ $trackingShare->id }}" class="flex items-center justify-between gap-3 text-sm">
+                            <span>Created {{ $trackingShare->created_at->timezone('Asia/Manila')->format('M d, h:i A') }} · Expires {{ $trackingShare->expires_at->timezone('Asia/Manila')->format('M d, h:i A') }} PHT</span>
+                            <flux:button type="button" size="sm" variant="danger" wire:click="revokePublicShare({{ $trackingShare->id }})" wire:confirm="Revoke this public tracking link? It will stop working immediately." wire:loading.attr="disabled">Revoke</flux:button>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+            <p role="status" aria-live="polite" x-text="shareMessage" class="text-sm text-gray-600"></p>
+        </div>
+    </flux:modal>
+
+    <section class="tracking-print-summary" aria-label="Printable tracking summary">
+        <h1>Document Tracking Summary</h1>
+        <dl>
+            <dt>Reference</dt><dd>{{ $document->document_number }}</dd>
+            <dt>Subject</dt><dd>{{ $document->subject }}</dd>
+            <dt>Document type</dt><dd>{{ $document->documentType?->name ?? '—' }}</dd>
+            <dt>From</dt><dd>{{ $document->fromOffice?->name ?? '—' }}</dd>
+            <dt>To</dt><dd>{{ $document->toOffice?->name ?? $document->to_text ?? '—' }}</dd>
+            <dt>Status</dt><dd>{{ $rawStatus }}</dd>
+            <dt>Created</dt><dd>{{ $document->created_at->format('M d, Y h:i A') }}</dd>
+            <dt>Printed</dt><dd><span x-text="printedAt"></span> (Philippine time)</dd>
+        </dl>
+        <h2>Workflow</h2>
+        <table>
+            <colgroup><col><col style="width: 30%"><col style="width: 17%"><col style="width: 23%"></colgroup>
+            <thead><tr><th>Step</th><th>Office</th><th>Status</th><th>Completed at</th></tr></thead>
+            <tbody>
+                @forelse($steps as $step)
+                    <tr>
+                        <td>{{ $step->step_label }}</td>
+                        <td>{{ $step->office?->name ?? $step->active_user?->office?->name ?? 'Unassigned' }}</td>
+                        <td>{{ $step->status }}</td>
+                        <td>{{ $step->processed_at?->format('M d, Y h:i A') ?? '—' }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4">No workflow steps.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        <h2>Recent activity — latest 10 entries</h2>
+        <table>
+            <colgroup><col style="width: 25%"><col></colgroup>
+            <thead><tr><th>Date</th><th>Activity</th></tr></thead>
+            <tbody>
+                @forelse($document->logs->sortBy([['created_at', 'desc'], ['id', 'desc']])->take(10) as $log)
+                    <tr><td>{{ $log->created_at->format('M d, Y h:i A') }}</td><td>{{ $log->description ?: ucfirst($log->action) }}</td></tr>
+                @empty
+                    <tr><td colspan="2">No activity recorded.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        <p class="print-note">Internal university tracking summary. This is a snapshot, not the original document or a signed approval.</p>
+    </section>
+</div>
+</div>

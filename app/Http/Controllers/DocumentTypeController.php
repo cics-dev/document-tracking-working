@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 class DocumentTypeController extends Controller
 {
-    public function index(User $user)
+    public function index(User $user, ?int $officeId = null)
     {
         $allowedIds = DB::table('role_document_types')
-            ->where('role_id', $user->effectiveRoleId())
+            ->where('role_id', $user->effectiveRoleId($officeId))
             ->where('is_allowed', true)
             ->pluck('document_type_id');
 

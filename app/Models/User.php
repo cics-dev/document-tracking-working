@@ -81,14 +81,25 @@ class User extends Authenticatable
      * The OIC temporarily uses the designated head's role for that office's
      * workflow permissions. The user's stored role is never changed.
      */
-    public function effectiveRoleId(): ?int
+    public function effectiveRoleId(?int $officeId = null): ?int
     {
-        return $this->actingOffice()?->head?->role_id ?? $this->role_id;
+        if ($officeId === null) {
+            return $this->actingOffice()?->head?->role_id ?? $this->role_id;
+        }
+        if (! in_array($officeId, $this->workflowOfficeIds(), true)) {
+            return null;
+        }
+        $office = Office::with('head')->find($officeId);
+
+        return $office?->acting_head_id === $this->id
+            ? ($office->head?->role_id ?? $this->role_id)
+            : $this->role_id;
     }
 
-    public function isRelievedByOic(): bool
+    public function isRelievedByOic(?int $officeId = null): bool
     {
         return Office::query()
+            ->when($officeId !== null, fn ($query) => $query->whereKey($officeId))
             ->where('head_id', $this->id)
             ->where('acting_head_id', '!=', $this->id)
             ->whereHas('actingHead', fn ($query) => $query->whereNull('users.deleted_at'))
@@ -100,25 +111,34 @@ class User extends Authenticatable
         return $this->actingOffice() !== null;
     }
 
+    public function managesMultipleOffices(): bool
+    {
+        return Office::query()->where(fn ($query) => $query
+            ->where('head_id', $this->id)->orWhere('acting_head_id', $this->id))
+            ->count() > 1;
+    }
+
     public function workflowOfficeIds(): array
     {
         return collect([$this->office_id])
+            ->merge(Office::where('head_id', $this->id)->pluck('id'))
             ->merge($this->actingHeadOf()->pluck('id'))
             ->filter()
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values()
             ->all();
     }
 
-    public function hasAccess(string $key): bool
+    public function hasAccess(string $key, ?int $officeId = null): bool
     {
-        $roleId = $this->effectiveRoleId();
+        $roleIds = $officeId !== null
+            ? [$this->effectiveRoleId($officeId)]
+            : (collect($this->workflowOfficeIds())->map(fn ($id) => $this->effectiveRoleId($id))->all() ?: [$this->effectiveRoleId()]);
 
-        return $roleId !== null
-            && Role::query()
-                ->whereKey($roleId)
-                ->whereHas('permissions', fn ($query) => $query->where('key', $key))
-                ->exists();
+        return Role::query()->whereIn('id', array_filter($roleIds))
+            ->whereHas('permissions', fn ($query) => $query->where('key', $key))
+            ->exists();
     }
 
     public function role()

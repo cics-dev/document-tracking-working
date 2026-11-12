@@ -39,7 +39,7 @@ class DocumentWorkflowService
 
         $this->twoFactor->throttle($actor->id, $code);
 
-        return DB::transaction(function () use ($document, $actor, $remarks, $isRejection, $code, $stepId) {
+        $result = DB::transaction(function () use ($document, $actor, $remarks, $isRejection, $code, $stepId) {
             $document = Document::query()->lockForUpdate()->findOrFail($document->id);
 
             if (! in_array($document->status, ['Sent', 'In Process'], true)) {
@@ -107,6 +107,10 @@ class DocumentWorkflowService
 
             return compact('document', 'step', 'completed', 'description');
         });
+
+        app(DocumentEmailService::class)->processed($result);
+
+        return $result;
     }
 
     private function stepStatus(DocumentStep $step, bool $isRejection): string

@@ -5,7 +5,6 @@ namespace App\Livewire\Documents;
 use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\UserController;
-use App\Mail\DocumentForReview;
 use App\Models\Document;
 use App\Models\DocumentAttachment;
 use App\Models\DocumentFlowStage;
@@ -19,7 +18,6 @@ use App\Support\DocumentNumber;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
@@ -107,6 +105,8 @@ class CreateDocument extends Component
             403,
             'You do not have permission to send documents.'
         );
+        $officeIds = Auth::user()->workflowOfficeIds();
+        $this->document_from_id = count($officeIds) === 1 ? $officeIds[0] : '';
         $this->redirect_mode = $number ? 'revision' : ($draft_id ? 'edit' : null);
         $this->office_type = Auth::user()->office->office_type;
         $this->manual_document_year = date('Y');
@@ -127,6 +127,10 @@ class CreateDocument extends Component
         $loadedExistingDocument = $this->handleSessionData();
         if (! $loadedExistingDocument) {
             $this->handlePassedData($number, $draft_id);
+        }
+
+        if ($this->document_from_id) {
+            $this->refreshOfficeDocumentTypes();
         }
 
         if (! $loadedExistingDocument && ! $this->redirect_mode && request()->string('level')->lower()->value() === 'intra') {
@@ -161,7 +165,9 @@ class CreateDocument extends Component
 
         $headIsTemporarilyRelieved = $this->headIsTemporarilyRelieved();
 
-        return view('livewire.documents.create-document', compact('selectedDocumentType', 'flowConditions', 'cfOfficeRecords', 'headIsTemporarilyRelieved'))
+        $senderOfficeOptions = Office::whereIn('id', Auth::user()->workflowOfficeIds())->orderBy('name')->get();
+
+        return view('livewire.documents.create-document', compact('senderOfficeOptions', 'selectedDocumentType', 'flowConditions', 'cfOfficeRecords', 'headIsTemporarilyRelieved'))
             ->layout('layouts.app');
     }
 
@@ -236,9 +242,41 @@ class CreateDocument extends Component
 
     public function updatedDocumentFromId(): void
     {
+        $this->validate(['document_from_id' => ['required', Rule::in(Auth::user()->workflowOfficeIds())]]);
+        $this->refreshOfficeDocumentTypes();
+        if (! collect($this->types)->contains('id', (int) $this->document_type_id)) {
+            $this->document_type_id = '';
+            $this->handleUpdateDocumentType();
+        }
         $this->flowGroupSelections = [];
         $this->syncRequiredConfiguredSignatories();
         $this->syncFlowGroupSelections();
+    }
+
+    private function refreshOfficeDocumentTypes(): void
+    {
+        $this->types = app(DocumentTypeController::class)->index(Auth::user(), (int) $this->document_from_id);
+        if ($this->original_document_id) {
+            $source = Document::find($this->original_document_id);
+            $generatedTypes = DocumentGenerationRule::where('source_context', 'internal')
+                ->where('source_document_type_id', $source?->document_type_id)->where('is_active', true)
+                ->whereHas('roles', fn ($query) => $query->whereKey(Auth::user()->effectiveRoleId((int) $this->document_from_id)))
+                ->pluck('target_document_type_id');
+            $this->types = $this->types->merge(DocumentType::whereIn('id', $generatedTypes)->get())->unique('id')->values();
+        }
+        $office = $this->sendingOffice();
+        $this->office_type = $office?->office_type ?? '';
+        $this->offices = collect(app(OfficeController::class)->index($this->office_type, false))->keyBy('id');
+    }
+
+    private function ensureSendingOfficeAllowed(): void
+    {
+        $this->validate(['document_from_id' => ['required', Rule::in(Auth::user()->workflowOfficeIds())]]);
+        $user = Auth::user();
+        if (! $user->hasAccess('send_documents', (int) $this->document_from_id)
+            && ! ($this->external_document_id && $user->hasAccess('send_external_documents', (int) $this->document_from_id))) {
+            throw ValidationException::withMessages(['document_from_id' => 'You do not have permission to send documents for this office.']);
+        }
     }
 
     public function signatoryOfficeOptions(array $signatory): array
@@ -485,6 +523,7 @@ class CreateDocument extends Component
 
     public function previewDocument()
     {
+        $this->ensureSendingOfficeAllowed();
         $fromOffice = $this->document_from_id ? Office::with('head', 'actingHead')->find($this->document_from_id) : Auth::user()->office->loadMissing('head', 'actingHead');
         $fromUser = $fromOffice ? ($this->documentTypeAssignee($fromOffice) ?? Auth::user()) : Auth::user();
         $toName = 'N/A';
@@ -560,7 +599,7 @@ class CreateDocument extends Component
             'senderSignaturePolicy' => $typeObj['sender_signature_policy'] ?? 'approved',
             'approverDisplayMode' => $typeObj['approver_display_mode'] ?? 'labeled',
             'documentNumber' => $docNumber,
-            'unit' => Auth::user()->office->abbreviation,
+            'unit' => $fromOffice->abbreviation,
             'signatories' => $signatoriesData->toJson(),
             'cfs' => $cfsData->toJson(),
             'attachment' => $this->attachment,
@@ -578,6 +617,7 @@ class CreateDocument extends Component
 
     public function submitDocument($action)
     {
+        $this->ensureSendingOfficeAllowed();
         $isSend = $action === 'send';
         $status = $isSend ? 'Sent' : 'Draft';
 
@@ -668,11 +708,7 @@ class CreateDocument extends Component
         });
 
         if ($isSend) {
-            $recipient = $document->nextPendingStep()?->active_user;
-            if (! empty($recipient?->email)) {
-                // Disabled for testing; uncomment for deployment.
-                // Mail::to($recipient->email)->send(new DocumentForReview($document, $recipient->name));
-            }
+            app(\App\Services\DocumentEmailService::class)->sent($document);
 
             $document->logs()->create([
                 'user_id' => Auth::id(),
@@ -688,7 +724,7 @@ class CreateDocument extends Component
 
     private function ensureGenerationIsAllowed(): void
     {
-        if ($this->external_document_id && Auth::user()->isRelievedByOic()) {
+        if ($this->external_document_id && Auth::user()->isRelievedByOic((int) $this->document_from_id)) {
             throw ValidationException::withMessages(['document_type_id' => 'Your OIC must generate this document.']);
         }
         if (! $this->original_document_id) {
@@ -705,10 +741,10 @@ class CreateDocument extends Component
         if (str_starts_with($source->status, 'Generated ')) {
             throw ValidationException::withMessages(['document_type_id' => 'This document has already been used to generate another document.']);
         }
-        if (Auth::user()->isRelievedByOic()) {
+        if (Auth::user()->isRelievedByOic((int) $this->document_from_id)) {
             throw ValidationException::withMessages(['document_type_id' => 'Your OIC must generate this document.']);
         }
-        if (! $rule->roles()->whereKey(Auth::user()->effectiveRoleId())->exists()) {
+        if (! $rule->roles()->whereKey(Auth::user()->effectiveRoleId((int) $this->document_from_id))->exists()) {
             throw ValidationException::withMessages([
                 'document_type_id' => 'This generation action is not assigned to your role.',
             ]);
@@ -726,7 +762,7 @@ class CreateDocument extends Component
             ->first();
         $canGenerate = $generationStep?->isAssignedTo(Auth::user());
 
-        if ($rule->requires_assigned_office && ! $canGenerate) {
+        if ($rule->requires_assigned_office && (! $canGenerate || (int) $generationStep->office_id !== (int) $this->document_from_id)) {
             throw ValidationException::withMessages([
                 'document_type_id' => 'Only the office assigned to the generation step may create this document.',
             ]);
@@ -777,7 +813,7 @@ class CreateDocument extends Component
     {
         $isPublic = $this->selectedType()?->is_publicly_creatable ?? false;
         $allowed = DB::table('role_document_types')
-            ->where('role_id', Auth::user()->effectiveRoleId())
+            ->where('role_id', Auth::user()->effectiveRoleId((int) $this->document_from_id))
             ->where('document_type_id', $this->document_type_id)
             ->where('is_allowed', true)
             ->exists();
@@ -787,7 +823,7 @@ class CreateDocument extends Component
             ->where('source_document_type_id', $source->document_type_id)
             ->where('target_document_type_id', $this->document_type_id)
             ->where('is_active', true)
-            ->whereHas('roles', fn ($query) => $query->whereKey(Auth::user()->effectiveRoleId()))
+            ->whereHas('roles', fn ($query) => $query->whereKey(Auth::user()->effectiveRoleId((int) $this->document_from_id)))
             ->exists();
 
         if (! $isPublic && ! $allowed && ! $allowedByGenerationRule) {
@@ -799,12 +835,7 @@ class CreateDocument extends Component
 
     private function numberingOffice(): Office
     {
-        $user = Auth::user();
-        $fromOffice = $this->document_from_id ? Office::find($this->document_from_id) : null;
-
-        return $fromOffice && $fromOffice->acting_head_id === $user->id
-            ? $fromOffice
-            : $user->office;
+        return $this->sendingOffice() ?? Auth::user()->office;
     }
 
     private function generateDocumentNumber()
@@ -1169,7 +1200,7 @@ class CreateDocument extends Component
         $this->redirect_mode = $data['redirect_mode'] ?? null;
         $this->document_to_id = $data['to'] ?? $data['to_id'] ?? null;
         $this->document_to_text = $data['to'] ?? null;
-        $this->document_from_id = $data['from'] ?? null;
+        $this->document_from_id = $data['from'] ?? $this->document_from_id;
         $this->document_type_id = $data['document_type_id'] ?? null;
         $this->document_type = $data['document_type'] ?? null;
         $this->subject = $data['subject'] ?? '';

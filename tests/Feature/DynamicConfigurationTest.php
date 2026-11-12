@@ -175,6 +175,7 @@ class DynamicConfigurationTest extends TestCase
         $this->actingAs($user);
         $component = new CreateDocument;
         $component->original_document_id = $document->id;
+        $component->document_from_id = $office->id;
         $component->document_type_id = (string) $targetType->id;
         $method = new ReflectionMethod(CreateDocument::class, 'ensureDocumentTypeAllowed');
         $method->setAccessible(true);

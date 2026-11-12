@@ -18,7 +18,7 @@ class DocumentQueryService
             || ($user->hasAccess('receive_documents') && $this->receivedBy(Document::query(), $user)->where('document_number', $number)->exists());
     }
 
-    public function listFor(User $user, string $mode): Builder
+    public function listFor(User $user, string $mode, ?int $officeId = null): Builder
     {
         $query = Document::query()->with([
             'documentType',
@@ -30,26 +30,28 @@ class DocumentQueryService
             'cfs.user.office.head',
         ]);
 
-        $officeIds = $user->workflowOfficeIds();
+        abort_if($officeId !== null && ! in_array($officeId, $user->workflowOfficeIds(), true), 403);
+        $officeIds = $officeId !== null ? [$officeId] : $user->workflowOfficeIds();
 
         return match ($mode) {
             'all' => $query,
-            'Sent' => $query->where(function (Builder $query) use ($user, $officeIds) {
+            'Sent' => $query->where(function (Builder $query) use ($user, $officeIds, $officeId) {
                 $query->whereIn('from_id', $officeIds)
-                    ->orWhere('created_by', $user->id);
+                    ->when($officeId === null, fn ($query) => $query->orWhere('created_by', $user->id));
             }),
-            'received' => $this->receivedBy($query, $user),
+            'received' => $this->receivedBy($query, $user, $officeId),
             default => abort(404),
         };
     }
 
-    public function receivedBy(Builder $query, User $user): Builder
+    public function receivedBy(Builder $query, User $user, ?int $officeId = null): Builder
     {
-        $officeIds = $user->workflowOfficeIds();
+        abort_if($officeId !== null && ! in_array($officeId, $user->workflowOfficeIds(), true), 403);
+        $officeIds = $officeId !== null ? [$officeId] : $user->workflowOfficeIds();
 
         return $query
             ->where('status', '!=', 'Draft')
-            ->where(function (Builder $query) use ($user, $officeIds) {
+            ->where(function (Builder $query) use ($user, $officeIds, $officeId) {
                 $query->where(function (Builder $direct) use ($officeIds) {
                     // A direct recipient may immediately see documents that have no
                     // workflow. When workflow steps exist, visibility must respect
@@ -58,9 +60,9 @@ class DocumentQueryService
                         ->whereDoesntHave('steps');
                 })
                     ->orWhereHas('steps', fn (Builder $steps) => $steps
-                        ->where(function (Builder $steps) use ($user, $officeIds) {
-                            $steps->where('user_id', $user->id)
-                                ->orWhereIn('office_id', $officeIds);
+                        ->where(function (Builder $steps) use ($user, $officeIds, $officeId) {
+                            $steps->whereIn('office_id', $officeIds)
+                                ->when($officeId === null, fn ($query) => $query->orWhere('user_id', $user->id));
                         })
                         ->where(function (Builder $steps) {
                             $steps->where('status', '!=', 'Pending')
@@ -93,7 +95,10 @@ class DocumentQueryService
                                         });
                                 });
                         }))
-                    ->orWhereHas('cfs', fn (Builder $copies) => $copies->where('user_id', $user->id));
+                    ->orWhere(fn (Builder $approvedCopies) => $approvedCopies
+                        ->where('documents.status', 'Approved')
+                        ->whereHas('cfs', fn (Builder $copies) => $copies->where('user_id', $user->id)
+                            ->when($officeId !== null, fn ($query) => $query->whereHas('user', fn ($query) => $query->where('office_id', $officeId)))));
             });
     }
 

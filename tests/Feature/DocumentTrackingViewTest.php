@@ -46,6 +46,7 @@ class DocumentTrackingViewTest extends TestCase
             'status' => 'Pending',
         ]);
 
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag);
         $html = view('livewire.documents.track-document', [
             'document' => $document->load('documentType', 'steps.user.office', 'steps.office', 'logs'),
         ])->render();

@@ -158,16 +158,17 @@
             <div class="flex items-center justify-between">
                 <flux:heading size="lg">Attachment Preview</flux:heading>
             </div>
+            <p wire:loading wire:target="viewAttachment" class="p-4 text-gray-500" role="status">Loading attachment...</p>
             @if ($selectedAttachment)
                 <div class="border rounded-lg overflow-hidden">
                     @if ($attachmentPreviewType === 'pdf')
                         @if ($attachmentPreviewUrl)
-                            <iframe src="{{ $attachmentPreviewUrl }}" class="w-full h-[600px] border rounded" frameborder="0"></iframe>
+                            <x-attachment-preview-media :url="$attachmentPreviewUrl" type="pdf" />
                         @else
                             <p>Loading preview...</p>
                         @endif
                     @elseif($attachmentPreviewType === 'image')
-                        <img src="{{ $attachmentPreviewUrl }}" class="w-full max-h-[700px] object-contain" alt="Attachment Preview">
+                        <x-attachment-preview-media :url="$attachmentPreviewUrl" type="image" />
                     @else
                         <p class="p-4 text-amber-700">This file type cannot be previewed.</p>
                     @endif

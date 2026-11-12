@@ -4,42 +4,43 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky stashable class="no-print border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
+        <flux:sidebar sticky collapsible class="no-print border-r border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800">
 
-            <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+            <flux:sidebar.header>
+                <flux:sidebar.brand :href="route('dashboard')" :logo="asset('/assets/img/zppsu-logo.png')" name="DTS - ZPPSU" wire:navigate />
+                <flux:sidebar.collapse class="hidden lg:flex" tooltip="Collapse or expand sidebar" />
+                <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
+            </flux:sidebar.header>
 
-            <a href="{{ route('dashboard') }}" class="mr-5 flex items-center space-x-2" wire:navigate>
-                <x-app-logo />
-            </a>
-
-            <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Navigation')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+            <flux:sidebar.nav>
+                <div class="grid">
+                    <div class="px-3 py-2 text-sm font-medium text-zinc-400 in-data-flux-sidebar-collapsed-desktop:hidden">{{ __('Navigation') }}</div>
+                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:sidebar.item>
                     @if(auth()->user()?->hasAccess('manage_roles'))
-                            <flux:navlist.item icon="user-group" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>{{ __('Roles') }}</flux:navlist.item>
+                            <flux:sidebar.item icon="user-group" :href="route('roles')" :current="request()->routeIs('roles')" wire:navigate>{{ __('Roles') }}</flux:sidebar.item>
                     @endif
                     @if(auth()->user()?->hasAccess('manage_users'))
-                            <flux:navlist.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
+                            <flux:sidebar.item icon="user" :href="route('users.list-users')" :current="request()->routeIs('users.*')" wire:navigate>{{ __('Users') }}</flux:sidebar.item>
                     @endif
                     @if(auth()->user()?->hasAccess('manage_offices'))
-                            <flux:navlist.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:navlist.item>
+                            <flux:sidebar.item icon="building-office" :href="route('offices.list-offices')" :current="request()->routeIs('offices.*')" wire:navigate>{{ __('Offices') }}</flux:sidebar.item>
                     @endif
                     @if(auth()->user()?->hasAccess('manage_access_rights'))
-                            <flux:navlist.item icon="key" :href="route('access-rights')" :current="request()->routeIs('access-rights')" wire:navigate>{{ __('Access Rights') }}</flux:navlist.item>
+                            <flux:sidebar.item icon="key" :href="route('access-rights')" :current="request()->routeIs('access-rights')" wire:navigate>{{ __('Access Rights') }}</flux:sidebar.item>
                     @endif
                     @if(auth()->user()?->hasAccess('manage_document_flows'))
-                            <flux:navlist.item icon="document-text" :href="route('document-types')" :current="request()->routeIs('document-types')" wire:navigate>{{ __('Document Types') }}</flux:navlist.item>
-                            <flux:navlist.item icon="arrow-path-rounded-square" :href="route('document-flows')" :current="request()->routeIs('document-flows')" wire:navigate>{{ __('Document Flows') }}</flux:navlist.item>
+                            <flux:sidebar.item icon="document-text" :href="route('document-types')" :current="request()->routeIs('document-types')" wire:navigate>{{ __('Document Types') }}</flux:sidebar.item>
+                            <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('document-flows')" :current="request()->routeIs('document-flows')" wire:navigate>{{ __('Document Flows') }}</flux:sidebar.item>
                     @endif
                     <livewire:notifications.sidebar-notifications />
-                </flux:navlist.group>
-            </flux:navlist>
+                </div>
+            </flux:sidebar.nav>
 
             <flux:spacer />
 
             <!-- Desktop User Menu -->
             <flux:dropdown position="bottom" align="start">
-                <flux:profile
+                <flux:sidebar.profile
                     :name="auth()->user()->position"
                     :initials="auth()->user()->initials()"
                     icon-trailing="chevrons-up-down"

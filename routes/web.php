@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ChatBotController;
+use App\Http\Controllers\PublicDocumentTrackingController;
+use App\Http\Controllers\DocumentTrackingSummaryController;
 use App\Http\Controllers\ConnectionTestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentAttachmentPreviewController;
@@ -44,7 +46,12 @@ Route::get('dashboard', DashboardController::class)
 
 Route::post('/chat/send', [ChatBotController::class, 'sendChat'])->name('chat.send');
 
+Route::get('/tracking/{token}', PublicDocumentTrackingController::class)
+    ->where('token', '[a-f0-9]{64}')->middleware('throttle:60,1')->name('tracking.public');
+
 Route::middleware(['auth'])->group(function () {
+    Route::get('/documents/{document}/tracking-summary.pdf', DocumentTrackingSummaryController::class)
+        ->name('documents.tracking-summary');
     Route::get('/document/preview', [DocumentPreviewController::class, 'preview'])->name('document.preview');
     Route::get('/documents/{document}/tracking-status', [DocumentTrackingController::class, 'getTrackingStatus'])
         ->name('documents.tracking-status');

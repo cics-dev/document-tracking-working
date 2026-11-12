@@ -4,7 +4,7 @@ use App\Livewire\Documents\CreateDocument;
 use App\Models\{Document, DocumentType, Office, Permission, Role, User};
 use Livewire\Livewire;
 
-it('uses the creator office normally and the from office when the creator is its OIC', function (string $abbreviation, bool $manual, bool $isOic) {
+it('uses the selected represented office for all document numbering', function (string $abbreviation, bool $manual, bool $isOic) {
     $role = Role::create(['role' => 'numbering-user', 'description' => 'Numbering user']);
     $role->permissions()->attach(Permission::where('key', 'send_documents')->firstOrFail());
     $creatorOffice = Office::create(['name' => 'Creator office', 'abbreviation' => 'SAO', 'office_type' => 'ADMIN', 'document_number_tag' => 'FINANCE']);
@@ -12,9 +12,9 @@ it('uses the creator office normally and the from office when the creator is its
     $creator = User::factory()->create(['office_id' => $creatorOffice->id, 'role_id' => $role->id]);
     $sender = User::factory()->create(['office_id' => $senderOffice->id]);
     $creatorOffice->update(['head_id' => $creator->id]);
-    $senderOffice->update(['head_id' => $sender->id, 'acting_head_id' => $isOic ? $creator->id : null]);
+    $senderOffice->update(['head_id' => $isOic ? $sender->id : $creator->id, 'acting_head_id' => $isOic ? $creator->id : null]);
     $type = DocumentType::create(['name' => 'Numbering '.$abbreviation, 'abbreviation' => $abbreviation, 'recipient_mode' => 'none', 'requires_signatories' => false, 'is_publicly_creatable' => true, 'document_level' => $abbreviation === 'INTRA' ? 'Intra' : 'Inter']);
-    $prefix = ($isOic ? 'OP(ADMIN)-' : 'SAO(FINANCE)-').$abbreviation.'-';
+    $prefix = 'OP(ADMIN)-'.$abbreviation.'-';
     Document::create(['document_number' => $prefix.'4-'.date('Y'), 'from_id' => $senderOffice->id, 'document_type_id' => $type->id, 'created_by' => $creator->id, 'subject' => 'Earlier number', 'content' => 'Body', 'status' => 'Sent']);
     $draft = Document::create(['document_number' => null, 'from_id' => $senderOffice->id, 'document_type_id' => $type->id, 'created_by' => $creator->id, 'subject' => 'Numbering draft', 'content' => 'Body', 'status' => 'Draft']);
     $this->actingAs($creator);

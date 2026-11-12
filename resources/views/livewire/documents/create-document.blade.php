@@ -15,6 +15,19 @@
             @endif
         </div>
 
+        @if($senderOfficeOptions->count() > 1)
+            <div class="mb-4">
+                <flux:select wire:model.live="document_from_id" label="From office" placeholder="Choose issuing office..." required>
+                    @foreach($senderOfficeOptions as $senderOffice)
+                        <flux:select.option value="{{ $senderOffice->id }}">
+                            {{ $senderOffice->name }} — {{ $senderOffice->acting_head_id === auth()->id() ? 'OIC' : ($senderOffice->head_id === auth()->id() ? 'Head' : 'Member') }}
+                        </flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:error name="document_from_id" />
+            </div>
+        @endif
+
         @if($redirect_mode != 'revision')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -420,16 +433,17 @@
             <div class="flex items-center justify-between">
                 <flux:heading size="lg">Attachment Preview</flux:heading>
             </div>
+            <p wire:loading wire:target="viewAttachment" class="p-4 text-gray-500" role="status">Loading attachment...</p>
             @if ($selectedAttachment)
                 <div class="border rounded-lg overflow-hidden">
                     @if ($selectedAttachment->file_type == 'pdf')
                         @if ($attachmentPreviewUrl)
-                            <iframe src="{{ $attachmentPreviewUrl }}" class="w-full h-[600px] border rounded" frameborder="0"></iframe>
+                            <x-attachment-preview-media :url="$attachmentPreviewUrl" type="pdf" />
                         @else
                             <p>Loading preview...</p>
                         @endif
                     @else
-                        <img src="{{ $attachmentPreviewUrl }}" class="w-full max-h-[700px] object-contain" alt="Attachment Preview">
+                        <x-attachment-preview-media :url="$attachmentPreviewUrl" type="image" />
                     @endif
                 </div>
             @endif

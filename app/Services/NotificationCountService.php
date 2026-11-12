@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Document;
-use App\Models\ExternalDocument;
 use App\Models\User;
 
 class NotificationCountService
@@ -15,11 +14,7 @@ class NotificationCountService
         $canViewAll = $user->hasAccess('view_all_documents');
         $canReceive = $user->hasAccess('receive_documents');
         $canSend = $user->hasAccess('send_documents');
-        $external = ExternalDocument::query();
-
-        if (! $canViewAll) {
-            $external->whereIn('to_id', $user->workflowOfficeIds());
-        }
+        $external = app(ExternalDocumentQueryService::class)->listFor($user);
 
         $counts = [
             'all' => $canViewAll

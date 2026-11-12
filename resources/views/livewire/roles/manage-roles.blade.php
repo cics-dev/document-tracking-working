@@ -30,8 +30,8 @@
 
         <section class="min-w-0">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search roles..." class="mb-4" />
-            <div class="overflow-x-auto rounded-lg border bg-white shadow-sm">
-                <table class="w-full min-w-[42rem] text-left text-sm">
+            <div class="min-w-0 overflow-x-auto rounded-lg border bg-white shadow-sm">
+                <table class="w-full text-left text-sm" style="table-layout: fixed; min-width: 34rem; overflow-wrap: anywhere;"><colgroup><col style="width: clamp(8rem, 22%, 10rem);"><col><col style="width: 4rem;"><col style="width: 9.5rem;"></colgroup>
                     <thead class="bg-gray-100 text-xs uppercase text-gray-600"><tr><th class="p-3">Role</th><th class="p-3">Description</th><th class="p-3">Users</th><th class="p-3 text-right">Actions</th></tr></thead>
                     <tbody>
                         @forelse($roles as $item)
@@ -39,7 +39,7 @@
                                 <td class="p-3 font-mono">{{ $item->role }}</td>
                                 <td class="p-3">{{ $item->description }}</td>
                                 <td class="p-3">{{ $item->users_count }}</td>
-                                <td class="p-3"><div class="flex justify-end gap-2">
+                                <td class="p-3"><div class="flex flex-wrap justify-end gap-2">
                                     <flux:button wire:click="edit({{ $item->id }})" size="sm" variant="subtle">Edit</flux:button>
                                     <flux:button wire:click="delete({{ $item->id }})" wire:confirm="Delete this role?" size="sm" variant="danger" :disabled="$item->users_count > 0">Delete</flux:button>
                                 </div></td>

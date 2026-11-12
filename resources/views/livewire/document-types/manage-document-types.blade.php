@@ -94,8 +94,8 @@
         </div>
     </form>
 
-    <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-        <table class="w-full text-left text-sm">
+    <div class="min-w-0 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table class="w-full text-left text-sm" style="table-layout: fixed; min-width: 30rem; overflow-wrap: anywhere;"><colgroup><col><col style="width: 7.5rem;"><col style="width: 10rem;"></colgroup>
             <thead class="border-b border-gray-200 bg-gray-50 text-gray-500">
                 <tr><th class="px-5 py-3">Name</th><th class="px-5 py-3">Abbreviation</th><th class="px-5 py-3 text-right">Actions</th></tr>
             </thead>
@@ -104,7 +104,7 @@
                     <tr>
                         <td class="px-5 py-3 font-medium text-gray-900">{{ $type->name }}</td>
                         <td class="px-5 py-3"><span class="inline-flex rounded-md border border-black/10 px-2 py-1 text-xs font-medium text-gray-800" style="background-color: {{ $type->chip_color }}">{{ $type->abbreviation }}</span></td>
-                        <td class="px-5 py-3"><div class="flex justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $type->id }})" icon="pencil-square">Edit</flux:button><flux:button size="sm" wire:click="delete({{ $type->id }})" wire:confirm="Delete this document type?" variant="danger" icon="trash">Delete</flux:button></div></td>
+                        <td class="px-5 py-3"><div class="flex flex-wrap justify-end gap-2"><flux:button size="sm" wire:click="edit({{ $type->id }})" icon="pencil-square">Edit</flux:button><flux:button size="sm" wire:click="delete({{ $type->id }})" wire:confirm="Delete this document type?" variant="danger" icon="trash">Delete</flux:button></div></td>
                     </tr>
                 @empty
                     <tr><td colspan="3" class="px-5 py-8 text-center text-gray-500">No document types yet.</td></tr>
