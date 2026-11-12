@@ -15,7 +15,7 @@ class DocumentPreviewController extends Controller
         $key = array_key_first($request->query());
         abort_unless(is_string($key) && $key !== '', 404, 'Preview session expired or not found.');
 
-        $data = session()->pull($key);
+        $data = session()->get($key);
 
         abort_unless(is_array($data), 404, 'Preview session expired or not found.');
 

@@ -90,7 +90,11 @@
             </div>
         </div>
     @endif
-    @if(
+    @if($oicViewOnly)
+        <div role="status" class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            You can view this document, but only your assigned OIC can take action while acting on your behalf.
+        </div>
+    @elseif(
         (
             $document->document_level != 'Intra' &&
             ($document['from_id'] != auth()->user()->office->id || auth()->user()->id == 2) &&

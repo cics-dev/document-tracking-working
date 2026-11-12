@@ -64,6 +64,9 @@ class DocumentQueryService
                         })
                         ->where(function (Builder $steps) {
                             $steps->where('status', '!=', 'Pending')
+                                ->orWhere(fn (Builder $history) => $history
+                                    ->where('documents.status', 'like', 'Generated %')
+                                    ->where('document_steps.step_type', 'action'))
                                 ->orWhere(function (Builder $steps) {
                                     $steps->where('status', 'Pending')
                                         ->where(function (Builder $readyDocument) {

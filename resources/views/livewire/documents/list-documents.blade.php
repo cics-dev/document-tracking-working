@@ -31,23 +31,11 @@
     </div>
     
     <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 [&>*]:min-w-0">
+        <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 [&>*]:min-w-0">
             <div class="w-full min-w-0">
                 <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or number..." />
             </div>
             
-            <div class="w-full min-w-0">
-                <flux:select wire:model.live="statusFilter" placeholder="All statuses">
-                    <flux:select.option value="Draft">Draft</flux:select.option>
-                    <flux:select.option value="Sent">Sent</flux:select.option>
-                    <flux:select.option value="In Process">In Process</flux:select.option>
-                    <flux:select.option value="Approved">Approved</flux:select.option>
-                    <flux:select.option value="Archived">Archived</flux:select.option>
-                    <flux:select.option value="Returned">Returned</flux:select.option>
-                    <flux:select.option value="Rejected">Rejected</flux:select.option>
-                </flux:select>
-            </div>
-
             <div class="w-full min-w-0">
                 <flux:input.group class="min-w-0 max-w-full">
                     <flux:input.group.prefix>From</flux:input.group.prefix>
@@ -61,6 +49,23 @@
                 </flux:input.group>
             </div>
 
+        </div>
+
+        <div class="mt-3 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
+            <div class="w-full min-w-0">
+                <flux:select wire:model.live="statusFilter" placeholder="All statuses">
+                    @if($mode === 'Sent')
+                        <flux:select.option value="Draft">Draft</flux:select.option>
+                    @endif
+                    <flux:select.option value="Sent">Sent</flux:select.option>
+                    <flux:select.option value="In Process">In Process</flux:select.option>
+                    <flux:select.option value="Approved">Approved</flux:select.option>
+                    <flux:select.option value="Archived">Archived</flux:select.option>
+                    <flux:select.option value="Returned">Returned</flux:select.option>
+                    <flux:select.option value="Rejected">Rejected</flux:select.option>
+                </flux:select>
+            </div>
+
             @if($documentTypeTab == 'inter')
                 <div class="w-full min-w-0">
                     <x-searchable-filter-select
@@ -71,6 +76,14 @@
                     />
                 </div>
             @endif
+
+            <div class="w-full min-w-0">
+                <flux:select wire:model.live="formatFilter" aria-label="Physical or digital documents">
+                    <flux:select.option value="">All formats</flux:select.option>
+                    <flux:select.option value="physical">Physical</flux:select.option>
+                    <flux:select.option value="digital">Digital</flux:select.option>
+                </flux:select>
+            </div>
 
             <flux:button wire:click="resetFilters" variant="subtle" icon="arrow-path" class="w-full sm:w-auto">
                 Reset filters
@@ -102,6 +115,9 @@
     </div>
 
     <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200 bg-white">
+        <div class="border-b border-gray-200 px-6 py-3 text-sm text-gray-600" role="status" aria-live="polite">
+            {{ $documents->total() }} {{ Str::plural('document', $documents->total()) }}
+        </div>
         <table class="w-full text-sm text-left">
             <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
@@ -189,7 +205,9 @@
                                     <flux:button wire:click="trackDocument('{{ $document->document_number }}')" size="sm" icon="map" variant="primary" class="px-3 py-1 text-sm rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors">Track</flux:button>
                                 @endif
 
+                                @if($document->status != 'Draft')
                                 <flux:button wire:click="viewDocument('{{ $document->document_number }}')" size="sm" icon="eye" variant="primary" class="px-3 py-1 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white transition-colors">View</flux:button>
+                                @endif
                             </div>
                         </td>
                     </tr>@empty

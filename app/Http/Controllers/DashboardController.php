@@ -8,6 +8,7 @@ use App\Models\DocumentLog;
 use App\Models\ExternalDocument;
 use App\Models\Office;
 use App\Models\User;
+use App\Services\DocumentQueryService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -63,6 +64,23 @@ class DashboardController extends Controller
             ->pluck('total', 'status');
 
         $recentActivity = DocumentLog::with(['document:id,document_number,subject', 'user:id,name'])
+            ->whereHas('document', function (Builder $query): void {
+                $user = auth()->user();
+                if ($user->hasAccess('view_all_documents')) {
+                    return;
+                }
+
+                $documents = app(DocumentQueryService::class);
+                $query->where(function (Builder $visible) use ($user, $documents): void {
+                    $visible->whereRaw('1 = 0');
+                    if ($user->hasAccess('send_documents')) {
+                        $visible->orWhereIn('documents.id', $documents->listFor($user, 'Sent')->select('documents.id'));
+                    }
+                    if ($user->hasAccess('receive_documents')) {
+                        $visible->orWhereIn('documents.id', $documents->receivedBy(Document::query(), $user)->select('documents.id'));
+                    }
+                });
+            })
             ->latest()
             ->limit(8)
             ->get();

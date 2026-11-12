@@ -119,7 +119,7 @@ class CreateOffice extends Component
         abort_unless($this->can_manage_details, 403);
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices', 'abbreviation')->ignore($this->office_id)],
+            'abbreviation' => ['required', 'string', 'max:50'],
             'office_type' => ['required', Rule::in(['ACAD', 'ADMIN'])],
             'document_number_tag' => ['nullable', 'string', 'max:50'],
             'office_head' => ['nullable', function ($attribute, $value, $fail) {

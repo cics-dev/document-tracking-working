@@ -23,7 +23,7 @@ class NotificationCountService
 
         $counts = [
             'all' => $canViewAll
-                ? Document::whereDoesntHave('accessLogs', $viewed)->count() : 0,
+                ? Document::where('status', '!=', 'Draft')->whereDoesntHave('accessLogs', $viewed)->count() : 0,
             'received' => $canReceive
                 ? $documents->listFor($user, 'received')->whereDoesntHave('accessLogs', $viewed)->count() : 0,
             'sent' => $canSend

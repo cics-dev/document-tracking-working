@@ -12,7 +12,7 @@ class DocumentGenerationService
 {
     public function availableForInternal(Document $document, User $user)
     {
-        if (! $user->hasAccess('send_documents')) {
+        if ($user->isRelievedByOic() || ! $user->hasAccess('send_documents')) {
             return collect();
         }
 
@@ -24,7 +24,7 @@ class DocumentGenerationService
 
     public function availableForExternal(ExternalDocument $document, User $user)
     {
-        if (! $user->hasAccess('send_external_documents')) {
+        if ($user->isRelievedByOic() || ! $user->hasAccess('send_external_documents')) {
             return collect();
         }
 
@@ -36,12 +36,13 @@ class DocumentGenerationService
 
     public function redirectData(DocumentGenerationRule $rule, Document|ExternalDocument $source, User $user): array
     {
+        abort_if($user->isRelievedByOic(), 403, 'Your OIC must perform this generation action. You may still view the document.');
         abort_unless($rule->is_active && $rule->roles()->where('roles.id', $user->effectiveRoleId())->exists(), 403, 'This generation action is not assigned to your role.');
         abort_unless($user->hasAccess($rule->source_context === 'external' ? 'send_external_documents' : 'send_documents'), 403, 'You do not have permission to generate documents in this context.');
         if ($source instanceof Document) {
             abort_unless($this->allowedInternal($rule, $source, $user), 403, 'This generation action is not allowed for this document.');
             $data = [
-                'to' => $source->fromOffice?->id, 'from' => $source->toOffice?->id,
+                'to' => $source->fromOffice?->id, 'from' => $user->office_id,
                 'subject' => 'RE: '.$source->subject, 'original_document_id' => $source->id,
             ];
             if ($source->steps->where('step_type', 'signatory')->isNotEmpty()) {
@@ -64,6 +65,9 @@ class DocumentGenerationService
 
     private function allowedInternal(DocumentGenerationRule $rule, Document $document, User $user): bool
     {
+        if (str_starts_with($document->status, 'Generated ')) {
+            return false;
+        }
         if ($rule->source_context !== 'internal' || $rule->source_document_type_id !== $document->document_type_id) {
             return false;
         }

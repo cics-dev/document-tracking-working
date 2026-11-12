@@ -53,7 +53,7 @@ class Office extends Component
 
         $data = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices', 'abbreviation')->ignore($this->office->id)],
+            'abbreviation' => ['required', 'string', 'max:50'],
             'office_type' => ['required', Rule::in(['ACAD', 'ADMIN'])],
             'document_number_tag' => ['nullable', 'string', 'max:50'],
             'acting_head' => ['nullable', 'exists:users,id'],

@@ -50,6 +50,8 @@ class ViewDocument extends Component
 
     public bool $canGenerate = false;
 
+    public bool $oicViewOnly = false;
+
     public array $generationRules = [];
 
     #[Locked]
@@ -159,6 +161,12 @@ class ViewDocument extends Component
         $this->canAct = in_array($this->document->status, ['Sent', 'In Process']) && $nextStep?->isAssignedTo(Auth::user());
         $this->generationRules = app(DocumentGenerationService::class)->availableForInternal($this->document, Auth::user())->toArray();
         $this->canGenerate = $this->generationRules !== [];
+        $this->oicViewOnly = ! $this->canAct && ! $this->canGenerate
+            && in_array($this->document->status, ['Sent', 'In Process', 'Approved'], true)
+            && $nextStep?->office?->head_id === Auth::id()
+            && $nextStep->office->actingHead !== null
+            && $nextStep->office->acting_head_id !== Auth::id()
+            && $nextStep->isAssignedTo($nextStep->office->actingHead);
 
         if (! $this->canAct && $this->myStep?->status === 'Pending' && $this->myStep->office?->acting_head_id) {
             $this->display_text = ($this->document->documentType?->allow_oic_signature ?? true)
@@ -253,7 +261,7 @@ class ViewDocument extends Component
     public function lastStep()
     {
         $this->document->refresh();
-        abort_if($this->document->is_physical, 403);
+        abort_if($this->document->is_physical || str_starts_with($this->document->status, 'Generated '), 403);
 
         $isComplete = $this->document->steps()
             ->whereIn('step_type', ['routing', 'signatory'])

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Office;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class OfficeController extends Controller
 {
@@ -20,7 +19,7 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'abbreviation' => 'required|string|max:50|unique:offices,abbreviation',
+            'abbreviation' => 'required|string|max:50',
             'office_type' => 'nullable|string|max:50',
             'document_number_tag' => 'nullable|string|max:50',
             'office_logo' => 'nullable|string|max:255',
@@ -35,7 +34,7 @@ class OfficeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices')->ignore($office)],
+            'abbreviation' => ['required', 'string', 'max:50'],
             'office_type' => 'nullable|string|max:50',
             'document_number_tag' => 'nullable|string|max:50',
             'office_logo' => 'nullable|string|max:255',

@@ -86,6 +86,15 @@ class User extends Authenticatable
         return $this->actingOffice()?->head?->role_id ?? $this->role_id;
     }
 
+    public function isRelievedByOic(): bool
+    {
+        return Office::query()
+            ->where('head_id', $this->id)
+            ->where('acting_head_id', '!=', $this->id)
+            ->whereHas('actingHead', fn ($query) => $query->whereNull('users.deleted_at'))
+            ->exists();
+    }
+
     public function isActingHead(): bool
     {
         return $this->actingOffice() !== null;

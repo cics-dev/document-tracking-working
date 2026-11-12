@@ -13,6 +13,7 @@ use App\Models\DocumentGenerationRule;
 use App\Models\DocumentType;
 use App\Models\ExternalDocument;
 use App\Models\Office;
+use App\Services\DocumentPreviewDataService;
 use App\Support\DocumentHtml;
 use App\Support\DocumentNumber;
 use Illuminate\Support\Collection;
@@ -509,7 +510,7 @@ class CreateDocument extends Component
         $docTypeAbbr = $typeObj['abbreviation'] ?? 'N/A';
         $docNumber = $this->is_manual_document_number
             ? $this->buildManualDocumentNumber()
-            : DocumentNumber::format($typeObj, $fromOffice ?? Auth::user()->office, '_____', date('Y'));
+            : DocumentNumber::format($typeObj, $this->numberingOffice(), '_____', date('Y'));
 
         $signatoriesData = collect($this->signatories)->map(function ($sig) {
             $office = $this->allOffices[$sig['office_id']] ?? null;
@@ -614,7 +615,7 @@ class CreateDocument extends Component
         $docNumber = null;
 
         if ($isSend && ! $this->is_manual_document_number && empty($this->document_number)) {
-            $docNumber = $this->generateDocumentNumber($fromUser->office->id);
+            $docNumber = $this->generateDocumentNumber();
         } else {
             $docNumber = $this->manual_document_number;
         }
@@ -627,16 +628,16 @@ class CreateDocument extends Component
                 ->where('target_document_type_id', $this->document_type_id)->where('is_active', true)->exists();
 
         $data = [
-            'from_id' => $fromUser->office->id,
+            'from_id' => $fromOffice->id,
             'from_user_id' => $fromUser->id,
             'from_name' => $isSend ? $fromUser->name : null,
-            'from_position' => $isSend ? ($fromUser->office->workflowAssigneePosition() ?? $fromUser->documentPosition()) : null,
+            'from_position' => $isSend ? ($fromOffice->workflowAssigneePosition() ?? $fromUser->documentPosition()) : null,
             'to_id' => $this->selectedType()?->recipient_mode === 'office' ? $this->document_to_id : null,
             'to_name' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflow_assignee?->name : null,
             'to_position' => $isSend && $this->selectedType()?->recipient_mode === 'office' ? Office::find($this->document_to_id)?->workflowAssigneePosition() : null,
             'to_text' => $this->selectedType()?->recipient_mode === 'text' ? $this->document_to_text : null,
             'document_type_id' => $this->document_type_id,
-            'document_number' => $this->revision_document_number ?? $docNumber,
+            'document_number' => $isSend ? ($this->revision_document_number ?? $docNumber) : null,
             'subject' => $this->subject,
             'thru' => $this->thru,
             'content' => DocumentHtml::sanitize($this->content),
@@ -687,6 +688,9 @@ class CreateDocument extends Component
 
     private function ensureGenerationIsAllowed(): void
     {
+        if ($this->external_document_id && Auth::user()->isRelievedByOic()) {
+            throw ValidationException::withMessages(['document_type_id' => 'Your OIC must generate this document.']);
+        }
         if (! $this->original_document_id) {
             return;
         }
@@ -697,6 +701,12 @@ class CreateDocument extends Component
             ->where('target_document_type_id', $this->document_type_id)->where('is_active', true)->first() : null;
         if (! $rule) {
             return;
+        }
+        if (str_starts_with($source->status, 'Generated ')) {
+            throw ValidationException::withMessages(['document_type_id' => 'This document has already been used to generate another document.']);
+        }
+        if (Auth::user()->isRelievedByOic()) {
+            throw ValidationException::withMessages(['document_type_id' => 'Your OIC must generate this document.']);
         }
         if (! $rule->roles()->whereKey(Auth::user()->effectiveRoleId())->exists()) {
             throw ValidationException::withMessages([
@@ -787,18 +797,27 @@ class CreateDocument extends Component
         }
     }
 
-    private function generateDocumentNumber($from_id)
+    private function numberingOffice(): Office
+    {
+        $user = Auth::user();
+        $fromOffice = $this->document_from_id ? Office::find($this->document_from_id) : null;
+
+        return $fromOffice && $fromOffice->acting_head_id === $user->id
+            ? $fromOffice
+            : $user->office;
+    }
+
+    private function generateDocumentNumber()
     {
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
 
-        $documents = Document::where('from_id', $from_id)
-            ->where('document_type_id', $this->document_type_id)
+        $documents = Document::where('document_type_id', $this->document_type_id)
             ->where('status', '!=', 'Draft')
             ->whereYear('created_at', date('Y'))
             ->pluck('document_number');
 
         $lastNumber = 0;
-        $office = Office::find($from_id) ?? Auth::user()->office;
+        $office = $this->numberingOffice();
         $pattern = DocumentNumber::pattern($typeObj, $office);
 
         foreach ($documents as $docNumber) {
@@ -818,7 +837,7 @@ class CreateDocument extends Component
             return [];
         }
 
-        $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
+        $office = $this->numberingOffice();
 
         return DocumentNumber::parts($type, $office);
     }
@@ -830,7 +849,7 @@ class CreateDocument extends Component
             return null;
         }
 
-        $office = ($this->document_from_id ? Office::find($this->document_from_id) : null) ?? Auth::user()->office;
+        $office = $this->numberingOffice();
 
         return DocumentNumber::format($type, $office, $this->manual_document_sequence, $this->manual_document_year);
     }
@@ -857,9 +876,10 @@ class CreateDocument extends Component
                         ->with('office.actingHead', 'office.head')
                         ->where('step_type', 'action')
                         ->where('status', 'Pending')
+                        ->orderBy('sequence')->orderBy('id')
                         ->first();
 
-                    if ($actionStep?->isAssignedTo(Auth::user())) {
+                    if ($actionStep) {
                         $actionStep->update([
                             'processed_at' => now(),
                             'user_id' => Auth::id(),
@@ -1302,7 +1322,8 @@ class CreateDocument extends Component
 
         if (! $this->selectedAttachment->is_upload && $type == 'internal') {
             $attachment_document = $this->selectedAttachment->attachmentDocument;
-            $attachment_query = $this->processPDF($attachment_document);
+            abort_unless($attachment_document, 404);
+            $attachment_query = app(DocumentPreviewDataService::class)->build($attachment_document);
             $key = uniqid();
             session([$key => $attachment_query]);
             $this->attachmentPreviewUrl = '/document/preview?'.$key;

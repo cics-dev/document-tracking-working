@@ -42,6 +42,53 @@ class NotificationPollingTest extends TestCase
             ->assertSet('showToast', true)->assertDispatched('new-document-notification');
     }
 
+    public function test_all_documents_unread_count_excludes_drafts_when_polling(): void
+    {
+        $role = Role::create(['role' => 'records-reader', 'description' => 'Records']);
+        $role->permissions()->attach(Permission::where('key', 'view_all_documents')->firstOrFail());
+        $office = Office::create(['name' => 'Records', 'abbreviation' => 'REC', 'office_type' => 'ADMIN']);
+        $user = User::factory()->create(['role_id' => $role->id, 'office_id' => $office->id]);
+        $type = DocumentType::create(['name' => 'Count Memo', 'abbreviation' => 'CM']);
+        $attributes = ['from_id' => $office->id, 'document_type_id' => $type->id, 'subject' => 'Count test', 'content' => 'Body', 'created_by' => $user->id];
+        $unread = Document::create($attributes + ['document_number' => 'CM-UNREAD', 'status' => 'Sent']);
+        $read = Document::create($attributes + ['document_number' => 'CM-READ', 'status' => 'Approved']);
+        $read->accessLogs()->create(['user_id' => $user->id, 'action' => 'Viewed']);
+        $this->actingAs($user);
+        $component = Livewire::test(SidebarNotifications::class)
+            ->assertSet('unreadAll', 1)->assertSet('unreadTotal', 1);
+
+        Document::create($attributes + ['document_number' => null, 'status' => 'Draft']);
+        $component->call('refreshNotifications')
+            ->assertSet('unreadAll', 1)->assertSet('unreadTotal', 1)
+            ->assertNotDispatched('new-document-notification');
+
+        $unread->accessLogs()->create(['user_id' => $user->id, 'action' => 'Viewed']);
+        $component->call('refreshNotifications')
+            ->assertSet('unreadAll', 0)->assertSet('unreadTotal', 0);
+    }
+
+    public function test_received_filter_and_unread_count_exclude_drafts(): void
+    {
+        $role = Role::create(['role' => 'received-draft-check', 'description' => 'Receiver']);
+        $role->permissions()->attach(Permission::where('key', 'receive_documents')->firstOrFail());
+        $office = Office::create(['name' => 'Receiving Office', 'abbreviation' => 'RD', 'office_type' => 'ADMIN']);
+        $user = User::factory()->create(['role_id' => $role->id, 'office_id' => $office->id]);
+        $type = DocumentType::create(['name' => 'Received Memo', 'abbreviation' => 'RM']);
+        $attributes = ['from_id' => $office->id, 'to_id' => $office->id, 'document_type_id' => $type->id, 'subject' => 'Received count', 'content' => 'Body', 'created_by' => $user->id, 'document_level' => 'Inter'];
+        Document::create($attributes + ['document_number' => 'RM-SENT', 'status' => 'Sent']);
+        $this->actingAs($user);
+        $component = Livewire::test(SidebarNotifications::class)
+            ->assertSet('unreadReceived', 1)->assertSet('unreadTotal', 1);
+        $draft = Document::create($attributes + ['document_number' => null, 'status' => 'Draft']);
+        $draft->steps()->create(['user_id' => $user->id, 'office_id' => $office->id, 'step_type' => 'routing', 'step_label' => 'Review', 'sequence' => 1, 'status' => 'Reviewed']);
+        $component->call('refreshNotifications')
+            ->assertSet('unreadReceived', 1)->assertSet('unreadTotal', 1)
+            ->assertNotDispatched('new-document-notification');
+        Livewire::test(ListDocuments::class, ['mode' => 'received'])
+            ->assertDontSee('value="Draft"', false)
+            ->assertViewHas('documents', fn ($rows) => $rows->total() === 1 && ! $rows->pluck('id')->contains($draft->id));
+    }
+
     public function test_external_notification_scope_is_controlled_by_permissions_not_position_names(): void
     {
         $receivingOffice = Office::create(['name' => 'Receiving Office', 'abbreviation' => 'RO', 'office_type' => 'ADMIN']);
