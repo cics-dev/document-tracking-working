@@ -21,18 +21,35 @@ class CleanStartSeederTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $this->assertSame(13, User::count());
-        $this->assertSame(11, Office::count());
+        $this->assertSame(17, User::count());
+        $this->assertSame(15, Office::count());
+        $hrmu = Office::where('abbreviation', 'HRMU')->sole();
+        $this->assertNotNull($hrmu->head);
+        $this->assertSame($hrmu->id, $hrmu->head->office_id);
         $this->assertSame(7, Role::count());
         $this->assertSame(10, Permission::count());
         $this->assertSame(6, DocumentType::count());
-        $this->assertSame(14, DocumentFlowStage::count());
+        $this->assertSame(24, DocumentFlowStage::count());
         $this->assertSame(0, Document::count());
         $this->assertSame('System Administrator', User::findOrFail(1)->name);
         $this->assertTrue(User::findOrFail(1)->hasAccess('manage_offices'));
 
+        $snapshot = json_decode(file_get_contents(database_path('seeders/data/setup.json')), true, 512, JSON_THROW_ON_ERROR);
+        foreach ($snapshot as $table => $rows) {
+            $this->assertSame(count($rows), \Illuminate\Support\Facades\DB::table($table)->count(), $table);
+            foreach ($rows as $row) {
+                $this->assertDatabaseHas($table, $row);
+            }
+        }
+        foreach (['documents', 'external_documents', 'document_steps', 'document_logs', 'document_attachments', 'document_carbon_copies', 'document_access_logs', 'document_tracking_shares'] as $table) {
+            $this->assertDatabaseCount($table, 0);
+        }
+        $password = \Illuminate\Support\Facades\Hash::make('keep-existing-password');
+        User::findOrFail(1)->update(['password' => $password]);
+
         $this->seed(DatabaseSeeder::class);
-        $this->assertSame(13, User::count());
+        $this->assertSame(17, User::count());
         $this->assertSame(0, Document::count());
+        $this->assertSame($password, User::findOrFail(1)->password);
     }
 }

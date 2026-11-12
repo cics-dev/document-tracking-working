@@ -265,9 +265,15 @@
 
                         <div class="md:col-span-7">
                             <div class="flex items-center gap-2">
-                                <div class="flex-1"><x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true" :disabled="(bool) ($signatory['locked'] ?? false)"
-                                    :options="$this->signatoryOfficeOptions($signatory)"
-                                    placeholder="Select signatory office..." search-placeholder="Search offices..." /></div>
+                                <div class="flex-1">
+                                    @if($signatory['locked'] ?? false)
+                                        <flux:input :value="collect($allOffices)->firstWhere('id', $signatory['office_id'])?->name ?? 'Office unavailable'" disabled />
+                                    @else
+                                        <x-searchable-filter-select model="signatories.{{ $index }}.office_id" :live="true"
+                                            :options="$this->signatoryOfficeOptions($signatory)"
+                                            placeholder="Select signatory office..." search-placeholder="Search offices..." />
+                                    @endif
+                                </div>
                                 @if($this->configuredSignatoryDescription($signatory))
                                     <flux:tooltip :content="$this->configuredSignatoryDescription($signatory)['description']" position="top">
                                         <button type="button" class="flex size-5 items-center justify-center rounded-full border border-indigo-300 text-xs font-bold text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" aria-label="{{ $this->configuredSignatoryDescription($signatory)['label'] }} help">?</button>

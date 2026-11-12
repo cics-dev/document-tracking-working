@@ -1,0 +1,1606 @@
+{
+    "roles": [
+        {
+            "id": 1,
+            "role": "admin",
+            "description": "Administrator"
+        },
+        {
+            "id": 2,
+            "role": "head",
+            "description": "head"
+        },
+        {
+            "id": 3,
+            "role": "president",
+            "description": "University President"
+        },
+        {
+            "id": 4,
+            "role": "vice-president",
+            "description": "Vice President"
+        },
+        {
+            "id": 5,
+            "role": "cao",
+            "description": "Chief Administrative Officer"
+        },
+        {
+            "id": 6,
+            "role": "sao",
+            "description": "Supervising Administrative Officer"
+        },
+        {
+            "id": 7,
+            "role": "records",
+            "description": "Records Officer"
+        }
+    ],
+    "permissions": [
+        {
+            "id": 1,
+            "key": "manage_offices",
+            "label": "Manage Offices"
+        },
+        {
+            "id": 2,
+            "key": "manage_users",
+            "label": "Manage Users"
+        },
+        {
+            "id": 3,
+            "key": "manage_roles",
+            "label": "Manage Roles"
+        },
+        {
+            "id": 4,
+            "key": "manage_access_rights",
+            "label": "Manage Access Rights"
+        },
+        {
+            "id": 5,
+            "key": "manage_document_flows",
+            "label": "Manage Document Flows"
+        },
+        {
+            "id": 6,
+            "key": "receive_documents",
+            "label": "Receive Documents"
+        },
+        {
+            "id": 7,
+            "key": "send_documents",
+            "label": "Send Documents"
+        },
+        {
+            "id": 8,
+            "key": "view_all_documents",
+            "label": "View All Documents"
+        },
+        {
+            "id": 9,
+            "key": "receive_external_documents",
+            "label": "Receive External"
+        },
+        {
+            "id": 10,
+            "key": "send_external_documents",
+            "label": "Send External"
+        }
+    ],
+    "offices": [
+        {
+            "id": 1,
+            "name": "Office of the University President",
+            "abbreviation": "OP",
+            "office_type": "ADMIN",
+            "head_id": 2,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 2,
+            "name": "Office of the Vice President for Adminstration and Finance",
+            "abbreviation": "OVPAF",
+            "office_type": "ADMIN",
+            "head_id": 3,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 3,
+            "name": "Office of the Vice President for Academic Affairs",
+            "abbreviation": "OVPAA",
+            "office_type": "ADMIN",
+            "head_id": 4,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 4,
+            "name": "Office of the Supervising Administrative Officer for Administration",
+            "abbreviation": "SAO",
+            "office_type": "ADMIN",
+            "head_id": 5,
+            "acting_head_id": 6,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 5,
+            "name": "Office of the Supervising Administrative Officer for Finance",
+            "abbreviation": "SAO-F",
+            "office_type": "ADMIN",
+            "head_id": 7,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 6,
+            "name": "Office of the Chief Administrative Officer",
+            "abbreviation": "CAO",
+            "office_type": "ADMIN",
+            "head_id": 8,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 7,
+            "name": "College of Information and Computing Sciences",
+            "abbreviation": "CICS",
+            "office_type": "ACAD",
+            "head_id": 9,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ACAD"
+        },
+        {
+            "id": 8,
+            "name": "Motorpool Office",
+            "abbreviation": "Motorpool",
+            "office_type": "ADMIN",
+            "head_id": 10,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 9,
+            "name": "Information and Communications Technology Unit",
+            "abbreviation": "ICTU",
+            "office_type": "ADMIN",
+            "head_id": 11,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 10,
+            "name": "Budget Office",
+            "abbreviation": "BO",
+            "office_type": "ADMIN",
+            "head_id": 12,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 11,
+            "name": "Records Office",
+            "abbreviation": "RO",
+            "office_type": "ADMIN",
+            "head_id": 13,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 12,
+            "name": "Office of the Vice President for Student Affairs",
+            "abbreviation": "VPSAS",
+            "office_type": "ADMIN",
+            "head_id": 14,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 13,
+            "name": "Office of the Vice President for Research and Development Extension",
+            "abbreviation": "VPRDE",
+            "office_type": "ADMIN",
+            "head_id": 15,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 14,
+            "name": "Office of the Vice President for Resource Generation",
+            "abbreviation": "VPRG",
+            "office_type": "ADMIN",
+            "head_id": 16,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        },
+        {
+            "id": 15,
+            "name": "Human Resource Managment Unit",
+            "abbreviation": "HRMU",
+            "office_type": "ADMIN",
+            "head_id": 17,
+            "acting_head_id": null,
+            "workflow_key": null,
+            "office_logo": null,
+            "deleted_at": null,
+            "document_number_tag": "ADMIN"
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "name": "System Administrator",
+            "email": "admin@example.com",
+            "position": "Administrator",
+            "role_id": 1,
+            "office_id": null,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 2,
+            "name": "Nelson Cabral",
+            "email": "president@example.com",
+            "position": "president",
+            "role_id": 3,
+            "office_id": 1,
+            "signature": "assets/img/signatures/president.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 3,
+            "name": "Josephine Sulasula",
+            "email": "vpaf@example.com",
+            "position": "vice-president",
+            "role_id": 4,
+            "office_id": 2,
+            "signature": "assets/img/signatures/vpaf.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 4,
+            "name": "Maria Christina Wee",
+            "email": "vpaa@example.com",
+            "position": "vice-president",
+            "role_id": 4,
+            "office_id": 3,
+            "signature": "assets/img/signatures/vpaa.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 5,
+            "name": "Arnel Lee",
+            "email": "sao-a@example.com",
+            "position": "sao",
+            "role_id": 6,
+            "office_id": 4,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 6,
+            "name": "Kristell Villanueva",
+            "email": "sao-a-oic@example.com",
+            "position": "sao",
+            "role_id": 6,
+            "office_id": 4,
+            "signature": "assets/img/signatures/sao-a.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 7,
+            "name": "Maria Christina Vergara",
+            "email": "sao-f@example.com",
+            "position": "sao",
+            "role_id": 6,
+            "office_id": 5,
+            "signature": "assets/img/signatures/sao-f.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 8,
+            "name": "Carina Abidin",
+            "email": "cao@example.com",
+            "position": "cao",
+            "role_id": 5,
+            "office_id": 6,
+            "signature": "assets/img/signatures/cao.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 9,
+            "name": "Ferdinand Andrade",
+            "email": "cics@example.com",
+            "position": "head",
+            "role_id": 2,
+            "office_id": 7,
+            "signature": "assets/img/signatures/cics.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 10,
+            "name": "Head Motorpool",
+            "email": "motorpool@example.com",
+            "position": "head",
+            "role_id": 2,
+            "office_id": 8,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 11,
+            "name": "Keith Carlou Jaramilla",
+            "email": "ictu@example.com",
+            "position": "head",
+            "role_id": 2,
+            "office_id": 9,
+            "signature": "assets/img/signatures/ictu.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 12,
+            "name": "Zandra Gale Tablante",
+            "email": "budget@example.com",
+            "position": "head",
+            "role_id": 2,
+            "office_id": 10,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 13,
+            "name": "Bernadette Pagayonan",
+            "email": "records@example.com",
+            "position": "records",
+            "role_id": 7,
+            "office_id": 11,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 14,
+            "name": "Cyrus Pil P. Cadavedo",
+            "email": "vpsas@example.com",
+            "position": "Vice President",
+            "role_id": 4,
+            "office_id": 12,
+            "signature": "assets/img/DkiVO6ZXjEIf2Fq4BWjhKmmvQlGZd1d3Iv0YwZkw.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 15,
+            "name": "Rolando P. Malalay",
+            "email": "vprde@example.com",
+            "position": "Vice President",
+            "role_id": 4,
+            "office_id": 13,
+            "signature": "assets/img/w0E2EESbpUQCNLm4zwrlgc69ct8dYWynPvqdPtbb.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 16,
+            "name": "Dorothy Joy D. Tan",
+            "email": "vprg@example.com",
+            "position": "Vice President",
+            "role_id": 4,
+            "office_id": 14,
+            "signature": "assets/img/RXaXhlEzan5HfyPwUrSGM6r3wkkrGtDwIENGyXAg.png",
+            "avatar": null,
+            "deleted_at": null
+        },
+        {
+            "id": 17,
+            "name": "Liza Santos",
+            "email": "hrmu@example.com",
+            "position": "Head",
+            "role_id": 2,
+            "office_id": 15,
+            "signature": null,
+            "avatar": null,
+            "deleted_at": null
+        }
+    ],
+    "user_profiles": [
+        {
+            "id": 1,
+            "user_id": 2,
+            "honorifics": "",
+            "given_name": "Nelson",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Cabral",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 2,
+            "user_id": 3,
+            "honorifics": "",
+            "given_name": "Josephine",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Sulasula",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 3,
+            "user_id": 4,
+            "honorifics": "",
+            "given_name": "Maria Christina",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Wee",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 4,
+            "user_id": 5,
+            "honorifics": "",
+            "given_name": "Arnel",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Lee",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 5,
+            "user_id": 6,
+            "honorifics": "",
+            "given_name": "Kristell",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Villanueva",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 6,
+            "user_id": 7,
+            "honorifics": "",
+            "given_name": "Maria Christina",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Vergara",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 7,
+            "user_id": 8,
+            "honorifics": "",
+            "given_name": "Carina",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Abidin",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 8,
+            "user_id": 9,
+            "honorifics": "",
+            "given_name": "Ferdinand",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Andrade",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 9,
+            "user_id": 10,
+            "honorifics": "",
+            "given_name": "Head",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Motorpool",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 10,
+            "user_id": 11,
+            "honorifics": "",
+            "given_name": "Keith Carlou",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Jaramilla",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 11,
+            "user_id": 12,
+            "honorifics": "",
+            "given_name": "Zandra Gale",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Tablante",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 12,
+            "user_id": 13,
+            "honorifics": "",
+            "given_name": "Bernadette",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Pagayonan",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 13,
+            "user_id": 14,
+            "honorifics": "Mr",
+            "given_name": "Cyrus Pil",
+            "middle_name": "Perez",
+            "middle_initial": "P",
+            "family_name": "Cadavedo",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 14,
+            "user_id": 15,
+            "honorifics": "Dr",
+            "given_name": "Rolando",
+            "middle_name": "Peñafiel",
+            "middle_initial": "P",
+            "family_name": "Malalay",
+            "suffix": "",
+            "titles": "",
+            "gender": "male"
+        },
+        {
+            "id": 15,
+            "user_id": 16,
+            "honorifics": "",
+            "given_name": "Dorothy Joy",
+            "middle_name": "Dalmacio",
+            "middle_initial": "D",
+            "family_name": "Tan",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        },
+        {
+            "id": 16,
+            "user_id": 17,
+            "honorifics": "Ms",
+            "given_name": "Liza",
+            "middle_name": "",
+            "middle_initial": "",
+            "family_name": "Santos",
+            "suffix": "",
+            "titles": "",
+            "gender": "female"
+        }
+    ],
+    "document_types": [
+        {
+            "id": 1,
+            "name": "Request Letter Memorandum",
+            "abbreviation": "RLM",
+            "chip_color": "#dbeafe",
+            "recipient_mode": "office",
+            "recipient_label": "For",
+            "recipient_office_id": 1,
+            "document_level": "Inter",
+            "number_prefix": "{office_with_type}-{type}",
+            "show_thru": 1,
+            "show_carbon_copy": 0,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 1,
+            "content_template": null,
+            "print_layout": "memorandum",
+            "sender_signature_policy": "always",
+            "approver_display_mode": "action_box",
+            "allow_oic_signature": 1
+        },
+        {
+            "id": 2,
+            "name": "Inter Office Memorandum",
+            "abbreviation": "IOM",
+            "chip_color": "#d1fae5",
+            "recipient_mode": "none",
+            "recipient_label": "To",
+            "recipient_office_id": null,
+            "document_level": "Inter",
+            "number_prefix": null,
+            "show_thru": 0,
+            "show_carbon_copy": 1,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 0,
+            "content_template": null,
+            "print_layout": "memorandum",
+            "sender_signature_policy": "approved",
+            "approver_display_mode": "hidden",
+            "allow_oic_signature": 1
+        },
+        {
+            "id": 3,
+            "name": "External Communication Letter Response",
+            "abbreviation": "ECLR",
+            "chip_color": "#ede9fe",
+            "recipient_mode": "text",
+            "recipient_label": "To",
+            "recipient_office_id": null,
+            "document_level": "Inter",
+            "number_prefix": null,
+            "show_thru": 0,
+            "show_carbon_copy": 0,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 1,
+            "content_template": null,
+            "print_layout": "letter",
+            "sender_signature_policy": "approved",
+            "approver_display_mode": "signature_only",
+            "allow_oic_signature": 0
+        },
+        {
+            "id": 4,
+            "name": "Intra Office Memorandum",
+            "abbreviation": "INTRA",
+            "chip_color": "#fef3c7",
+            "recipient_mode": "text",
+            "recipient_label": "To",
+            "recipient_office_id": null,
+            "document_level": "Intra",
+            "number_prefix": null,
+            "show_thru": 0,
+            "show_carbon_copy": 0,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 1,
+            "content_template": null,
+            "print_layout": "memorandum",
+            "sender_signature_policy": "always",
+            "approver_display_mode": "hidden",
+            "allow_oic_signature": 1
+        },
+        {
+            "id": 5,
+            "name": "Indorsement Letter",
+            "abbreviation": "IL",
+            "chip_color": "#ffe4e6",
+            "recipient_mode": "none",
+            "recipient_label": "To",
+            "recipient_office_id": null,
+            "document_level": "Inter",
+            "number_prefix": null,
+            "show_thru": 1,
+            "show_carbon_copy": 1,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 1,
+            "content_template": null,
+            "print_layout": "indorsement",
+            "sender_signature_policy": "never",
+            "approver_display_mode": "action_box",
+            "allow_oic_signature": 1
+        },
+        {
+            "id": 6,
+            "name": "Special Order",
+            "abbreviation": "SO",
+            "chip_color": "#cffafe",
+            "recipient_mode": "none",
+            "recipient_label": "To",
+            "recipient_office_id": null,
+            "document_level": "Inter",
+            "number_prefix": null,
+            "show_thru": 1,
+            "show_carbon_copy": 1,
+            "allow_attachments": 1,
+            "requires_signatories": 1,
+            "is_publicly_creatable": 0,
+            "content_template": null,
+            "print_layout": "special_order",
+            "sender_signature_policy": "never",
+            "approver_display_mode": "signature_only",
+            "allow_oic_signature": 1
+        }
+    ],
+    "permission_role": [
+        {
+            "permission_id": 1,
+            "role_id": 1
+        },
+        {
+            "permission_id": 2,
+            "role_id": 1
+        },
+        {
+            "permission_id": 3,
+            "role_id": 1
+        },
+        {
+            "permission_id": 4,
+            "role_id": 1
+        },
+        {
+            "permission_id": 5,
+            "role_id": 1
+        },
+        {
+            "permission_id": 6,
+            "role_id": 2
+        },
+        {
+            "permission_id": 6,
+            "role_id": 3
+        },
+        {
+            "permission_id": 6,
+            "role_id": 4
+        },
+        {
+            "permission_id": 6,
+            "role_id": 5
+        },
+        {
+            "permission_id": 6,
+            "role_id": 6
+        },
+        {
+            "permission_id": 7,
+            "role_id": 2
+        },
+        {
+            "permission_id": 7,
+            "role_id": 3
+        },
+        {
+            "permission_id": 7,
+            "role_id": 4
+        },
+        {
+            "permission_id": 7,
+            "role_id": 5
+        },
+        {
+            "permission_id": 7,
+            "role_id": 6
+        },
+        {
+            "permission_id": 7,
+            "role_id": 7
+        },
+        {
+            "permission_id": 8,
+            "role_id": 7
+        },
+        {
+            "permission_id": 9,
+            "role_id": 2
+        },
+        {
+            "permission_id": 9,
+            "role_id": 3
+        },
+        {
+            "permission_id": 9,
+            "role_id": 4
+        },
+        {
+            "permission_id": 9,
+            "role_id": 5
+        },
+        {
+            "permission_id": 9,
+            "role_id": 6
+        },
+        {
+            "permission_id": 9,
+            "role_id": 7
+        },
+        {
+            "permission_id": 10,
+            "role_id": 2
+        },
+        {
+            "permission_id": 10,
+            "role_id": 3
+        },
+        {
+            "permission_id": 10,
+            "role_id": 4
+        },
+        {
+            "permission_id": 10,
+            "role_id": 5
+        },
+        {
+            "permission_id": 10,
+            "role_id": 6
+        },
+        {
+            "permission_id": 10,
+            "role_id": 7
+        }
+    ],
+    "role_document_types": [
+        {
+            "id": 1,
+            "role_id": 1,
+            "document_type_id": 2,
+            "is_allowed": 0
+        },
+        {
+            "id": 2,
+            "role_id": 1,
+            "document_type_id": 1,
+            "is_allowed": 0
+        },
+        {
+            "id": 3,
+            "role_id": 7,
+            "document_type_id": 2,
+            "is_allowed": 0
+        },
+        {
+            "id": 4,
+            "role_id": 7,
+            "document_type_id": 3,
+            "is_allowed": 0
+        },
+        {
+            "id": 5,
+            "role_id": 7,
+            "document_type_id": 4,
+            "is_allowed": 0
+        },
+        {
+            "id": 6,
+            "role_id": 7,
+            "document_type_id": 5,
+            "is_allowed": 0
+        },
+        {
+            "id": 7,
+            "role_id": 7,
+            "document_type_id": 6,
+            "is_allowed": 0
+        },
+        {
+            "id": 8,
+            "role_id": 7,
+            "document_type_id": 1,
+            "is_allowed": 0
+        },
+        {
+            "id": 9,
+            "role_id": 2,
+            "document_type_id": 2,
+            "is_allowed": 0
+        },
+        {
+            "id": 10,
+            "role_id": 2,
+            "document_type_id": 3,
+            "is_allowed": 1
+        },
+        {
+            "id": 11,
+            "role_id": 2,
+            "document_type_id": 4,
+            "is_allowed": 1
+        },
+        {
+            "id": 12,
+            "role_id": 2,
+            "document_type_id": 5,
+            "is_allowed": 1
+        },
+        {
+            "id": 13,
+            "role_id": 2,
+            "document_type_id": 6,
+            "is_allowed": 0
+        },
+        {
+            "id": 14,
+            "role_id": 2,
+            "document_type_id": 1,
+            "is_allowed": 1
+        },
+        {
+            "id": 15,
+            "role_id": 6,
+            "document_type_id": 2,
+            "is_allowed": 1
+        },
+        {
+            "id": 16,
+            "role_id": 6,
+            "document_type_id": 3,
+            "is_allowed": 0
+        },
+        {
+            "id": 17,
+            "role_id": 6,
+            "document_type_id": 4,
+            "is_allowed": 0
+        },
+        {
+            "id": 18,
+            "role_id": 6,
+            "document_type_id": 5,
+            "is_allowed": 0
+        },
+        {
+            "id": 19,
+            "role_id": 6,
+            "document_type_id": 6,
+            "is_allowed": 1
+        },
+        {
+            "id": 20,
+            "role_id": 6,
+            "document_type_id": 1,
+            "is_allowed": 0
+        },
+        {
+            "id": 21,
+            "role_id": 3,
+            "document_type_id": 2,
+            "is_allowed": 1
+        },
+        {
+            "id": 22,
+            "role_id": 3,
+            "document_type_id": 3,
+            "is_allowed": 0
+        },
+        {
+            "id": 23,
+            "role_id": 3,
+            "document_type_id": 4,
+            "is_allowed": 0
+        },
+        {
+            "id": 24,
+            "role_id": 3,
+            "document_type_id": 5,
+            "is_allowed": 0
+        },
+        {
+            "id": 25,
+            "role_id": 3,
+            "document_type_id": 6,
+            "is_allowed": 1
+        },
+        {
+            "id": 26,
+            "role_id": 3,
+            "document_type_id": 1,
+            "is_allowed": 0
+        }
+    ],
+    "workflow_conditions": [
+        {
+            "id": 1,
+            "key": "has_ict_implications",
+            "label": "Has ICT implications?",
+            "input_type": "boolean",
+            "options": null,
+            "is_active": 1
+        },
+        {
+            "id": 2,
+            "key": "has_budget_implications",
+            "label": "Has budget implications?",
+            "input_type": "boolean",
+            "options": null,
+            "is_active": 1
+        }
+    ],
+    "document_flow_stages": [
+        {
+            "id": 1,
+            "document_type_id": 1,
+            "office_id": 8,
+            "stage_type": "routing",
+            "label": "Motorpool Review",
+            "description": null,
+            "sequence": 1000,
+            "is_required": 0,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 2,
+            "document_type_id": 1,
+            "office_id": 9,
+            "stage_type": "routing",
+            "label": "ICTU Review",
+            "description": null,
+            "sequence": 1010,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": 1,
+            "condition_operator": "equals",
+            "condition_value": "1",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 3,
+            "document_type_id": 1,
+            "office_id": 2,
+            "stage_type": "signatory",
+            "label": "Recommending Approval",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "1",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 4,
+            "document_type_id": 1,
+            "office_id": 3,
+            "stage_type": "signatory",
+            "label": "Recommending Approval",
+            "description": null,
+            "sequence": 2010,
+            "is_required": 0,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 5,
+            "document_type_id": 1,
+            "office_id": 4,
+            "stage_type": "action",
+            "label": "Generation of IOM",
+            "description": null,
+            "sequence": 3000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "0",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 6,
+            "document_type_id": 1,
+            "office_id": 5,
+            "stage_type": "action",
+            "label": "Generation of IOM",
+            "description": null,
+            "sequence": 3010,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "1",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 7,
+            "document_type_id": 1,
+            "office_id": 1,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2020,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 8,
+            "document_type_id": 2,
+            "office_id": 1,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 9,
+            "document_type_id": 3,
+            "office_id": 1,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 10,
+            "document_type_id": 5,
+            "office_id": 1,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2020,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 11,
+            "document_type_id": 6,
+            "office_id": 6,
+            "stage_type": "routing",
+            "label": "CAO Review",
+            "description": null,
+            "sequence": 1000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 12,
+            "document_type_id": 6,
+            "office_id": 2,
+            "stage_type": "routing",
+            "label": "VPAF Review",
+            "description": null,
+            "sequence": 1010,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 13,
+            "document_type_id": 6,
+            "office_id": 1,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 15,
+            "document_type_id": 1,
+            "office_id": 10,
+            "stage_type": "routing",
+            "label": "Budget Review",
+            "description": null,
+            "sequence": 1020,
+            "is_required": 1,
+            "is_selectable": 1,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "1",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 16,
+            "document_type_id": 5,
+            "office_id": 2,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "not_equals",
+            "selection_group": "VP approval"
+        },
+        {
+            "id": 17,
+            "document_type_id": 5,
+            "office_id": 3,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "not_equals",
+            "selection_group": "VP approval"
+        },
+        {
+            "id": 18,
+            "document_type_id": 5,
+            "office_id": 13,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "not_equals",
+            "selection_group": "VP approval"
+        },
+        {
+            "id": 19,
+            "document_type_id": 5,
+            "office_id": 12,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "not_equals",
+            "selection_group": "VP approval"
+        },
+        {
+            "id": 20,
+            "document_type_id": 5,
+            "office_id": 14,
+            "stage_type": "signatory",
+            "label": "Approved by",
+            "description": null,
+            "sequence": 2000,
+            "is_required": 1,
+            "is_selectable": 0,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": 4,
+            "sender_role_operator": "not_equals",
+            "selection_group": "VP approval"
+        },
+        {
+            "id": 21,
+            "document_type_id": 1,
+            "office_id": 12,
+            "stage_type": "signatory",
+            "label": "Recommending Approval",
+            "description": null,
+            "sequence": 2019,
+            "is_required": 0,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 22,
+            "document_type_id": 1,
+            "office_id": 13,
+            "stage_type": "signatory",
+            "label": "Recommending Approval",
+            "description": null,
+            "sequence": 2019,
+            "is_required": 0,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 23,
+            "document_type_id": 1,
+            "office_id": 14,
+            "stage_type": "signatory",
+            "label": "Recommending Approval",
+            "description": null,
+            "sequence": 2019,
+            "is_required": 0,
+            "is_selectable": 1,
+            "workflow_condition_id": null,
+            "condition_operator": "equals",
+            "condition_value": null,
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 24,
+            "document_type_id": 5,
+            "office_id": 4,
+            "stage_type": "action",
+            "label": "Generation of IOM or SO",
+            "description": null,
+            "sequence": 3000,
+            "is_required": 0,
+            "is_selectable": 0,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "0",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        },
+        {
+            "id": 25,
+            "document_type_id": 5,
+            "office_id": 5,
+            "stage_type": "action",
+            "label": "Generation of IOM or SO",
+            "description": null,
+            "sequence": 3010,
+            "is_required": 0,
+            "is_selectable": 0,
+            "workflow_condition_id": 2,
+            "condition_operator": "equals",
+            "condition_value": "1",
+            "sender_role_id": null,
+            "sender_role_operator": "equals",
+            "selection_group": null
+        }
+    ],
+    "document_generation_rules": [
+        {
+            "id": 1,
+            "source_context": "internal",
+            "source_document_type_id": 1,
+            "target_document_type_id": 2,
+            "button_label": "Generate IOM",
+            "required_status": "Approved",
+            "requires_assigned_office": 0,
+            "is_active": 1
+        },
+        {
+            "id": 2,
+            "source_context": "external",
+            "source_document_type_id": null,
+            "target_document_type_id": 1,
+            "button_label": "Generate RLM",
+            "required_status": null,
+            "requires_assigned_office": 0,
+            "is_active": 1
+        },
+        {
+            "id": 4,
+            "source_context": "internal",
+            "source_document_type_id": 5,
+            "target_document_type_id": 6,
+            "button_label": "Generate SO",
+            "required_status": "Approved",
+            "requires_assigned_office": 0,
+            "is_active": 1
+        },
+        {
+            "id": 5,
+            "source_context": "internal",
+            "source_document_type_id": 5,
+            "target_document_type_id": 2,
+            "button_label": "Generate IOM",
+            "required_status": "Approved",
+            "requires_assigned_office": 0,
+            "is_active": 1
+        },
+        {
+            "id": 6,
+            "source_context": "external",
+            "source_document_type_id": null,
+            "target_document_type_id": 3,
+            "button_label": "Generate ECLR",
+            "required_status": "Approved",
+            "requires_assigned_office": 0,
+            "is_active": 1
+        }
+    ],
+    "document_generation_rule_role": [
+        {
+            "document_generation_rule_id": 1,
+            "role_id": 6
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 2
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 3
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 4
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 5
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 6
+        },
+        {
+            "document_generation_rule_id": 2,
+            "role_id": 7
+        },
+        {
+            "document_generation_rule_id": 4,
+            "role_id": 6
+        },
+        {
+            "document_generation_rule_id": 5,
+            "role_id": 6
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 1
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 2
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 3
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 4
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 5
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 6
+        },
+        {
+            "document_generation_rule_id": 6,
+            "role_id": 7
+        }
+    ]
+}

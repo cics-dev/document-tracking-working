@@ -60,6 +60,37 @@ it('requires one of the configured VP choices for non-VP senders', function () {
     expect(Document::count())->toBe(0);
 });
 
+it('seeds the IL routes repeatedly without duplicating stages', function () {
+    $this->seed(Database\Seeders\IndorsementFlowSeeder::class);
+    $this->seed(Database\Seeders\IndorsementFlowSeeder::class);
+
+    $stages = $this->type->flowStages;
+    expect($stages)->toHaveCount(3);
+    $president = $stages->firstWhere('office_id', $this->president->id);
+    expect($president->is_required)->toBeTrue()
+        ->and($president->is_selectable)->toBeFalse()
+        ->and($president->matchesSenderRole($this->vpA))->toBeTrue()
+        ->and($president->matchesSenderRole($this->sender))->toBeTrue()
+        ->and($president->matchesSenderRole($this->president))->toBeTrue()
+        ->and($president->sender_role_id)->toBeNull();
+    foreach ([$this->vpA, $this->vpB] as $office) {
+        $stage = $stages->firstWhere('office_id', $office->id);
+        expect($stage->selection_group)->toBe('VP approval')
+            ->and($stage->is_required)->toBeTrue()
+            ->and($stage->matchesSenderRole($this->sender))->toBeTrue()
+            ->and($stage->matchesSenderRole($this->vpA))->toBeFalse();
+    }
+});
+
+it('requires President approval after VP recommendation with the seeded IL flow', function () {
+    $this->seed(Database\Seeders\IndorsementFlowSeeder::class);
+    ($this->compose)()->set($this->choiceField, (string) $this->vpBStage->id)
+        ->call('submitDocument', 'send')->assertHasNoErrors();
+
+    expect(Document::firstOrFail()->steps()->orderBy('sequence')->pluck('office_id')->all())
+        ->toBe([$this->vpB->id, $this->president->id]);
+});
+
 it('sends to exactly the selected configured VP instead of the President', function () {
     ($this->compose)()->set($this->choiceField, (string) $this->vpBStage->id)
         ->call('submitDocument', 'send')->assertHasNoErrors();

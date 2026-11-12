@@ -1020,6 +1020,8 @@ class CreateDocument extends Component
             }
         }
 
+        $groupStages = $this->validateFlowGroups()->sortBy('sequence')->values();
+
         foreach ($signatories as $signatory) {
             $role = $signatory['role'] ?? '';
             $officeId = (int) ($signatory['office_id'] ?? 0);
@@ -1039,6 +1041,9 @@ class CreateDocument extends Component
                     continue;
                 }
 
+                while ($groupStages->isNotEmpty() && $groupStages->first()->sequence <= $configured->sequence) {
+                    $this->createConfiguredStep($document, $groupStages->shift(), $sequence++);
+                }
                 $this->createConfiguredStep($document, $configured, $sequence++);
 
                 continue;
@@ -1061,7 +1066,7 @@ class CreateDocument extends Component
             ]);
         }
 
-        foreach ($this->validateFlowGroups() as $stage) {
+        foreach ($groupStages as $stage) {
             $this->createConfiguredStep($document, $stage, $sequence++);
         }
 
