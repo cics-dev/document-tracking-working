@@ -18,6 +18,14 @@
                         </flux:select>
                         <flux:error name="office_type" />
                     </div>
+                    <div class="md:col-span-6">
+                        <flux:field>
+                            <flux:label>Document Number Tag (optional)</flux:label>
+                            <flux:input wire:model="document_number_tag" maxlength="50" placeholder="e.g. ADMIN, ACAD, FINANCE" />
+                            <flux:description>Text shown in parentheses after the office abbreviation. Enter without parentheses, or leave blank to omit.</flux:description>
+                            <flux:error name="document_number_tag" />
+                        </flux:field>
+                    </div>
                 </div>
             </div>
 

@@ -20,6 +20,8 @@ class Office extends Component
 
     public string $office_type = '';
 
+    public ?string $document_number_tag = null;
+
     public $acting_head = '';
 
     public $office_logo;
@@ -35,6 +37,7 @@ class Office extends Component
         $this->name = $office->name;
         $this->abbreviation = $office->abbreviation;
         $this->office_type = $office->office_type;
+        $this->document_number_tag = $office->document_number_tag;
         $this->acting_head = $office->acting_head_id ?: '';
         $this->current_logo = $office->office_logo;
     }
@@ -52,6 +55,7 @@ class Office extends Component
             'name' => ['required', 'string', 'max:255'],
             'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices', 'abbreviation')->ignore($this->office->id)],
             'office_type' => ['required', Rule::in(['ACAD', 'ADMIN'])],
+            'document_number_tag' => ['nullable', 'string', 'max:50'],
             'acting_head' => ['nullable', 'exists:users,id'],
             'office_logo' => ['nullable', 'image', 'max:2048'],
         ]);

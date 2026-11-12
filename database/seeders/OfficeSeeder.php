@@ -46,6 +46,7 @@ class OfficeSeeder extends Seeder
                     'name' => $name,
                     'workflow_key' => $workflowKey,
                     'office_type' => $officeType,
+                    'document_number_tag' => $officeType ?: null,
                     'office_logo' => $officeLogo,
                 ],
             );

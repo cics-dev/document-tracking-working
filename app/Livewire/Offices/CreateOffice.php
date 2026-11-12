@@ -27,6 +27,8 @@ class CreateOffice extends Component
 
     public $office_type = '';
 
+    public ?string $document_number_tag = null;
+
     public $office_head = '';
 
     public $acting_head = '';
@@ -69,6 +71,7 @@ class CreateOffice extends Component
             $this->name = $office->name;
             $this->abbreviation = $office->abbreviation;
             $this->office_type = $office->office_type;
+            $this->document_number_tag = $office->document_number_tag;
             $this->office_head = $office->head_id;
             $this->acting_head = $office->acting_head_id ?? '';
 
@@ -118,6 +121,7 @@ class CreateOffice extends Component
             'name' => ['required', 'string', 'max:255'],
             'abbreviation' => ['required', 'string', 'max:50', Rule::unique('offices', 'abbreviation')->ignore($this->office_id)],
             'office_type' => ['required', Rule::in(['ACAD', 'ADMIN'])],
+            'document_number_tag' => ['nullable', 'string', 'max:50'],
             'office_head' => ['nullable', function ($attribute, $value, $fail) {
                 if ($value !== '' && $value !== '__new_user__' && ! User::whereKey($value)->exists()) {
                     $fail('The selected office head is invalid.');
@@ -166,6 +170,7 @@ class CreateOffice extends Component
             'name' => $this->name,
             'abbreviation' => $this->abbreviation,
             'office_type' => $this->office_type ?? '',
+            'document_number_tag' => $this->document_number_tag,
             'head_id' => $creatingHead ? null : ($this->office_head ?: null),
             'acting_head_id' => $creatingOic ? null : ($this->acting_head ?: null),
         ];

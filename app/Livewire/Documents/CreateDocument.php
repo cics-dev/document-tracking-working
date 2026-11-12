@@ -252,7 +252,7 @@ class CreateDocument extends Component
 
         $officeIds = $configuredStages->filter(fn ($stage) => empty($stage['selection_group'])
             && $this->stageMatchesSender($stage)
-            && (empty($stage['workflow_condition_id']) || $this->flowConditionArrayMatches($stage)))->pluck('office_id');
+            && (($stage['is_selectable'] ?? false) || $this->flowConditionArrayMatches($stage)))->pluck('office_id');
 
         return collect($this->allOffices)->whereIn('id', $officeIds)->map(fn ($office) => [
             'value' => (string) $office->id, 'label' => $office->name, 'search' => $office->abbreviation,
@@ -361,6 +361,9 @@ class CreateDocument extends Component
             ]);
 
         $this->signatories = $manualSignatories
+            ->reject(fn ($signatory) => $requiredSignatories->contains(fn ($required) =>
+                (int) $required['office_id'] === (int) ($signatory['office_id'] ?? 0)
+                && strcasecmp($required['role'], $signatory['role'] ?? '') === 0))
             ->concat($requiredSignatories)
             ->values()
             ->all();
@@ -504,12 +507,6 @@ class CreateDocument extends Component
 
         $typeObj = collect($this->types)->firstWhere('id', $this->document_type_id);
         $docTypeAbbr = $typeObj['abbreviation'] ?? 'N/A';
-        $officePart = Auth::user()->office->abbreviation;
-
-        if (Auth::user()->office->office_type) {
-            $officePart .= '('.Auth::user()->office->office_type.')';
-        }
-
         $docNumber = $this->is_manual_document_number
             ? $this->buildManualDocumentNumber()
             : DocumentNumber::format($typeObj, $fromOffice ?? Auth::user()->office, '_____', date('Y'));
@@ -986,7 +983,8 @@ class CreateDocument extends Component
                 if ($configured->selection_group) {
                     throw ValidationException::withMessages(['signatories' => 'Use the choose-one field for '.$configured->selection_group.'.']);
                 }
-                if (! $this->flowConditionMatches($configured)) {
+                if (! $configured->matchesSenderRole($this->sendingOffice())
+                    || (! $configured->is_selectable && ! $this->flowConditionMatches($configured))) {
                     continue;
                 }
 

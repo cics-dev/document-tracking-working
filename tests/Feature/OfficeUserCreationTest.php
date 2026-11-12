@@ -24,6 +24,7 @@ class OfficeUserCreationTest extends TestCase
             ->set('name', 'Research Office')
             ->set('abbreviation', 'RO')
             ->set('office_type', 'ADMIN')
+            ->set('document_number_tag', 'RESEARCH')
             ->set('office_head', '__new_user__')
             ->set('newUser.given_name', 'Maria')
             ->set('newUser.family_name', 'Santos')
@@ -36,6 +37,7 @@ class OfficeUserCreationTest extends TestCase
 
         $office = Office::where('abbreviation', 'RO')->firstOrFail();
         $head = User::where('email', 'maria@example.test')->firstOrFail();
+        $this->assertSame('RESEARCH', $office->document_number_tag);
         $this->assertSame($office->id, $head->office_id);
         $this->assertSame($head->id, $office->head_id);
         $this->assertDatabaseHas('user_profiles', ['user_id' => $head->id, 'given_name' => 'Maria', 'family_name' => 'Santos']);

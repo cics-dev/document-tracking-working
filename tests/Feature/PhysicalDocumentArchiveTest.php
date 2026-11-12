@@ -19,7 +19,7 @@ test('a signed paper document is archived privately and appears in the selected 
     $receiverRole = Role::create(['role' => 'receiver', 'description' => 'Receiver']);
     $receiverRole->permissions()->attach(Permission::where('key', 'receive_documents')->firstOrFail());
 
-    $senderOffice = Office::create(['name' => 'Sender Office', 'abbreviation' => 'SO', 'office_type' => 'ADMIN']);
+    $senderOffice = Office::create(['name' => 'Sender Office', 'abbreviation' => 'SO', 'office_type' => 'ADMIN', 'document_number_tag' => 'ADMIN']);
     $receiverOffice = Office::create(['name' => 'Receiver Office', 'abbreviation' => 'RO', 'office_type' => 'ADMIN']);
     $sender = User::factory()->create(['office_id' => $senderOffice->id, 'role_id' => $senderRole->id]);
     $recipient = User::factory()->create(['office_id' => $receiverOffice->id, 'role_id' => $receiverRole->id]);

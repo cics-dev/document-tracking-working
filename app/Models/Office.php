@@ -9,7 +9,7 @@ class Office extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'abbreviation', 'workflow_key', 'office_type', 'head_id', 'acting_head_id', 'office_logo'];
+    protected $fillable = ['name', 'abbreviation', 'workflow_key', 'office_type', 'document_number_tag', 'head_id', 'acting_head_id', 'office_logo'];
 
     public function head()
     {

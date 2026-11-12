@@ -65,6 +65,7 @@ class SetupDataSeeder extends Seeder
                 ['id' => 11, 'name' => 'Records Office', 'abbreviation' => 'RO', 'office_type' => 'ADMIN', 'head_id' => 13],
             ];
             $this->upsert('offices', array_map(function ($office) {
+                $office['document_number_tag'] = $office['office_type'] ?: null;
                 $office['head_id'] = null;
                 $office['acting_head_id'] = null;
 

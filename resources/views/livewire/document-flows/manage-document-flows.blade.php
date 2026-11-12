@@ -56,9 +56,9 @@
                 @endif
                 <flux:error name="conditionValue" />
             @endif
-            @if(! $selectionGroup)<flux:checkbox wire:model="isSelectable" label="Show checkbox" />@endif
+            @if(! $selectionGroup)<flux:checkbox wire:model="isSelectable" label="Allow manual selection" />@endif
             <flux:checkbox wire:model="isRequired" label="Required" />
-            <flux:description>Required checkboxes are automatically selected and locked when the condition applies.</flux:description>
+            <flux:description>Selectable routing and signatory stages remain available for manual selection when the condition does not apply. Required stages are automatically selected and locked when the condition applies.</flux:description>
             <div class="flex gap-2"><flux:button type="submit" variant="primary">{{ $stageId ? 'Update' : 'Add' }} Stage</flux:button>@if($stageId)<flux:button type="button" wire:click="resetStage">Cancel</flux:button>@endif</div>
         </form>
 

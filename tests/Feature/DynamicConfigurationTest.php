@@ -185,7 +185,7 @@ class DynamicConfigurationTest extends TestCase
     public function test_number_template_controls_automatic_and_manual_number_positions(): void
     {
         $office = $this->office('Student Affairs Office', 'SAO');
-        $office->update(['office_type' => 'ADMIN']);
+        $office->update(['office_type' => 'ADMIN', 'document_number_tag' => 'ADMIN']);
         $type = DocumentType::create([
             'name' => 'Request Letter Memorandum',
             'abbreviation' => 'RLM',

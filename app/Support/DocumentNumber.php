@@ -57,7 +57,7 @@ class DocumentNumber
     {
         return [
             '{office}' => $office->abbreviation,
-            '{office_with_type}' => $office->abbreviation.($office->office_type ? '('.$office->office_type.')' : ''),
+            '{office_with_type}' => $office->abbreviation.(filled($office->document_number_tag) ? '('.$office->document_number_tag.')' : ''),
             '{type}' => (string) $type?->abbreviation,
         ];
     }
