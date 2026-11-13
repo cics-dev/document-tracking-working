@@ -28,7 +28,7 @@ class NotificationCountService
                         ->orWhere('documents.created_by', '!=', $user->id))
                     ->whereDoesntHave('accessLogs', $viewed)
                     ->count() : 0,
-            'external' => ($user->hasAccess('receive_external_documents') || $user->hasAccess('send_external_documents'))
+            'external' => ($user->hasAccess('view_all_external_documents') || $user->hasAccess('receive_external_documents') || $user->hasAccess('send_external_documents'))
                 ? $external->whereDoesntHave('accessLogs', $viewed)->count() : 0,
         ];
         $counts['total'] = ($canViewAll

@@ -60,7 +60,7 @@
         <flux:sidebar.item icon="inbox-stack" :href="route('documents.list-documents', 'Sent')" :current="$activeSection === 'Sent'" wire:navigate :badge="$unreadSent ?: null" :badge-color="$unreadSent ? 'red' : null">{{ __('Sent Documents') }}</flux:sidebar.item>
         <flux:sidebar.item icon="document-plus" :href="route('documents.create-document')" :current="$activeSection === 'write'" wire:navigate>{{ __('Write Document') }}</flux:sidebar.item>
     @endif
-    @if(auth()->user()->hasAccess('receive_external_documents') || auth()->user()->hasAccess('send_external_documents'))
+    @if(auth()->user()->hasAccess('view_all_external_documents') || auth()->user()->hasAccess('receive_external_documents') || auth()->user()->hasAccess('send_external_documents'))
         <flux:sidebar.item icon="inbox-arrow-down" :href="route('documents.list-external-documents')" :current="$activeSection === 'external'" wire:navigate :badge="$unreadExternal ?: null" :badge-color="$unreadExternal ? 'red' : null">{{ __('External Documents') }}</flux:sidebar.item>
     @endif
     @if($showToast)

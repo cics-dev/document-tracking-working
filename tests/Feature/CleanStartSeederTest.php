@@ -27,7 +27,7 @@ class CleanStartSeederTest extends TestCase
         $this->assertNotNull($hrmu->head);
         $this->assertSame($hrmu->id, $hrmu->head->office_id);
         $this->assertSame(7, Role::count());
-        $this->assertSame(10, Permission::count());
+        $this->assertSame(11, Permission::count());
         $this->assertSame(6, DocumentType::count());
         $this->assertSame(24, DocumentFlowStage::count());
         $this->assertSame(0, Document::count());

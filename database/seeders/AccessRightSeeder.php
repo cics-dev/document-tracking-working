@@ -21,6 +21,7 @@ class AccessRightSeeder extends Seeder
             'view_all_documents' => 'View All Documents',
             'receive_external_documents' => 'Receive External',
             'send_external_documents' => 'Send External',
+            'view_all_external_documents' => 'View All External Documents',
         ];
 
         foreach ($rights as $key => $label) {

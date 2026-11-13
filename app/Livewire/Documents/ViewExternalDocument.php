@@ -23,7 +23,7 @@ class ViewExternalDocument extends Component
     public function mount($id)
     {
         abort_unless(
-            Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
+            Auth::user()->hasAccess('view_all_external_documents') || Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
             403,
             'You do not have permission to access external documents.'
         );

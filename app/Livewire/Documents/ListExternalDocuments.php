@@ -27,7 +27,7 @@ class ListExternalDocuments extends Component
     public function mount(): void
     {
         abort_unless(
-            Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
+            Auth::user()->hasAccess('view_all_external_documents') || Auth::user()->hasAccess('receive_external_documents') || Auth::user()->hasAccess('send_external_documents'),
             403,
             'You do not have permission to access external documents.'
         );
@@ -72,7 +72,7 @@ class ListExternalDocuments extends Component
         $user = Auth::user();
         $query = app(ExternalDocumentQueryService::class)->listFor($user)->with('toOffice');
         $officeIds = $user->workflowOfficeIds();
-        if (! $user->hasAccess('view_all_documents') && $this->officeFilter !== '') {
+        if (! $user->hasAccess('view_all_external_documents') && $this->officeFilter !== '') {
             abort_unless(in_array((int) $this->officeFilter, $officeIds, true), 403);
         }
 
@@ -97,13 +97,13 @@ class ListExternalDocuments extends Component
         return view('livewire.documents.list-external-documents', [
             'documents' => $documents,
             'offices' => Office::query()
-                ->when(! $user->hasAccess('view_all_documents'), fn ($query) => $query->whereIn('id', $officeIds))
+                ->when(! $user->hasAccess('view_all_external_documents'), fn ($query) => $query->whereIn('id', $officeIds))
                 ->orderBy('name')->get(['id', 'name', 'abbreviation'])
-                ->filter(fn ($office) => $user->hasAccess('view_all_documents')
+                ->filter(fn ($office) => $user->hasAccess('view_all_external_documents')
                     || $user->hasAccess('receive_external_documents', $office->id)
                     || $user->hasAccess('send_external_documents', $office->id)),
             'showOfficeContext' => $user->managesMultipleOffices(),
-            'allOfficesLabel' => $user->hasAccess('view_all_documents') ? 'All Offices' : 'All my offices',
+            'allOfficesLabel' => $user->hasAccess('view_all_external_documents') ? 'All Offices' : 'All my offices',
         ])->layout('layouts.app');
     }
 }

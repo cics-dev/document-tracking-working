@@ -17,7 +17,7 @@
         <div class="w-full min-w-0">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Search subject or sender..." />
         </div>
-        @if($showOfficeContext || auth()->user()->hasAccess('view_all_documents'))
+        @if($showOfficeContext || auth()->user()->hasAccess('view_all_external_documents'))
         <div class="w-full min-w-0">
             <x-searchable-filter-select
                 model="officeFilter"

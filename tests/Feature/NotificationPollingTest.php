@@ -104,7 +104,7 @@ class NotificationPollingTest extends TestCase
 
         $globalRole = Role::create(['role' => 'global-external', 'description' => 'Global External']);
         $globalRole->permissions()->attach(
-            Permission::whereIn('key', ['receive_external_documents', 'view_all_documents'])->pluck('id')
+            Permission::whereIn('key', ['receive_external_documents', 'view_all_external_documents'])->pluck('id')
         );
         $globalUser = User::factory()->create(['role_id' => $globalRole->id, 'office_id' => $receivingOffice->id]);
 

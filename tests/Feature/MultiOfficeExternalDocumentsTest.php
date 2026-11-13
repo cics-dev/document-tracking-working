@@ -72,13 +72,51 @@ it('honors external permissions separately for each office', function () {
     expect(app(NotificationCountService::class)->for($this->actor)['external'])->toBe(1);
 });
 
-it('retains all-office access for Records users with global document permission', function () {
-    $this->supplyRole->permissions()->attach(Permission::where('key', 'view_all_documents')->firstOrFail());
+it('allows all-office external access with the dedicated permission', function () {
+    $this->supplyRole->permissions()->attach(Permission::where('key', 'view_all_external_documents')->firstOrFail());
     Livewire::test(ListExternalDocuments::class)->assertSee('Unrelated Office letter')
         ->set('officeFilter', (string) $this->other->id)->assertSee('Unrelated Office letter')->assertDontSee('Supply Office letter');
     expect(app(NotificationCountService::class)->for($this->actor)['external'])->toBe(3);
     Livewire::test(ViewExternalDocument::class, ['id' => $this->letters->last()->id])->assertStatus(200);
     expect(app(NotificationCountService::class)->for($this->actor)['external'])->toBe(2);
+});
+
+it('does not grant global external visibility through internal document permission', function () {
+    $this->supplyRole->permissions()->attach(Permission::where('key', 'view_all_documents')->firstOrFail());
+    Livewire::test(ListExternalDocuments::class)->assertDontSee('Unrelated Office letter');
+    Livewire::test(ViewExternalDocument::class, ['id' => $this->letters->last()->id])->assertForbidden();
+    expect(app(NotificationCountService::class)->for($this->actor)['external'])->toBe(2);
+});
+
+it('supports external-only read access including filters previews and notifications', function () {
+    $role = Role::create(['role' => 'external-viewer', 'description' => 'External Viewer']);
+    $role->permissions()->attach(Permission::where('key', 'view_all_external_documents')->firstOrFail());
+    $viewer = User::factory()->create(['role_id' => $role->id, 'office_id' => $this->other->id]);
+    $this->actingAs($viewer);
+
+    Livewire::test(ListExternalDocuments::class)->assertSee('All Offices')
+        ->assertSee('Supply Office letter')->assertSee('SAO Administration letter')->assertSee('Unrelated Office letter')
+        ->assertDontSee('Receive Document')
+        ->set('officeFilter', (string) $this->supply->id)->assertSee('Supply Office letter')->assertDontSee('Unrelated Office letter');
+    expect(app(NotificationCountService::class)->for($viewer)['external'])->toBe(3);
+    Livewire::test(ViewExternalDocument::class, ['id' => $this->letters->first()->id])->assertOk();
+    $this->get(route('documents.external-document-preview', $this->letters->first()))->assertOk();
+    expect(app(NotificationCountService::class)->for($viewer)['external'])->toBe(2);
+    Livewire::test(App\Livewire\Documents\ReceiveExternalDocument::class)->assertForbidden();
+    Livewire::test(App\Livewire\Documents\ListDocuments::class, ['mode' => 'all'])->assertForbidden();
+    Livewire::test(App\Livewire\Notifications\SidebarNotifications::class)->assertSee('External Documents');
+});
+
+it('exposes the new permission in access rights and saves it on its own', function () {
+    $managerRole = Role::create(['role' => 'external-rights-manager', 'description' => 'Rights Manager']);
+    $managerRole->permissions()->attach(Permission::where('key', 'manage_access_rights')->firstOrFail());
+    $manager = User::factory()->create(['role_id' => $managerRole->id]);
+    $permission = Permission::where('key', 'view_all_external_documents')->firstOrFail();
+    $this->actingAs($manager);
+    Livewire::test(App\Livewire\AccessRights\ManageAccessRights::class)->assertSee('View All External Documents')
+        ->set('rights.'.$this->supplyRole->id, [(string) $permission->id])
+        ->call('saveRole', $this->supplyRole->id)->assertHasNoErrors();
+    expect($this->supplyRole->fresh()->permissions->pluck('key')->all())->toBe(['view_all_external_documents']);
 });
 
 

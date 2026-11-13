@@ -11,11 +11,11 @@ class ExternalDocumentQueryService
     public function listFor(User $user): Builder
     {
         $query = ExternalDocument::query();
+        if ($user->hasAccess('view_all_external_documents')) {
+            return $query;
+        }
         if (! $user->hasAccess('receive_external_documents') && ! $user->hasAccess('send_external_documents')) {
             return $query->whereRaw('1 = 0');
-        }
-        if ($user->hasAccess('view_all_documents')) {
-            return $query;
         }
 
         $officeIds = array_values(array_filter($user->workflowOfficeIds(), fn ($id) =>
