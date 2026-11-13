@@ -1,0 +1,27 @@
+[
+    {
+        "question": "What is DTS?",
+        "aliases": ["DTS", "What is DTS", "What does DTS mean?", "What does DTS stand for?", "What is DTS-ZPPSU?", "What is the document tracking system?"],
+        "answer": "DTS stands for Document Tracking System. DTS-ZPPSU is ZPPSU's system for creating, routing, reviewing, approving, and tracking official documents between offices. It helps authorized users monitor document status and processing history."
+    },
+    {
+        "question": "What can DTS do?",
+        "aliases": ["What are the features of DTS?", "What is DTS used for?"],
+        "answer": "DTS helps authorized users create and route official documents, review and approve them, manage attachments, track processing history, and archive and retrieve documents. Available actions depend on your office and access permissions."
+    },
+    {
+        "question": "What is RLM?",
+        "aliases": ["What does RLM stand for?"],
+        "answer": "RLM stands for Request Letter Memorandum, a document type in DTS. Its routing and approvals follow the document flow configured by your administrator."
+    },
+    {
+        "question": "What is IL?",
+        "aliases": ["What does IL stand for?"],
+        "answer": "IL stands for Indorsement Letter, a document type in DTS. Its recommending approvers and final approver follow the document flow configured by your administrator."
+    },
+    {
+        "question": "Can you check my document status?",
+        "aliases": ["Where is my document?"],
+        "answer": "I can explain how DTS works, but I cannot look up live document records. Sign in to DTS and use document tracking, or open a tracking link shared with you, to check your document's status."
+    }
+]
