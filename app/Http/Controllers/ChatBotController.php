@@ -19,7 +19,9 @@ class ChatBotController extends Controller
 
         try {
             $result = OpenAI::chat()->create([
-                'model' => 'gpt-5',
+                'model' => 'gpt-6-luna',
+                'reasoning_effort' => 'none',
+                'verbosity' => 'low',
                 'messages' => [...$faqs, ['role' => 'user', 'content' => $validated['message']]],
             ]);
         } catch (Throwable $exception) {
