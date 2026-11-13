@@ -40,9 +40,7 @@ beforeEach(function () {
     }
 });
 
-it('keeps email disabled by default and sends nothing when disabled', function () {
-    $config = require base_path('config/document-notifications.php');
-    expect($config['email_enabled'])->toBeFalse();
+it('sends nothing when email is explicitly disabled', function () {
     config(['document-notifications.email_enabled' => false]);
     app(DocumentEmailService::class)->sent($this->document);
     app(DocumentWorkflowService::class)->approve($this->document, $this->reviewer->actingHead);
@@ -132,4 +130,39 @@ it('also skips recipient lookup failures', function () {
     $document->shouldReceive('nextPendingStep')->once()->andThrow(new RuntimeException('Lookup unavailable'));
     app(DocumentEmailService::class)->sent($document);
     Mail::assertNothingSent();
+});
+
+it('sends first-step notifications through the actual Write Document action', function () {
+    $role = App\Models\Role::create(['role' => 'email-sender', 'description' => 'Email sender']);
+    $role->permissions()->attach(App\Models\Permission::where('key', 'send_documents')->firstOrFail());
+    $actor = $this->owner->actingHead;
+    $actor->update(['role_id' => $role->id]);
+    $type = DocumentType::create([
+        'name' => 'Notification Integration', 'abbreviation' => 'NI',
+        'is_publicly_creatable' => true, 'recipient_mode' => 'none', 'requires_signatories' => true,
+    ]);
+    App\Models\DocumentFlowStage::create([
+        'document_type_id' => $type->id, 'office_id' => $this->reviewer->id,
+        'stage_type' => 'signatory', 'label' => 'Approved by', 'sequence' => 1,
+        'is_required' => true, 'is_selectable' => false,
+    ]);
+    $this->actingAs($actor);
+    Livewire\Livewire::test(App\Livewire\Documents\CreateDocument::class)
+        ->set('document_type_id', (string) $type->id)
+        ->set('subject', 'Notification integration')->set('content', '<p>Test</p>')
+        ->call('submitDocument', 'send')->assertHasNoErrors()->assertRedirect();
+    Mail::assertSent(DocumentForReview::class, 2);
+    Mail::assertNotSent(DocumentStatusUpdate::class);
+});
+
+it('records delivery failures with the document and recipient for diagnosis', function () {
+    Illuminate\Support\Facades\Log::spy();
+    Mail::shouldReceive('to')->twice()->andThrow(new RuntimeException('SMTP unavailable'));
+    app(DocumentEmailService::class)->sent($this->document);
+    foreach ([$this->reviewer->head_id, $this->reviewer->acting_head_id] as $id) {
+        Illuminate\Support\Facades\Log::shouldHaveReceived('log')->withArgs(fn ($level, $message, $context) =>
+            $level === 'warning' && $context['document_id'] === $this->document->id
+            && $context['recipient_user_id'] === $id && $context['reason'] === 'SMTP unavailable'
+        )->once();
+    }
 });

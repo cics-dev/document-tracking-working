@@ -16,17 +16,19 @@ class ForgotPassword extends Component
      */
     public function sendPasswordResetLink(): void
     {
+        session()->forget('status');
         $this->validate([
             'email' => ['required', 'string', 'email'],
         ]);
 
-        Password::sendResetLink($this->only('email'));
+        $status = Password::sendResetLink($this->only('email'));
+        if ($status !== Password::RESET_LINK_SENT) {
+            $this->addError('email', $status === Password::INVALID_USER
+                ? __('No account exists for this email address.')
+                : __($status));
+            return;
+        }
 
-        // Always show the same response so this form cannot be used to discover
-        // which email addresses have an account.
-        session()->flash(
-            'status',
-            __('If an account exists for that email address, a password reset link has been sent.')
-        );
+        session()->flash('status', __('A password reset link has been sent to your email address.'));
     }
 }

@@ -31,6 +31,7 @@
                             autocomplete="email"
                             placeholder="email@example.com"
                         />
+                        <flux:error name="email" />
                     </div>
 
                     <div>

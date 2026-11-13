@@ -30,19 +30,23 @@ test('reset password link can be requested', function () {
 
     Livewire::test(ForgotPassword::class)
         ->set('email', $user->email)
-        ->call('sendPasswordResetLink');
+        ->call('sendPasswordResetLink')
+        ->assertHasNoErrors()
+        ->assertSee('A password reset link has been sent to your email address.');
 
     Notification::assertSentTo($user, ResetPasswordNotification::class);
 });
 
-test('password reset requests do not reveal whether an account exists', function () {
+test('password reset reports when an account does not exist', function () {
     Notification::fake();
 
     $response = Livewire::test(ForgotPassword::class)
         ->set('email', 'missing@example.com')
         ->call('sendPasswordResetLink');
 
-    $response->assertSee('If an account exists for that email address, a password reset link has been sent.');
+    $response->assertHasErrors('email')
+        ->assertSee('No account exists for this email address.')
+        ->assertDontSee('A password reset link has been sent to your email address.');
     Notification::assertNothingSent();
 });
 

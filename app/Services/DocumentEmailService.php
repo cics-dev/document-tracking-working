@@ -6,6 +6,8 @@ use App\Mail\DocumentForReview;
 use App\Mail\DocumentStatusUpdate;
 use App\Models\Document;
 use App\Models\Office;
+use App\Models\User;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -40,10 +42,14 @@ class DocumentEmailService
                     ->get()->map(fn ($attachment) => $attachment->attachmentDocument?->fromOffice));
             }
             $action = strtolower($final ? $document->status : $result['step']->status);
-            foreach ($this->recipients($offices) as $recipient) {
-                $this->attempt(fn () => Mail::to($recipient->email)->send(new DocumentStatusUpdate(
+            $recipients = $this->recipients($offices);
+            if ($recipients->isEmpty()) {
+                $this->log('warning', 'Document status email skipped: no active office recipient with an email address.', ['document_id' => $document->id]);
+            }
+            foreach ($recipients as $recipient) {
+                $this->deliver($document, $recipient, new DocumentStatusUpdate(
                     $document, $recipient->name, $action, $result['description'],
-                )));
+                ));
             }
         });
     }
@@ -54,8 +60,48 @@ class DocumentEmailService
         if (! $step) {
             return;
         }
-        foreach ($this->recipients(collect([$step->office])) as $recipient) {
-            $this->attempt(fn () => Mail::to($recipient->email)->send(new DocumentForReview($document, $recipient->name)));
+        $recipients = $this->recipients(collect([$step->office]));
+        if ($recipients->isEmpty()) {
+            $this->log('warning', 'Document first/next-step email skipped: no active office recipient with an email address.', [
+                'document_id' => $document->id, 'step_id' => $step->id, 'office_id' => $step->office_id,
+            ]);
+        }
+        foreach ($recipients as $recipient) {
+            $this->deliver($document, $recipient, new DocumentForReview($document, $recipient->name));
+        }
+    }
+
+    private function deliver(Document $document, User $recipient, Mailable $mail): void
+    {
+        $context = [
+            'document_id' => $document->id,
+            'recipient_user_id' => $recipient->id,
+            'notification' => class_basename($mail),
+        ];
+        try {
+            $sent = Mail::to($recipient->email)->send($mail);
+        } catch (Throwable $exception) {
+            $this->log('warning', 'Document email skipped after a delivery failure.', $context + [
+                'exception_type' => $exception::class,
+                'reason' => $exception->getMessage(),
+            ]);
+            return;
+        }
+        if ($sent) {
+            $this->log('info', 'Document email accepted by mail transport.', $context + [
+                'message_id' => $sent->getMessageId(),
+            ]);
+        } else {
+            $this->log('warning', 'Document email was not accepted by mail transport.', $context);
+        }
+    }
+
+    private function log(string $level, string $message, array $context): void
+    {
+        try {
+            Log::log($level, $message, $context);
+        } catch (Throwable) {
+            // Logging must not interrupt document actions or other recipients.
         }
     }
 
@@ -64,14 +110,10 @@ class DocumentEmailService
         try {
             $notification();
         } catch (Throwable $exception) {
-            // Notification failures must never interrupt a document action.
-            try {
-                Log::warning('Document email skipped after a notification failure.', [
-                    'exception_type' => $exception::class,
-                ]);
-            } catch (Throwable) {
-                // Even an unavailable logger must not surface an email error.
-            }
+            $this->log('warning', 'Document email skipped after a notification failure.', [
+                'exception_type' => $exception::class,
+                'reason' => $exception->getMessage(),
+            ]);
         }
     }
 
